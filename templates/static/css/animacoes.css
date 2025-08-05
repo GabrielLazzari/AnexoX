@@ -1,0 +1,20 @@
+@keyframes btnAnimacao {
+    0% {
+        transform: scale(1, 1) rotate(10deg);
+    }
+    50%{
+        transform: scale(1, 0.9) rotate(-10deg);
+    }
+    100% {
+        transform: scale(1, 1);
+    }
+}
+
+@keyframes hrPraDireita{
+    0% {
+        width: 0%;
+    }
+    100% {
+        width: 100%;
+    }
+}

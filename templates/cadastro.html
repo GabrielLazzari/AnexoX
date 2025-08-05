@@ -1,0 +1,129 @@
+{% extends 'index.html' %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro</title>
+
+    <link rel="stylesheet" type="text/css" href="static/css/animacoes.css">
+    <link rel="stylesheet" type="text/css" href="static/css/central.css">
+
+</head>
+<body>
+
+    <script src="static/js/multiSelect.js"></script>
+
+    {% block conteudo %}
+
+    <div class="tituloPagina">Cadastro de Usuário</div>
+
+    <form action="" method="post" id="formCadastro" class="formUsuario" enctype='multipart/form-data' ondrop="dropHandler(event)" ondragover="dragOverHandler(event)">
+        <div style="max-width: 220px;">
+            <div>
+                Imagem
+                <label class="fileInput" style="width: 200px; height: 200px;">
+                    <input type="file" name="imagem" onchange="carregarImagem(this)"/>
+                </label>
+            </div>
+
+            <div>
+                Perfil
+                <div class="tipoPerfilUsuario">
+                    <div>
+                        <input type="radio" id="checkTipoLeitor" name="tipoUsuario" value="0" checked>
+                        <label for="checkTipoLeitor">Leitor</label>
+                    </div>
+                    
+                    <div>
+                        <input type="radio" id="checkTipoAutor" name="tipoUsuario" value="1">
+                        <label for="checkTipoAutor">Autor</label>
+                    </div>
+                    
+                    <div>
+                        <input type="radio" id="checkTipoEditora" name="tipoUsuario" value="2">
+                        <label for="checkTipoEditora">Editora</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <div>
+                <label for="campoNome">Nome</label>
+                <input type="text" name="campoNome" id="campoNome" value="{{usuario.nome}}" required>
+            </div>
+
+            <div>
+                <label for="campoSenha">Senha</label>
+                <input type="password" name="campoSenha" id="campoSenha" value="{{usuario.senha}}" required>
+            </div>
+
+            <div>
+                <label for="campoConfirmarSenha">Confirmar Senha</label>
+                <input type="password" name="campoConfirmarSenha" id="campoConfirmarSenha" value="{{usuario.senha_confirmar}}" required>
+            </div>
+
+            <div>
+                <label for="campoEmail">E-mail</label>
+                <input type="text" name="campoEmail" id="campoEmail" value="{{usuario.email}}" required>
+            </div>
+
+            <div id="divCnpj" style="display: none;">
+                <label for="campoCnpj">Cnpj</label>
+                <input type="text" name="campoCnpj" id="campoCnpj" maxlength="18" value="{{usuario.cnpj}}">
+            </div>
+
+            <div id="divPreferenciasLiterarias">
+                <label for="campoPreferenciasLiterarias">Preferências Literárias</label>
+                <div id="preferenciasLiterarias"></div>
+            </div>
+
+            <div id="acoesLogin">
+                <button id="btnCancelarCadastro">Cancelar</button>
+                <button type="submit" id="btnSalvarCadastro">Salvar</button>
+            </div>
+
+            <span class="msgRetornoErro">{{ erro }}</span>
+        </div>
+    </form>
+
+    <script>
+
+        var divCnpj = document.getElementById("divCnpj");
+        var divPreferenciasLiterarias = document.getElementById("divPreferenciasLiterarias");
+        var inputCnpj = document.getElementById("campoCnpj");
+
+        document.querySelectorAll("input[name='tipoUsuario']").forEach((input) => {
+            input.addEventListener('change', function(event){
+                if (event.target.id == 'checkTipoEditora') {
+                    divCnpj.style.display = "block";
+                    divPreferenciasLiterarias.style.display = "none";
+                    inputCnpj.setAttribute("required", true);
+                }else{
+                    divCnpj.style.display = "none";
+                    divPreferenciasLiterarias.style.display = "block";
+                    inputCnpj.removeAttribute("required");
+                }
+
+                if (event.target.id == 'checkTipoAutor'){
+                    divCnpj.style.display = "block";
+                    inputCnpj.setAttribute("required", true);
+                }
+            });
+        });
+
+        new MultiploSelect("preferenciasLiterarias",
+            ['Romance', 'Suspense', 'Mistério', 'Aventura', 'Policial', 'Ficção Científica', 'Fantasia', 
+            'Técnicos / Estudos', 'Bibliográficos / Auto Bibliográficos', 'Terror', 'Histórico', 
+            'Auto Ajuda', 'Religioso', 'Finanças', 'Literatura', 'Infanto Juvenil', 'Contos', 'Poesia']
+        );
+
+    </script>
+
+    {% endblock %}
+
+    <script src="static/js/validadorCampos.js"></script>
+</body>
+</html>

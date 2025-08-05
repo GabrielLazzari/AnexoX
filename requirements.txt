@@ -1,0 +1,9 @@
+
+selenium
+Unidecode
+requests
+pandas
+pillow
+Flask
+flask-sqlalchemy
+flask-login

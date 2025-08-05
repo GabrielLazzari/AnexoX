@@ -1,0 +1,100 @@
+{% extends 'index.html' %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <link rel="stylesheet" type="text/css" href="static/css/animacoes.css">
+    <link rel="stylesheet" type="text/css" href="static/css/central.css">
+    <link rel="stylesheet" type="text/css" href="static/css/usuario.css">
+</head>
+<body>
+    {% block conteudo %}
+
+    <div class="tituloPagina">Criar Publicação</div>
+
+    <form action="" method="post" id="formCadastro" class="formUsuario" enctype='multipart/form-data' ondrop="dropHandler(event)" ondragover="dragOverHandler(event)">
+
+        <div style="max-width: 220px;">
+            <div>
+                Tipo
+                <div class="tipoPerfilUsuario">
+                    <div>
+                        <input type="checkbox" id="checkTipoLeitor" name="tipoUsuario" value="0" checked>
+                        <label for="checkTipoLeitor">Evento</label>
+                    </div>
+                    
+                    <div>
+                        <input type="checkbox" id="checkTipoAutor" name="tipoUsuario" value="1">
+                        <label for="checkTipoAutor">Anônimo</label>
+                    </div>
+                    
+                    <div>
+                        <input type="checkbox" id="checkTipoEditora" name="tipoUsuario" value="2">
+                        <label for="checkTipoEditora">Spoiler</label>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                Adicionar
+                <div>
+                    <button onclick="adicionarConteudoTexto()">Texto</button>
+                    <button onclick="adicionarConteudoImagem()">Imagem</button>
+                    <button onclick="adicionarConteudoVideo()">Vídeo</button>
+                </div>
+            </div>
+
+            <div>
+                Referênciar um livro
+                <div>
+                    <input type="text" placeholder="Selecionar um livro">
+                </div>
+            </div>
+        </div>
+        <div>
+            <div>
+                <label for="campoTitulo">Titulo</label>
+                <input type="text" name="campoTitulo" id="campoTitulo" value="{{publicacao.titulo}}" required>
+            </div>
+
+            <div>
+                <label for="campoTitulo">Conteúdo</label>
+                <div id="estruturaConteudoPublicacao">
+
+                </div>
+            </div>
+
+            <div id="acoesLogin">
+                <button id="btnCancelarCadastro">Cancelar</button>
+                <button type="submit" id="btnSalvarCadastro">Salvar</button>
+            </div>
+
+            <span class="msgRetornoErro">{{ erro }}</span>
+        </div>
+
+    </form>
+
+    <script>
+
+        var estruturaConteudoPublicacao = document.getElementById('estruturaConteudoPublicacao');
+
+        function adicionarConteudoTexto(){
+
+        }
+
+        function adicionarConteudoImagem(){
+
+        }
+
+        function adicionarConteudoVideo(){
+
+        }
+    </script>
+
+    {% endblock %}
+</body>
+</html>

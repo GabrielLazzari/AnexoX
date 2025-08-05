@@ -1,0 +1,44 @@
+{% extends 'index.html' %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <link rel="stylesheet" type="text/css" href="static/css/animacoes.css">
+    <link rel="stylesheet" type="text/css" href="static/css/central.css">
+    <link rel="stylesheet" type="text/css" href="static/css/paginacao.css">
+    <link rel="stylesheet" type="text/css" href="static/css/pesquisa.css">
+    <link rel="stylesheet" type="text/css" href="static/css/livro.css">
+
+</head>
+<body>
+    <script src="static/js/pesquisa.js"></script>
+    <script src="static/js/paginacao.js"></script>
+
+    {% block conteudo %}
+
+    <div id="dataDados" style="display: none;">{{ dados | tojson | safe if dados else "{}" }}</div>
+
+    <div id="btnsAlterarFiltros" style="display: flex;">
+        <button id="btnFiltroRapidoLivros" class="btnMenu btnOpcaoFiltro" onclick="trocarTipoFiltro('livros')">Livros<hr></button>
+        <button id="btnFiltroRapidoLeitores" class="btnMenu btnOpcaoFiltro" onclick="trocarTipoFiltro('leitores')">Leitores<hr></button>
+        <button id="btnFiltroRapidoAutores" class="btnMenu btnOpcaoFiltro" onclick="trocarTipoFiltro('autores')">Autores<hr></button>
+        <button id="btnFiltroRapidoEditoras" class="btnMenu btnOpcaoFiltro" onclick="trocarTipoFiltro('editoras')">Editoras<hr></button>
+        <button id="btnFiltroRapidoPublicacoes" class="btnMenu btnOpcaoFiltro" onclick="trocarTipoFiltro('publicacoes')">Publicações<hr></button>
+    </div>
+
+    <div id="areaPesquisa"></div>
+
+    <script>
+        var valoresFiltro = JSON.parse(document.getElementById('dataDados')?.innerText || '{}');
+        console.log(valoresFiltro)
+        new Paginacao(document.getElementById('areaPesquisa'), valoresFiltro, valoresFiltro.qtdItens);
+    </script>
+
+    {% endblock %}
+
+</body>
+</html>

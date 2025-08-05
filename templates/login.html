@@ -1,0 +1,52 @@
+{% extends 'index.html' %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+
+    <link rel="stylesheet" type="text/css" href="static/css/animacoes.css">
+    <link rel="stylesheet" type="text/css" href="static/css/central.css">
+
+</head>
+<body>
+    {% block conteudo %}
+
+    <div class="tituloPagina">Entrar</a></div>
+
+    {% if pagina %}
+        <span style="color: red;">Para acessar a página de {{ pagina }} você deve estar logado.</span>
+    {% endif %}
+
+    <form action="" method="post" id="formLogin" class="formUsuario">
+        <div style="width: 100%; max-width: unset; margin-bottom: 0px; display: flex; justify-content: center;">
+            <img src="static/imagens/sistema/login.png" alt="" style="width: 300px; ">
+        </div>
+
+        <div style="border: 1px solid var(--corDestaque);">
+            <div>
+                <label for="campoNome">Nome</label>
+                <input type="text" name="campoNome" id="campoNome" value="{{nome}}" required>
+            </div>
+
+            <div>
+                <label for="campoSenha">Senha</label>
+                <input type="password" name="campoSenha" id="campoSenha" value="{{senha}}" required>
+            </div>
+
+            <div id="acoesLogin">
+                <a href="cadastro">Primeiro Acesso</a>
+                <button type="submit" id="btnLogin">Login</button>
+            </div>
+
+            <span class="msgRetornoErro">{{ erro }}</span>
+        </div>
+    </form>
+
+    {% endblock %}
+
+    <script src="static/js/validadorCampos.js"></script>
+</body>
+</html>

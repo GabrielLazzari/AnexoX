@@ -1,0 +1,427 @@
+:root{
+    --corPrimaria: #cfbd9b;
+    --corIcone: #000;
+    --corDestaque: #a98d56;
+    --corHover: #e6d49e;
+    --corPrata: #ddd;
+    --corFundo: white;
+    --corFundo2: #f8f8f8;
+    --corSelecionado: #6aeb6a;
+}
+
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: monospace;
+    font-size: 16px
+    /*user-select: none*/;
+}
+
+body{
+    background-color: var(--corFundo);
+}
+
+.corPrimaria{
+    background-color: var(--corPrimaria);
+}
+
+button, #campoPesquisa{
+    border: none;
+    background-color: unset;
+    padding: 2px;
+}
+
+button{
+    background-color: var(--corPrimaria);
+    border: 1px solid var(--corDestaque);
+    border-radius: 5px;
+}
+
+input{
+    border: 1px solid var(--corDestaque);
+    padding: 4px;
+}
+
+hr{
+    margin: 0;
+    opacity: 1;
+    border: 1px solid var(--corDestaque);
+}
+
+button:hover, .btnMenu:hover, #menuSuspenso > *:hover{
+    background-color: var(--corHover);
+}
+
+.btnAnimaRotate:hover{
+    animation: btnAnimacao 0.5s 1;
+    transform-origin: center center;
+}
+
+#menu{
+    position: fixed;
+    display: flex;
+    width: calc(100% - 20px);
+    margin-left: 10px;
+    margin-right: 10px;
+    z-index: 998;
+    background-color: var(--corFundo);
+}
+
+.sobreTela{
+    z-index: 999;
+}
+
+.sobreTela.fechado{
+    display: none;
+}
+
+#conteudo{
+    position: relative;
+    top: 30px;
+    padding: 10px;
+}
+
+.btnMenu, .tituloBarra{
+    background-color: var(--corPrimaria);
+    border: 1px solid black;
+    border-radius: 5px;
+    padding: 2px;
+}
+
+.btnMenu{
+    margin-top: 5px;
+    margin-bottom: 5px;
+    margin-left: 5px;
+    width: 25px;
+    height: 25px;
+}
+
+.tituloBarra{
+    font-weight: bold;
+    font-size: 16px;
+    width: 100%;
+}
+
+.btnOpcaoFiltro{
+    width: max-content;
+    height: max-content;
+    margin-top: 0;
+    font-weight: bold;
+    font-size: 14px;
+    text-align: center;
+    padding-top: 0px;
+    padding-bottom: 0px;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+.btnOpcaoFiltro hr{
+    margin-top: -2px;
+    margin-bottom: 2px;
+}
+
+.btnOpcaoFiltro:hover hr, #interacoesPerfil button:hover hr{
+    animation: hrPraDireita 0.5s 1;
+}
+
+#menu > :nth-child(1){
+    margin-left: 0px;
+}
+
+#menu :last-child{
+    margin-right: 5px;
+}
+
+::placeholder {
+    text-align: center; 
+}
+
+#barraPesquisa{
+    width: unset;
+    flex-grow: 1;
+    display: flex;
+    padding: 0;
+}
+
+#campoPesquisa{
+    width: 100%;
+    padding: 1px;
+    padding-left: 5px;
+    padding-right: 5px;
+    margin: 2px;
+    margin-left: 0;
+}
+
+#campoPesquisa:focus {
+    border: none;
+    outline: none;
+    background-color: white;
+}
+
+#btAbrirFiltros{
+    display: flex;
+    background-color: var(--corDestaque);
+    padding: 2px;
+    padding-left: 5px;
+    align-items: center;
+}
+
+#caixaPesquisa, #caixaFiltro{
+    display: none;
+    position: absolute;
+    background-color: var(--corPrimaria);
+    border: 1px solid black;
+    padding: 10px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border-radius: 5px;
+}
+
+#caixaPesquisa:not(:empty).aberto{
+    display: block;
+}
+
+#caixaPesquisa button{
+    width: 100%;
+    text-align: left;
+    border: none;
+}
+
+#caixaPesquisa a:hover{
+    background-color: var(--corHover);
+}
+
+#caixaFiltro.aberto{
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.tituloPagina{
+    font-weight: bold;
+    font-size: 24px;
+}
+
+#btnPesquisar{
+    background-color: var(--corDestaque);
+    float: right;
+}
+
+.svg-smm{
+    width: 15px;
+    height: 15px;
+}
+
+.svg-sm{
+    width: 20px;
+    height: 20px;
+}
+
+.svg-mm{
+    width: 28px;
+    height: 28px;
+}
+
+.svg-m{
+    width: 37px;
+    height: 37px;
+}
+
+.svg-gg{
+    width: 200px;
+    height: 200px;
+}
+
+#menuSuspenso{
+    background-color: var(--corPrimaria);
+    position: absolute;
+    top: 0;
+    left: -200px;
+    width: 200px;
+    height: 100vh;
+    transition: 0.5s;
+    padding: 10px;
+    overflow-y: auto;
+}
+
+#menuSuspenso.aberto{
+    left: 0px;
+    box-shadow: 5px 0 10px rgba(0, 0, 0, 0.5);
+}
+
+#menuSuspenso > *{
+    text-decoration: none;
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 8px;
+    border-radius: 5px;
+}
+
+#menuSuspenso hr{
+    border-radius: 0px;
+    padding: 0px;
+    margin-bottom: 5px;
+    margin-top: 5px;
+}
+
+input[type="radio"], input[type="checkbox"] {
+    appearance: none;
+    width: 15px;
+    height: 15px;
+    border: 2px solid black;
+    border-radius: 3px;
+    position: relative;
+    margin: 5px;
+}
+
+input[type="radio"]::before, input[type="checkbox"]::before {
+    content: "";
+    position: absolute;
+    top: 1px;
+    left: 1px;
+    width: 10px;
+    height: 10px;
+    background-color: brown;
+    transform: scale(0);
+    transition: transform 120ms ease-in-out;
+}
+
+input[type="radio"]:checked::before, input[type="checkbox"]:checked::before {
+    transform: scale(1);
+}
+
+.comboCheck > *{
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.sutituloPesquisa{
+    font-weight: bold;
+    font-size: 16px;
+    border-top: 2px solid var(--corDestaque);
+}
+
+.comboCheck .sutituloPesquisa:nth-child(n+2){
+    margin-top: 20px;
+}
+
+.comboCheck > *:not(.sutituloPesquisa){
+    margin-left: 20px;
+}
+
+#resultadoPesquisa{
+    margin-bottom: 10px;
+}
+
+#resultadoLivros, #resultadoUsuario, .previewPesquisaLivro, .previewPesquisaUsuario{
+    display: flex;
+    margin-bottom: 10px;
+    padding: 5px;
+}
+
+.previewPesquisaResultado{
+    margin-bottom: 5px;
+    padding: 5px;
+}
+
+.previewPesquisaResultado, .previewPesquisaLivro, .previewPesquisaUsuario{
+    border-radius: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    flex-grow: 1;
+}
+
+.previewPesquisaImgLivro, .previewPesquisaImgUsuario{
+    margin-right: 10px;
+}
+
+.previewPesquisaImgLivro{
+    width: 70px;
+    height: 100px;
+    background-color: gray;
+}
+
+.previewPesquisaImgUsuario{
+    width: 70px;
+    height: 70px;
+    border: 2px solid var(--corDestaque);
+    border-radius: 100%;
+    padding: 5px;
+}
+
+#btnPesquisaAprofundada{
+    background-color: var(--corDestaque);
+    padding: 3px;
+    display: flex;
+    justify-content: center;
+    background-color: #c2af8a;
+}
+
+#btnPesquisaAprofundada:hover{
+    background-color: var(--corHover);
+}
+
+
+#caixaNotificacoes{
+    background-color: var(--corFundo2);
+    position: absolute;
+    right: 0;
+    margin-right: 10px;
+    padding: 5px;
+    border: 1px solid black;
+}
+
+.itemNotificacao{
+    padding: 5px;
+    border-radius: 5px;
+    border: 1px solid black;
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.itemNotificacao img{
+    width: 50px;
+    height: 70px;
+    margin: 5px;
+}
+
+.tituloItemNotificacao{
+    font-weight: bold;
+    margin: 5px;
+}
+
+.conteudoItemNotificacao{
+    margin: 5px;
+}
+
+.btnMaisInfo{
+    background-color: unset;
+    border: unset;
+    background-image: url('icones/ellipsis-vertical-outline.svg');
+    width: 30px;
+    height: 30px;
+}
+
+/* PARTE DO BODY DO INDEX */
+
+#areaAcessoRapido{
+    display: flex;
+    justify-content: space-evenly;
+}
+
+#areaAcessoRapido > *{
+    border: 1px solid black;
+    border-radius: 5px;
+    padding: 5px;
+}
+
+#areaAcessoRapido img{
+    margin-left: 40px;
+    margin-right: 40px;
+}

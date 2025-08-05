@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AcervoX</title>
+
+    <link rel="stylesheet" type="text/css" href="static/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="static/css/animacoes.css">
+    <link rel="stylesheet" type="text/css" href="static/css/central.css">
+    <link rel="stylesheet" type="text/css" href="static/css/comentario.css">
+    <link rel="stylesheet" type="text/css" href="static/css/paginacao.css">
+    <link rel="stylesheet" type="text/css" href="static/css/pesquisa.css">
+    <link rel="stylesheet" type="text/css" href="static/css/publicacao.css">
+    <link rel="stylesheet" type="text/css" href="static/css/usuario.css">
+    <link rel="stylesheet" type="text/css" href="static/css/livro.css">
+
+    <script src="static/js/jquery/jquery-3.7.1.min.js"></script>
+    <script src="static/js/jquery/jquery.mask.min.js"></script>
+</head>
+<body>
+    
+    <script src="static/js/multiSelect.js"></script>
+    
+    <script src="static/js/imagem.js"></script>
+    <script>
+
+    </script>
+    <script src="static/js/paginacao.js"></script>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <ul class="flashes">
+        {% for category, message in messages %}
+            <li class="{{ category }}">{{ message }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+    {% endwith %}
+
+    <div id="menu">
+        <button id="btnMenu" class="btnMenu btnAnimaRotate" title="Mostrar mais ações"><img src="static/icones/menu-outline.svg" class="svg-sm"></button>
+        <a id="btnInicio" class="btnMenu btnAnimaRotate" href="/" title="Ir para a tela inicial"><img src="static/icones/home-outline.svg" class="svg-sm"></a>
+        <a id="btnFeed" class="btnMenu btnAnimaRotate" href="publicacoes" title="Ir para a tela de feed"><img class="svg-sm" src="static/icones/newspaper-outline.svg"></a>
+        <div id="barraPesquisa" class="btnMenu">
+            <button id="btAbrirFiltros" style="margin-right: 5px;" title="Abrir filtros avançados">
+                <img src="static/icones/search-outline.svg" class="svg-sm">
+                <img src="static/icones/seta.svg" class="svg-smm" style="margin-left: 10px;">
+            </button>
+            <input id="campoPesquisa" type="text" placeholder="Pesquisar..." title="Pesquisar">
+        </div>
+        <button id="btnNotificacoes" class="btnMenu btnAnimaRotate" onclick="abrirNotificacoes()" title="Ver notificações"><img src="static/icones/notifications-outline.svg" class="svg-sm"></button>
+        <a id="btnUsuario" class="btnMenu btnAnimaRotate" href="usuario?id=0" title="Ir para o meu perfil"><img src="static/icones/person-outline.svg" class="svg-sm"></a>
+        <div id="caixaPesquisa" class="sobreTela">
+            <div id="resultadoPesquisa">
+                <button class="previewPesquisaResultado" onclick="executarPesquisa('Quatro Vidas de um Cachorro')">Quatro Vidas de um Cachorro</button>
+                <button class="previewPesquisaResultado" onclick="executarPesquisa('José de Alencar')">José de Alencar</button>
+                <button class="previewPesquisaResultado" onclick="executarPesquisa('Diário de um Banana')">Diário de um Banana</button>
+            </div>
+            <div class="sutituloPesquisa">Livros</div>
+            <div id="resultadoLivros">
+                <a class="previewPesquisaLivro">
+                    <img src="static/imagens/livros/QuatroVidasDeUmCachorro.jpeg" alt="" class="previewPesquisaImgLivro">
+                    <div>
+                        <div class="previewPesquisaTituloLivro">Quatro Vidas de Um Cachorro</div>
+                        <br>
+                        <div class="previewPesquisaAutorLivro">W. Bruce Cameron</div>
+                    </div>
+                </a>
+
+                <a class="previewPesquisaLivro">
+                    <img src="static/imagens/livros/Senhora.png" alt="" class="previewPesquisaImgLivro">
+                    <div>
+                        <div class="previewPesquisaTituloLivro">Senhora</div>
+                        <br>
+                        <div class="previewPesquisaAutorLivro">José de Alencar</div>
+                    </div>
+                </a>
+
+                <a class="previewPesquisaLivro">
+                    <img src="static/imagens/livros/DiarioDeUmBanana.jpg" alt="" class="previewPesquisaImgLivro">
+                    <div>
+                        <div class="previewPesquisaTituloLivro">Diário de um Banana</div>
+                        <br>
+                        <div class="previewPesquisaAutorLivro">Jeff Kenney</div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="sutituloPesquisa">Pessoas</div>
+            <div id="resultadoUsuario">
+                <a href="usuario?id=1" class="previewPesquisaUsuario">
+                    <img src="static/imagens/usuarios/anonimo.png" alt="" class="previewPesquisaImgUsuario">
+                    <div class="previewPesquisaNomeUsuario">Nome Leitor</div>
+                </a>
+                
+                <a href="usuario?id=2" class="previewPesquisaUsuario">
+                    <img src="static/imagens/usuarios/feliz.png" alt="" class="previewPesquisaImgUsuario">
+                    <div class="previewPesquisaNomeUsuario">Nome Autor</div>
+                </a>
+
+                <a href="usuario?id=33" class="previewPesquisaUsuario">
+                    <img src="static/imagens/usuarios/robo.png" alt="" class="previewPesquisaImgUsuario">
+                    <div class="previewPesquisaNomeUsuario">Nome Editora</div>
+                </a>
+            </div>
+            <button id="btnPesquisaAprofundada">Pesquisa apronfundada de livros</button>
+        </div>
+
+        <div id="caixaFiltro" class="sobreTela">
+            <div class="comboCheck" style="margin-right: 20px;">
+                <div class="sutituloPesquisa">Livros</div>
+                <div><input type="checkbox" id="checkEmalta" class="checkFiltro"><label for="checkEmalta">Em alta</label></div>
+                <div><input type="checkbox" id="checkSugeridos" class="checkFiltro"><label for="checkSugeridos">Sugeridos</label></div>
+
+                <div class="sutituloPesquisa">Filtro</div>
+                <div><input type="radio" id="checkLivros" class="checkFiltro" name="tipofiltro" checked><label for="checkLivros">Livros</label></div>
+                <div><input type="radio" id="checkLeitores" class="checkFiltro" name="tipofiltro"><label for="checkLeitores">Leitores</label></div>
+                <div><input type="radio" id="checkAutores" class="checkFiltro" name="tipofiltro"><label for="checkAutores">Autores</label></div>
+                <div><input type="radio" id="checkEditoras" class="checkFiltro" name="tipofiltro"><label for="checkEditoras">Editoras</label></div>
+                <div><input type="radio" id="checkPublicacoes" class="checkFiltro" name="tipofiltro"><label for="checkPublicacoes">Publicações</label></div>
+
+                <div class="sutituloPesquisa">Ordenação</div>
+                <div><input type="radio" id="checkCrescente" class="checkFiltro" name="ordenacao" checked><label for="checkCrescente">Crescente</label></div>
+                <div><input type="radio" id="checkDecrescente" class="checkFiltro" name="ordenacao"><label for="checkDecrescente">Decrescente</label></div>
+
+                <div class="sutituloPesquisa">Tipo Ordenação</div>
+                <div><input type="radio" id="checkOrdenarDatapublicacao" class="checkFiltro" name="tipoordenacao" checked><label for="checkOrdenarDatapublicacao">Data Publicação</label></div>
+                <div><input type="radio" id="checkOrdenarTitulo" class="checkFiltro" name="tipoordenacao"><label for="checkOrdenarTitulo">Título / Nome</label></div>
+                <div><input type="radio" id="checkOrdenarAutor" class="checkFiltro" name="tipoordenacao"><label for="checkOrdenarAutor">Autor</label></div>
+                <div><input type="radio" id="checkOrdenarEditora" class="checkFiltro" name="tipoordenacao"><label for="checkOrdenarEditora">Editora</label></div>
+            </div>
+
+            <div class="comboCheck">
+                <div class="sutituloPesquisa">Estilos Literários</div>
+                <div><input type="checkbox" id="checkTodosEstilos" class="checkFiltro"><label for="checkTodosEstilos">Todos</label></div>
+                <div><input type="checkbox" id="checkRomance" class="checkFiltro"><label for="checkRomance">Romance</label></div>
+                <div><input type="checkbox" id="checkSuspense" class="checkFiltro"><label for="checkSuspense">Suspense</label></div>
+                <div><input type="checkbox" id="checkMisterio" class="checkFiltro"><label for="checkMisterio">Mistério</label></div>
+                <div><input type="checkbox" id="checkAventura" class="checkFiltro"><label for="checkAventura">Aventura</label></div>
+                <div><input type="checkbox" id="checkPolicial" class="checkFiltro"><label for="checkPolicial">Policial</label></div>
+                <div><input type="checkbox" id="checkFiccaocientifica" class="checkFiltro"><label for="checkFiccaocientifica">Ficção Científica</label></div>
+                <div><input type="checkbox" id="checkFantasia" class="checkFiltro"><label for="checkFantasia">Fantasia</label></div>
+                <div><input type="checkbox" id="checkTecnicosestudos" class="checkFiltro"><label for="checkTecnicosestudos">Técnicos / Estudos</label></div>
+                <div><input type="checkbox" id="checkBibliograficos" class="checkFiltro"><label for="checkBibliograficos">Bibliográficos / Auto Bibliográficos</label></div>
+                <div><input type="checkbox" id="checkTerror" class="checkFiltro"><label for="checkTerror">Terror</label></div>
+                <div><input type="checkbox" id="checkHistorico" class="checkFiltro"><label for="checkHistorico">Histórico</label></div>
+                <div><input type="checkbox" id="checkAutoajuda" class="checkFiltro"><label for="checkAutoajuda">Auto Ajuda</label></div>
+                <div><input type="checkbox" id="checkReligioso" class="checkFiltro"><label for="checkReligioso">Religioso</label></div>
+                <div><input type="checkbox" id="checkFinancas" class="checkFiltro"><label for="checkFinancas">Finanças</label></div>
+                <div><input type="checkbox" id="checkLiteratura" class="checkFiltro"><label for="checkLiteratura">Literatura</label></div>
+                <div><input type="checkbox" id="checkInfantojuvenil" class="checkFiltro"><label for="checkInfantojuvenil">Infanto Juvenil</label></div>
+                <button id="btnPesquisar" onclick="executarPesquisa(campoPesquisa.value.trim())">Pesquisar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="menuSuspenso" class="sobreTela">
+        <button id="btnMenuSuspenso" class="btnMenuSuspenso" onclick="fecharSobreTela('menuSuspenso', true)" style="border: none;"><img src="static/icones/menu-outline.svg" class="svg-sm"></button>
+        <hr>
+        <a id="btnInicioSuspenso" class="btnMenuSuspenso" href="/" onclick="fecharSobreTela('menuSuspenso', true);"><img src="static/icones/home-outline.svg" class="svg-sm"> Início</a>
+        <a id="btnUsuarioSuspenso" class="btnMenuSuspenso" href="usuario?id=0" onclick="fecharSobreTela('menuSuspenso', true);"><img src="static/icones/person-outline.svg" class="svg-sm"> Meu Perfil</a>
+        <a id="btnLivrosSuspenso" class="btnMenuSuspenso" href="livros" onclick="fecharSobreTela('menuSuspenso', true);"><img src="static/icones/person-outline.svg" class="svg-sm"> Livros</a>
+        <a id="btnLeitoresSuspenso" class="btnMenuSuspenso" href="usuarios" onclick="fecharSobreTela('menuSuspenso', true);"><img src="static/icones/person-outline.svg" class="svg-sm"> Leitores</a>
+        <a id="btnAutoresSuspenso" class="btnMenuSuspenso" href="usuarios" onclick="fecharSobreTela('menuSuspenso', true);"><img src="static/icones/person-outline.svg" class="svg-sm"> Autores</a>
+        <a id="btnFeedSuspenso" class="btnMenuSuspenso" href="publicacoes" onclick="fecharSobreTela('menuSuspenso', true);"><img src="static/icones/newspaper-outline.svg" class="svg-sm"> Publicações</a>
+        {% if current_user.is_authenticated %}
+        <hr>
+        <a id="btnMinhasListasSuspenso" class="btnMenuSuspenso" href="" onclick="fecharSobreTela('menuSuspenso', true);"><img src="static/icones/person-outline.svg" class="svg-sm"> Minhas Listas</a>
+        <a id="btnSeguindoSuspenso" class="btnMenuSuspenso" href="" onclick="fecharSobreTela('menuSuspenso', true);"><img src="static/icones/person-outline.svg" class="svg-sm"> Seguindo (0)</a>
+        <a id="btnSeguidoresSuspenso" class="btnMenuSuspenso" href="" onclick="fecharSobreTela('menuSuspenso', true);"><img src="static/icones/person-outline.svg" class="svg-sm"> Seguindores (0)</a>
+        <a id="btnMinhasPublicacoesSuspenso" class="btnMenuSuspenso" href="" onclick="fecharSobreTela('menuSuspenso', true);"><img src="static/icones/newspaper-outline.svg" class="svg-sm"> Meu Feed</a>
+        <hr>
+        <a id="btnNotificacoesSuspenso" class="btnMenuSuspenso" onclick="fecharSobreTela('menuSuspenso', true);"><img src="static/icones/notifications-outline.svg" class="svg-sm"> Notificações</a>
+        <a id="btnConfiguracoesSuspenso" class="btnMenuSuspenso" onclick="fecharSobreTela('menuSuspenso', true);"><img src="static/icones/settings-outline.svg" class="svg-sm"> Configurações</a>
+        {% endif %}
+    </div>
+
+    <div id="caixaNotificacoes" class="sobreTela fechado">
+        <div class="tituloBarra">Notificações</div>
+        <div id="conteudoNotificacoes">
+            <div class="itemNotificacao">
+                <img src="static/imagens/sistema/googlechat.png" alt="">
+                <div>
+                    <div class="tituloItemNotificacao">Convite para Chat</div>
+                    <div class="conteudoItemNotificacao">Sala 123</div>
+                </div>
+            </div>
+
+            <div class="itemNotificacao">
+                <img src="static/imagens/livros/ArseneLupinOLadraoDeCasaca.jpeg" alt="">
+                <div>
+                    <div class="tituloItemNotificacao">Sugestão de Livro</div>
+                    <div class="conteudoItemNotificacao">Aresè Lupin: O Ladrão de Casaca<br>Maurice Leblanc</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="conteudo">
+
+        {% block conteudo %}
+        <div id="areaAcessoRapido" style="display: flex; flex-wrap: wrap;">
+            <button>
+                <div class="tituloBarra">Livros</div>
+                <img src="static/icones/library-outline.svg" alt="" class="svg-gg" style="filter: invert(0.5) sepia(1) saturate(5) hue-rotate(175deg);">
+            </button>
+
+            <button>
+                <div class="tituloBarra">Feed</div>
+                <img src="static/icones/newspaper-outline.svg" alt="" class="svg-gg">
+            </button>
+        </div>
+
+        <div id="areaLivrosEmAlta" class="carrossel">
+            <div class="tituloBarra">Livros em Alta</div>
+        </div>
+
+        <div id="areaLivrosSugeridos" class="carrossel">
+            <div class="tituloBarra">Livros Sugeridos</div>
+        </div>
+
+        <div class="anuncio">
+
+        </div>
+        {% endblock %}
+    </div>
+
+    <script src="static/js/central.js"></script>
+    <script src="static/js/pesquisa.js"></script>
+    <script src="static/js/validadorCampos.js"></script>
+</body>
+</html>

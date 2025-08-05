@@ -1,0 +1,183 @@
+
+.formUsuario{
+    padding: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.formUsuario *{
+    width: 100%;
+}
+
+.formUsuario > *{
+    padding: 10px;
+    max-width: 300px;
+}
+
+.formUsuario > * > *{
+    margin-bottom: 20px;
+}
+
+#acoesLogin{
+    display: flex;
+    flex-wrap: wrap;
+}
+
+#acoesLogin > *{
+    width: max-content;
+    margin-bottom: 10px;
+}
+
+#acoesLogin a{
+    color: var(--corDestaque);
+    margin-right: 20px;
+}
+
+#acoesLogin #btnCancelarCadastro{
+    margin-right: 20px;
+}
+
+#acoesLogin button{
+    min-width: 100px;
+    flex-grow: 1;
+}
+
+.tipoPerfilUsuario{
+    padding-left: 10px;
+}
+
+.tipoPerfilUsuario > *{
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.fileInput{
+    width: 100%;
+    height: 100%;
+    background: url("icones/image-outline.svg") no-repeat center center;
+    background-size: 100% 100%;
+    border: 1px solid var(--corDestaque);
+}
+
+.formUsuario .fileInput{
+    background-image: url("icones/person-outline.svg");
+}
+
+input[type="file"] {
+    display: none;
+}
+
+
+
+
+.blocoInfoPerfil{
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.blocoInfoPerfil > *{
+    padding: 20px;
+}
+
+#informacoesPerfil > *{
+    margin: 0 auto;
+}
+
+#dadosPerfil{
+    text-align: center;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+}
+
+#dadosPerfil img, .usuarioItem img{
+    width: 150px;
+    height: 150px;
+    border-radius: 100%;
+    border: 2px solid var(--corDestaque);
+    margin-bottom: 5px;
+    padding: 5px;
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.5);
+}
+
+#dadosPerfil div{
+    width: 100%;
+}
+
+#acoesPerfil{
+    max-width: 300px;
+}
+
+#informacoesPerfil button{
+    width: 100%;
+    height: 30px;
+    padding: 5px;
+    margin-bottom: 10px;
+}
+
+#estilosLiterariosPerfil button{
+    border: 2px solid var(--corPrata);
+    background-color: lightgrey;
+}
+
+#estilosLiterariosPerfil button:hover{
+    background-color: var(--corHover);
+}
+
+#estilosLiterariosPerfil{
+    text-align: center;
+    max-width: 300px;
+}
+
+#preferenciasLiterarias{
+    display: flex;
+    flex-wrap: wrap;
+}
+
+#preferenciasLiterarias div{
+    padding: 5px;
+    width: 100%;
+}
+
+#preferenciasLiterariasTitulo{
+    text-transform: uppercase;
+    font-weight: bold;
+    margin-bottom: 6px;
+}
+
+#preferenciasLiterariasTitulo hr{
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.4);
+}
+
+#interacoesPerfil{
+    margin-top: 10px;
+}
+
+#interacoesPerfil > *{
+    flex-grow: 1;
+}
+
+#interacoesPerfil button{
+    background-color: unset;
+    border: unset;
+}
+
+#interacoesPerfil button.selecionado{
+    background-color: var(--corPrata);
+    border-radius: 10px;
+}
+
+
+
+.usuarioItem{
+    width: 150px;
+    height: 150px;
+    margin: 25px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+}

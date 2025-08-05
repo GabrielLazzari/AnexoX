@@ -1,0 +1,33 @@
+.comentario{
+    padding: 10px;
+    display: flex;
+}
+
+.comentario > div{
+    flex-grow: 1;
+}
+
+.comentario .comentarioCabecalho{
+    display: flex;
+    margin-bottom: 10px;
+    align-items: center;
+}
+
+.comentario img{
+    width: 30px;
+    height: 30px;
+    border-radius: 100%;
+    border: 1px solid var(--corDestaque);
+    margin-right: 10px;
+}
+
+.comentario .comentarioCabecalho div{
+    flex-grow: 1;
+    margin-left: 5px;
+    margin-right: 10px;
+    font-weight: bold;
+}
+
+.comentario .comentarioConteudo{
+    max-width: 500px;
+}

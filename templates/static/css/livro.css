@@ -1,0 +1,61 @@
+.livroItem{
+    width: 250px;
+    min-height: 300px;
+    padding: 5px;
+    margin: 15px;
+    margin-top: 5px;
+    border-top: 3px solid var(--corDestaque);
+    border-bottom: 3px solid var(--corPrata);
+    border-left: 1px solid var(--corPrata);
+    border-right: 1px solid var(--corPrata);
+    display: block;
+    margin-bottom: .625em;
+    background-color: var(--corFundo2);
+}
+
+.livroItem .imgLivro{
+    width: 120px;
+    margin-bottom: 10px;
+    margin-left: 10px;
+}
+
+.livroItem hr{
+    border-bottom: #ddd 1px solid;
+    border-top: #ddd 0px solid;
+    width: 100%;
+    margin: 0;
+    opacity: 1;
+}
+
+.dataLabel{
+    font-weight: bold;
+    font-size: 14px;
+    text-transform: uppercase;
+    text-align: left;
+    float: left;
+    margin-right: 4px;
+}
+
+.dataContent{
+    text-align: right;
+}
+
+.livroItem .controles{
+    float: right;
+    padding: 10px;
+    padding-top: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.livroItem .controles button{
+    margin-bottom: 10px;
+}
+
+.livroItem .controles button:last-child{
+    margin-bottom: 0;
+}
+
+.livroItem > div, .livroItem > hr{
+    margin-bottom: 5px;
+}
