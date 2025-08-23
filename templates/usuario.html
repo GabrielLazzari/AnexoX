@@ -13,8 +13,10 @@
 <body>
     {% block conteudo %}
 
+    <div style="display: none;" id="idUsuario">{{usuario.id}}</div>
+
     {% if usuario.usuario_tela_logado %}
-    <div class="tituloPagina">Meu perfil <a href="logout">Sair do Perfil</a> <a href="excluirUsuario?id{{usuario.id}}">Deletar Perfil</a></div>
+    <div class="tituloPagina">Meu perfil <a href="logout">Sair do Perfil</a></div>
     {% else %}
     <div class="tituloPagina">Perfil de {{usuario.nome}}</div>
     {% endif %}
@@ -29,14 +31,14 @@
         <div id="estilosLiterariosPerfil">
             <div id="preferenciasLiterariasTitulo">Preferências Literárias <hr></div>
             <div id="preferenciasLiterarias">
-                {% for pos in range(5) %}
-                {% if usuario.preferencias_literarias|length  > pos %}
-                <div>{{ usuario.preferencias_literarias[pos].descricao }}</div>
+                {% for pos in range(4) %}
+                {% if usuario.preferencias.split(";")|length  > pos %}
+                <div>{{ usuario.preferencias.split(";")[pos] }}</div>
                 {% endif %}
                 {% endfor %}
             </div>
-            {% if usuario.preferencias_literarias|length  > 0 %}
-            <a>Visualizar Preferências</a>
+            {% if usuario.preferencias|length  > 0 %}
+            <a onclick="abrirSobreTela('sobretelaMostrarPreferencias')">Visualizar Preferências</a>
             {% else %}
             <div>Nenhuma preferência</div>
             {% endif %}
@@ -44,11 +46,11 @@
 
         <div id="acoesPerfil">
             {% if usuario.usuario_tela_logado %}
-            <button>Editar Perfil</button>
-            <button>Compartilhar Perfil</button>
+            <a href="cadastro">Editar Perfil</a>
+            <button onclick="abrirSobreTela('caixaCompartilharPerfil');">Compartilhar Perfil</button>
             {% elif current_user.is_authenticated %}
-            <button>Seguir</button>
-            <button>Deixar de Seguir</button>
+            <button id="btnSeguirUsuario">Seguir</button>
+            <button id="btnDeixarSeguirUsuario">Deixar de Seguir</button>
             <button>Conversar</button>
             {% else %}
             <button>Faça login para interagir</button>
@@ -65,26 +67,77 @@
     </div>
 
     <div id="interacoesPerfilVisualizacao"  class="blocoInfoPerfil">
+        <div id="interacaoPerfilLivrosConteudo" class="selecionado">
+            <div id="controleListasLivros">
+                {% if usuario.usuario_tela_logado %}
+                <div class="tituloBarra">Minhas Listas</div>
+                <button class="btnCriarLista" onclick="abrirSobreTelaLista();">Adicionar</button>
+                {% else %}
+                <div class="tituloBarra">Listas</div>
+                {% endif %}
+                <div id="areaListasUsuario">
 
+                </div>
+            </div>
+            <div>
+                <button class="btnCriarLista" onclick="executarPesquisa('livros')">Adicionar Livro</button>
+                <div id="areaDescricaoLista"></div>
+                <div id="areaVerLivrosLista">
+
+                </div>
+            </div>
+        </div>
+
+        <div id="interacaoPerfilSeguindoConteudo">
+            
+        </div>
+
+        <div id="interacaoPerfilSeguidoresConteudo">
+            
+        </div>
+
+        <div id="interacaoPerfilPublicacoesConteudo">
+            <a href="criarPublicacao">Criar Publicação</a>
+            <a href="criarPublicacao">Minhas Publicações</a>
+            <a href="criarPublicacao">Publicações Salvas</a>
+        </div>
     </div>
 
-    <script>
-        var interacoesPerfil = document.getElementById('interacoesPerfil');
-        var interacoesPerfilVisualizacao = document.getElementById('interacoesPerfilVisualizacao');
+    <div id="caixaCompartilharPerfil" class="sobreTela modal">
+        <div>
+            <div class="tituloBarra">Compartilhar Perfil</div>
+            <div id="conteudoCompartilharPerfil">
+                <img src="{{usuario.qr_compartilhar}}" alt="">
+            </div>
+        </div>
+    </div>
 
-        Array.prototype.forEach.call(interacoesPerfil.getElementsByTagName('button'), function(btn){
-            btn.addEventListener('click', function(event){
-                btn_aux = interacoesPerfil.querySelector('.selecionado').classList.remove("selecionado");
-                btn.classList.add('selecionado');
-                if (btn.id == "interacaoPerfilPublicacoes"){
-                    interacoesPerfilVisualizacao.innerHTML = '<a href="criarPublicacao">Criar Publicação</a>';
-                }else{
-                    interacoesPerfilVisualizacao.innerHTML = "";
-                }
-            })
-        });
+    <div id="sobretelaMostrarPreferencias" class="sobreTela modal">
+        <div>
+            <div class="tituloBarra">Minhas Preferências Literárias</div>
+            <div id="conteudoMostrarPreferencias">
+                {% for preferencia in usuario.preferencias.split(";") %}
+                <div>{{ preferencia }}</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
 
-    </script>
+    {% if usuario.usuario_tela_logado %}
+    <div id="sobretelaGerenciarLista" class="sobreTela acao">
+        <div class="tituloBarra">Gerenciar Lista</div>
+        <div class="acaoConteudo">
+            <button onclick="excluirLista()">
+                <img src="static/icones/duplicate-outline.svg" class="svg-m" alt=""> Excluir
+            </button>
+            <button onclick="abrirSobreTelaListaEditar()">
+                <img src="static/icones/duplicate-outline.svg" class="svg-m" alt=""> Editar
+            </button>
+        </div>
+    </div>
+    {% endif %}
+
+    <script src="static/js/usuario.js"></script>
 
     {% endblock %}
 </body>

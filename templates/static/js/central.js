@@ -97,7 +97,7 @@ function atualizarTamanhoCaixaFiltros(){
     }
 }
 
-function abrirSobreTela(sobreTela){
+function abrirSobreTela(sobreTela, btn=null){
     if (typeof sobreTela === "string"){
         sobreTela = document.getElementById(sobreTela)
     }
@@ -115,7 +115,14 @@ function abrirSobreTela(sobreTela){
 
     }else if (sobreTela.id == "caixaFiltro"){
         caixaPesquisa.classList.remove("aberto");
-        atualizarTamanhoCaixaFiltros()
+        atualizarTamanhoCaixaFiltros();
+
+    }else if (sobreTela.id == "caixaNotificacoes"){
+        abrirNotificacoes();
+    }
+
+    if (btn != null){
+        sobreTela.style.top = btn.getBoundingClientRect().bottom + "px";
     }
 }
 
@@ -131,6 +138,7 @@ function fecharSobreTela(sobreTela, obrigarFechamento=false){
 
     if (sobreTela){
         if (obrigarFechamento || 
+                event.target.classList.contains("modal") || 
                 (!event.target.closest("#"+sobreTela.id)
                     && (sobreTela.id != "caixaFiltro" && sobreTela.id != "caixaPesquisa"
                         || (sobreTela.id == "caixaFiltro" && (!event.target.closest("#btAbrirFiltros") || document.activeElement != btAbrirFiltros))
@@ -142,6 +150,16 @@ function fecharSobreTela(sobreTela, obrigarFechamento=false){
                     
             sobreTela.classList.remove("aberto");
             atualizarMovimentacaoTeclado('inicio');
+            if (sobreTela.id == "sobretelaInfoLista"){
+                var sobretelaSelecionarListaLivro = document.getElementById("sobretelaSelecionarListaLivro");
+                if (sobretelaSelecionarListaLivro){
+                    sobretelaSelecionarListaLivro.classList.remove("aberto");
+                }
+                var sobretelaGerenciarLista = document.getElementById("sobretelaGerenciarLista");
+                if (sobretelaGerenciarLista){
+                    sobretelaGerenciarLista.classList.remove("aberto");
+                }
+            }
         }
     }
 }
@@ -153,13 +171,12 @@ function retornarInofrmacoesEmComum(){
 function abrirNotificacoes(){
     var menu = document.getElementById("menu");
     var caixaNotificacoes = document.getElementById('caixaNotificacoes');
-    caixaNotificacoes.classList.toggle("fechado");
     caixaNotificacoes.style.top = menu.getBoundingClientRect().bottom + "px"
 }
 
 campoPesquisa.addEventListener("keyup", (event) => {
     if (event.key == "Enter"){
-        executarPesquisa(campoPesquisa.value.trim());
+        executarPesquisa();
     }else {
         obterSugestaoNomes(campoPesquisa.value.trim());
     }
@@ -302,15 +319,20 @@ atualizarMovimentacaoTeclado("inicio");
 
 // Serve para preecher os campos de filtro se a tela receber os valores e tiver o elemento de id 'dataDados'
 var valoresFiltro = JSON.parse(document.getElementById('dataDados')?.innerText || '{}');
-for (const [chave, valor] of Object.entries(valoresFiltro)){
-    if (el = document.getElementById(chave)){
-        if (el.type == "checkbox" || el.type == "radio"){
-            el.checked = valor === "true";
-        }else{
-            el.value = valor;
+function atualizarValoresCaixaFiltros(valoresFiltro){
+    console.log('v', valoresFiltro);
+    for (const [chave, valor] of Object.entries(valoresFiltro)){
+        if (el = document.getElementById(chave)){
+            if (el.type == "checkbox" || el.type == "radio"){
+                el.checked = !!valor;
+            }else{
+                el.value = valor;
+            }
         }
     }
 }
+atualizarValoresCaixaFiltros(valoresFiltro);
+
 
 
 

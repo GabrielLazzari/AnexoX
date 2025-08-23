@@ -21,6 +21,7 @@ class MultiploSelect{
 
         this.atualizarTamanho();
         window.addEventListener("resize", this.atualizarTamanho.bind(this));
+        this.selecionarPreferencias();
     }
 
     criarItens(){
@@ -97,6 +98,30 @@ class MultiploSelect{
                 this.container.style.height = (window.innerHeight - this.container.getBoundingClientRect().top) - 10 + "px";
             }
         }
+    }
+
+    selecionarPreferencias(preferencias=[]){
+        var valores = [];
+        if (!preferencias || preferencias.length == 0){
+            valores = this.el.getAttribute("value").trim().split(";");
+
+        }else if (typeof preferencias == "string"){
+            valores = preferencias.trim().split(";")
+        }
+
+        for (var valor of valores){
+            if (valor.trim() == ""){
+                continue;
+            }
+
+            for (var e of this.container.children){
+                if (e.innerText == valor){
+                    e.classList.add("selecionado")
+                }
+            }
+        }
+
+        this.el.querySelector("input").value = valores.join("; ")
     }
 }
 

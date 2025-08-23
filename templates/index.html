@@ -6,6 +6,7 @@
     <title>AcervoX</title>
 
     <link rel="stylesheet" type="text/css" href="static/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="static/css/toastify/toastify.css">
     <link rel="stylesheet" type="text/css" href="static/css/animacoes.css">
     <link rel="stylesheet" type="text/css" href="static/css/central.css">
     <link rel="stylesheet" type="text/css" href="static/css/comentario.css">
@@ -17,16 +18,14 @@
 
     <script src="static/js/jquery/jquery-3.7.1.min.js"></script>
     <script src="static/js/jquery/jquery.mask.min.js"></script>
+    <script src="static/js/toastify/toastify.js"></script>
 </head>
 <body>
     
     <script src="static/js/multiSelect.js"></script>
-    
     <script src="static/js/imagem.js"></script>
-    <script>
-
-    </script>
     <script src="static/js/paginacao.js"></script>
+    <script src="static/js/usuarioListas.js"></script>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
@@ -41,7 +40,7 @@
     <div id="menu">
         <button id="btnMenu" class="btnMenu btnAnimaRotate" title="Mostrar mais ações"><img src="static/icones/menu-outline.svg" class="svg-sm"></button>
         <a id="btnInicio" class="btnMenu btnAnimaRotate" href="/" title="Ir para a tela inicial"><img src="static/icones/home-outline.svg" class="svg-sm"></a>
-        <a id="btnFeed" class="btnMenu btnAnimaRotate" href="publicacoes" title="Ir para a tela de feed"><img class="svg-sm" src="static/icones/newspaper-outline.svg"></a>
+        <button id="btnFeed" class="btnMenu btnAnimaRotate" onclick="executarPesquisa('publicacoes');" title="Ir para a tela de feed"><img class="svg-sm" src="static/icones/newspaper-outline.svg"></button>
         <div id="barraPesquisa" class="btnMenu">
             <button id="btAbrirFiltros" style="margin-right: 5px;" title="Abrir filtros avançados">
                 <img src="static/icones/search-outline.svg" class="svg-sm">
@@ -49,7 +48,7 @@
             </button>
             <input id="campoPesquisa" type="text" placeholder="Pesquisar..." title="Pesquisar">
         </div>
-        <button id="btnNotificacoes" class="btnMenu btnAnimaRotate" onclick="abrirNotificacoes()" title="Ver notificações"><img src="static/icones/notifications-outline.svg" class="svg-sm"></button>
+        <button id="btnNotificacoes" class="btnMenu btnAnimaRotate" onclick="abrirSobreTela('caixaNotificacoes')" title="Ver notificações"><img src="static/icones/notifications-outline.svg" class="svg-sm"></button>
         <a id="btnUsuario" class="btnMenu btnAnimaRotate" href="usuario?id=0" title="Ir para o meu perfil"><img src="static/icones/person-outline.svg" class="svg-sm"></a>
         <div id="caixaPesquisa" class="sobreTela">
             <div id="resultadoPesquisa">
@@ -156,27 +155,27 @@
     </div>
 
     <div id="menuSuspenso" class="sobreTela">
-        <button id="btnMenuSuspenso" class="btnMenuSuspenso" onclick="fecharSobreTela('menuSuspenso', true)" style="border: none;"><img src="static/icones/menu-outline.svg" class="svg-sm"></button>
+        <button id="btnMenuSuspenso" class="btnMenuSuspenso" onclick="fecharSobreTela('menuSuspenso', true)"><img src="static/icones/menu-outline.svg" class="svg-sm"></button>
         <hr>
         <a id="btnInicioSuspenso" class="btnMenuSuspenso" href="/" onclick="fecharSobreTela('menuSuspenso', true);"><img src="static/icones/home-outline.svg" class="svg-sm"> Início</a>
         <a id="btnUsuarioSuspenso" class="btnMenuSuspenso" href="usuario?id=0" onclick="fecharSobreTela('menuSuspenso', true);"><img src="static/icones/person-outline.svg" class="svg-sm"> Meu Perfil</a>
-        <a id="btnLivrosSuspenso" class="btnMenuSuspenso" href="livros" onclick="fecharSobreTela('menuSuspenso', true);"><img src="static/icones/person-outline.svg" class="svg-sm"> Livros</a>
-        <a id="btnLeitoresSuspenso" class="btnMenuSuspenso" href="usuarios" onclick="fecharSobreTela('menuSuspenso', true);"><img src="static/icones/person-outline.svg" class="svg-sm"> Leitores</a>
-        <a id="btnAutoresSuspenso" class="btnMenuSuspenso" href="usuarios" onclick="fecharSobreTela('menuSuspenso', true);"><img src="static/icones/person-outline.svg" class="svg-sm"> Autores</a>
-        <a id="btnFeedSuspenso" class="btnMenuSuspenso" href="publicacoes" onclick="fecharSobreTela('menuSuspenso', true);"><img src="static/icones/newspaper-outline.svg" class="svg-sm"> Publicações</a>
+        <button id="btnLivrosSuspenso" class="btnMenuSuspenso" onclick="executarPesquisa('livros')"><img src="static/icones/library-outline.svg" class="svg-sm"> Livros</button>
+        <button id="btnLeitoresSuspenso" class="btnMenuSuspenso" onclick="executarPesquisa('leitores');"><img src="static/icones/glasses-outline.svg" class="svg-sm"> Leitores</button>
+        <button id="btnAutoresSuspenso" class="btnMenuSuspenso" onclick="executarPesquisa('autores');"><img src="static/icones/people-outline.svg" class="svg-sm"> Autores</button>
+        <button id="btnFeedSuspenso" class="btnMenuSuspenso" onclick="executarPesquisa('publicacoes');"><img src="static/icones/newspaper-outline.svg" class="svg-sm"> Publicações</button>
         {% if current_user.is_authenticated %}
         <hr>
-        <a id="btnMinhasListasSuspenso" class="btnMenuSuspenso" href="" onclick="fecharSobreTela('menuSuspenso', true);"><img src="static/icones/person-outline.svg" class="svg-sm"> Minhas Listas</a>
-        <a id="btnSeguindoSuspenso" class="btnMenuSuspenso" href="" onclick="fecharSobreTela('menuSuspenso', true);"><img src="static/icones/person-outline.svg" class="svg-sm"> Seguindo (0)</a>
-        <a id="btnSeguidoresSuspenso" class="btnMenuSuspenso" href="" onclick="fecharSobreTela('menuSuspenso', true);"><img src="static/icones/person-outline.svg" class="svg-sm"> Seguindores (0)</a>
+        <a id="btnMinhasListasSuspenso" class="btnMenuSuspenso" href="" onclick="fecharSobreTela('menuSuspenso', true);"><img src="static/icones/list-outline.svg" class="svg-sm"> Minhas Listas</a>
+        <a id="btnSeguindoSuspenso" class="btnMenuSuspenso" href="" onclick="fecharSobreTela('menuSuspenso', true);"><img src="static/icones/person-add-outline.svg" class="svg-sm"> Seguindo (0)</a>
+        <a id="btnSeguidoresSuspenso" class="btnMenuSuspenso" href="" onclick="fecharSobreTela('menuSuspenso', true);"><img src="static/icones/people-outline.svg" class="svg-sm"> Seguidores (0)</a>
         <a id="btnMinhasPublicacoesSuspenso" class="btnMenuSuspenso" href="" onclick="fecharSobreTela('menuSuspenso', true);"><img src="static/icones/newspaper-outline.svg" class="svg-sm"> Meu Feed</a>
         <hr>
-        <a id="btnNotificacoesSuspenso" class="btnMenuSuspenso" onclick="fecharSobreTela('menuSuspenso', true);"><img src="static/icones/notifications-outline.svg" class="svg-sm"> Notificações</a>
-        <a id="btnConfiguracoesSuspenso" class="btnMenuSuspenso" onclick="fecharSobreTela('menuSuspenso', true);"><img src="static/icones/settings-outline.svg" class="svg-sm"> Configurações</a>
+        <button id="btnNotificacoesSuspenso" class="btnMenuSuspenso" onclick="abrirSobreTela('caixaNotificacoes');fecharSobreTela('menuSuspenso', true)"><img src="static/icones/notifications-outline.svg" class="svg-sm"> Notificações</button>
+        <button id="btnConfiguracoesSuspenso" class="btnMenuSuspenso" onclick="abrirSobreTela('caixaConfiguracoes');fecharSobreTela('menuSuspenso', true);"><img src="static/icones/settings-outline.svg" class="svg-sm"> Configurações</button>
         {% endif %}
     </div>
 
-    <div id="caixaNotificacoes" class="sobreTela fechado">
+    <div id="caixaNotificacoes" class="sobreTela">
         <div class="tituloBarra">Notificações</div>
         <div id="conteudoNotificacoes">
             <div class="itemNotificacao">
@@ -197,27 +196,177 @@
         </div>
     </div>
 
+    {% if current_user.is_authenticated %}
+    <div id="caixaConfiguracoes" class="sobreTela modal">
+        <div>
+            <div class="tituloBarra">Configurações</div>
+            <div id="conteudoConfiguracoes">
+                <div><input type="checkbox" id="checkReceberNotificacoes" class="checkFiltro"><label for="checkReceberNotificacoes">Receber notificações personalisadas</label></div>
+                <a href="excluirUsuario?id{{current_user.id}}">Deletar Perfil</a>
+                <div id="areaPlano">
+                    Planos
+                    <hr>
+                    <div id="tiposPlanos">
+                        <div>
+                            <div class="tipoPlanoTitulo">Padrão</div>
+                            <ul>
+                                <li>Acesso a livros</li>
+                                <li>Acesso a publicações</li>
+                                <li>Criar listas</li>
+                            </ul>
+                            
+                            <div class="tiposPlanosPreco">
+                                <hr>
+                                <div>
+                                    <div>Preço</div>
+                                    <div>Gratuito</div>
+                                </div>
+                                <button style="width: 100%;">Contratar</button>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="tipoPlanoTitulo">Médio</div>
+                            <ul>
+                                <li>Alterar estilo</li>
+                                <li>Ao criar Publicação
+                                    <ul>
+                                        <li>Imagens maior que 2MB</li>
+                                        <li>Referenciar mais de um livro</li>
+                                        <li>Adicionar mais que 10 conteúdos numa publicação</li>
+                                        <li>Aumentar quantidade de caracteres pra digitar</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                            
+                            <div class="tiposPlanosPreco">
+                                <hr>
+                                <div>
+                                    <div>Preço</div>
+                                    <div>A verificar</div>
+                                </div>
+                                <button style="width: 100%;">Contratar</button>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="tipoPlanoTitulo">Premium</div>
+                            <ul>
+                                <li>Aumentar alcance
+                                    <ul>
+                                        <li>De um livro</li>
+                                        <li>De um perfil</li>
+                                        <li>De uma publicação</li>
+                                    </ul>
+                                </li>
+                                <li>Ver histórico de preços de livros</li>
+                            </ul>
+                            <div class="tiposPlanosPreco">
+                                <hr>
+                                <div>
+                                    <div>Preço</div>
+                                    <div>A verificar</div>
+                                </div>
+                                <button style="width: 100%;">Contratar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="sobretelaInfoLista" class="sobreTela modal">
+        <div>
+            <div class="tituloBarra">Criar Lista</div>
+            <div id="conteudoInfoLista" class="formUsuario">
+                <div>
+                    <input type="hidden" id="idListaLivro" value="0">
+
+                    <div>
+                        <label for="nomeListaLivro">Nome</label>
+                        <input type="text" id="nomeListaLivro" required>
+                    </div>
+                    <div>
+                        <label for="descricaoListaLivro">Descrição</label>
+                        <input type="text" id="descricaoListaLivro">
+                    </div>
+                    <div>
+                        <label for="visibilidade">Status</label>
+                        <select name="" id="visibilidade">
+                            <option value="0">Privada</option>
+                            <option value="1">Pública</option>
+                            <option value="2">Seguindo</option>
+                        </select>
+                    </div>
+
+                    <div id="erroSalvarLista" style="color: red;"></div>
+
+                    <div style="margin-bottom: 0px; display: flex;">
+                        <button onclick="fecharSobreTela('sobretelaInfoLista', true)">Cancelar</button>
+                        <button onclick="salvarLista()">Salvar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="sobretelaSelecionarListaLivro" class="sobreTela acao">
+        <div class="tituloBarra">Selecionar Lista</div>
+        <button class="btnCriarLista" onclick="abrirSobreTela('sobretelaInfoLista');">Nova Lista</button>
+        <div class="acaoConteudo">
+            <button>teste</button>
+        </div>
+    </div>
+    {% else %}
+    <div id="sobretelaSelecionarListaLivro" class="sobreTela acao">
+        <div class="tituloBarra">Selecionar Lista</div>
+        <div class="acaoConteudo">
+            Você precisa estar logado para salvar livros em uma lista.
+            <a href="login">Ir para tela de login</a>
+        </div>
+    </div>
+    {% endif %}
+
     <div id="conteudo">
 
         {% block conteudo %}
-        <div id="areaAcessoRapido" style="display: flex; flex-wrap: wrap;">
-            <button>
-                <div class="tituloBarra">Livros</div>
-                <img src="static/icones/library-outline.svg" alt="" class="svg-gg" style="filter: invert(0.5) sepia(1) saturate(5) hue-rotate(175deg);">
+        <div id="areaAcessoRapido">
+            <button onclick="executarPesquisa('livros')">
+                <div>
+                    <img src="static/icones/library-outline.svg" alt="" class="svg-gg" style="filter: invert(0.5) sepia(1) saturate(5) hue-rotate(175deg);">
+                    Livros
+                </div>
+                <hr>
             </button>
 
-            <button>
-                <div class="tituloBarra">Feed</div>
-                <img src="static/icones/newspaper-outline.svg" alt="" class="svg-gg">
+            <button onclick="executarPesquisa('publicacoes')">
+                <div>
+                    <img src="static/icones/newspaper-outline.svg" alt="" class="svg-gg">
+                    Feed
+                </div>
+                <hr>
             </button>
+
+            <a href="usuario?id=0">
+                <div>
+                    <img src="static/icones/person-outline.svg" alt="" class="svg-gg">
+                    Meu Perfil
+                </div>
+                <hr>
+            </a>
         </div>
 
-        <div id="areaLivrosEmAlta" class="carrossel">
+        <div id="areaLivrosEmAlta">
             <div class="tituloBarra">Livros em Alta</div>
+            <div id="conteudoLivrosEmAlta" class="carrossel">
+
+            </div>
         </div>
 
-        <div id="areaLivrosSugeridos" class="carrossel">
+        <div id="areaLivrosSugeridos">
             <div class="tituloBarra">Livros Sugeridos</div>
+            <div id="conteudoLivrosSugeridos" class="carrossel">
+
+            </div>
         </div>
 
         <div class="anuncio">
@@ -229,5 +378,60 @@
     <script src="static/js/central.js"></script>
     <script src="static/js/pesquisa.js"></script>
     <script src="static/js/validadorCampos.js"></script>
+
+    <script>
+        function teste(livro){
+            return `
+                <div class="livroItem" href="livro/${livro.id})">
+                    <div>
+                        <img class="imgLivro" src="${livro.img}">
+                        <div class="controles">
+                            <button class="btnAnimaRotate" onclick="compartilharLivro('${livro.id}')" title="Compartilhar"><img src="static/icones/share-social-outline.svg" alt="" class="svg-m"></button>
+                            <button class="btnAnimaRotate" onclick="salvarLivro('${livro.id}')" title="Salvar na Lista"><img src="static/icones/bookmark-outline.svg" alt="" class="svg-m"></button>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="dataLabel">Título</div>
+                        <div class="dataContent">${livro.titulo}</div>
+                    </div>
+                    <hr>
+                    <div>
+                        <div class="dataLabel">Autor</div>
+                        <div class="dataContent"><a href="usuario?id=${livro.idAutor}">${livro.autor}</a></div>
+                    </div>
+                    <hr>
+                    <div>
+                        <div class="dataLabel">Editora</div>
+                        <div class="dataContent"><a href="usuario?id=${livro.idEditora}">${livro.editora}</a></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        var conteudoLivrosEmAlta = document.getElementById('conteudoLivrosEmAlta');
+        var conteudoLivrosSugeridos = document.getElementById('conteudoLivrosSugeridos');
+        if (conteudoLivrosEmAlta != null && conteudoLivrosSugeridos != null){
+            for (var c=0; c<3; c++){
+                a = teste({id: 1, 
+                    img: 'static/imagens/livros/QuatroVidasDeUmCachorro.jpeg', titulo: 'Quatro Vidas de um Cachorro',
+                    idAutor: 1, autor: 'W. Bruce Cameron', editora: 'Harper Collins'
+                })
+                conteudoLivrosEmAlta.innerHTML += a;
+                conteudoLivrosSugeridos.innerHTML += a;
+            }
+        }
+
+        class carrossel{
+            constructor(el){
+                
+            }
+        }
+
+        Array.prototype.forEach.call(document.getElementsByClassName("carrossel"), function(carrossel){
+
+        })
+
+        toast = new toast();
+    </script>
 </body>
 </html>

@@ -20,7 +20,7 @@
 
     {% block conteudo %}
 
-    <div id="dataDados" style="display: none;">{{ dados | tojson | safe if dados else "{}" }}</div>
+    <div id="dataDados" style="display: none;">{{ filtros | tojson | safe if filtros else "{}" }}</div>
 
     <div id="btnsAlterarFiltros" style="display: flex;">
         <button id="btnFiltroRapidoLivros" class="btnMenu btnOpcaoFiltro" onclick="trocarTipoFiltro('livros')">Livros<hr></button>

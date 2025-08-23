@@ -1,6 +1,12 @@
 .comentario{
     padding: 10px;
     display: flex;
+    margin-top: 10px;
+}
+
+.comentarioTab{
+    width: calc(100% - 50px);
+    float: right;
 }
 
 .comentario > div{
@@ -26,8 +32,37 @@
     margin-left: 5px;
     margin-right: 10px;
     font-weight: bold;
+    font-size: 18px;
 }
 
 .comentario .comentarioConteudo{
     max-width: 500px;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.comentario .comentarioAcoes{
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+}
+
+.btnComentar, .btnReagir{
+    background-color: unset;
+    border: unset;
+}
+
+.btnComentar{
+    font-weight: bold;
+}
+
+.btnReagir{
+    background-image: url('icones/heart-outline.svg');
+    width: 30px;
+    height: 30px;
+}
+
+.btnReagir.reagido{
+    background-color: #f55;
+    mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="white" d="M352.92 80C288 80 256 144 256 144s-32-64-96.92-64c-52.76 0-94.54 44.14-95.08 96.81-1.1 109.33 86.73 187.08 183 252.42a16 16 0 0018 0c96.26-65.34 184.09-143.09 183-252.42-.54-52.67-42.32-96.81-95.08-96.81z"/></svg>');
 }

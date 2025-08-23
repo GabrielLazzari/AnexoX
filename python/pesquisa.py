@@ -1,4 +1,5 @@
 
+from python.crawler import procurar_livros_internet
 from python.modelos.usuario import *
 from python.modelos.livro import *
 from python.modelos.publicacao import *
@@ -8,6 +9,7 @@ def processar_filtros(filtros, retornar_quantidade=False):
     #.limit(10)  # pega 10 registros
     #.offset(20)  # pulando os primeiros 20
 
+    filtros['campoPesquisa'] = filtros.get('campoPesquisa', '').strip()
     filtros['id_usuario'] = filtros.get('id_usuario', '0')
     filtros['limit'] = filtros.get('limit', '20')
     filtros['skip'] = filtros.get('skip', '0')
@@ -15,7 +17,8 @@ def processar_filtros(filtros, retornar_quantidade=False):
     if filtros.get('checkLivros', False):
 
         condicao = []
-        if filtros['campoPesquisa'].strip() != "":
+        if filtros['campoPesquisa'] != "":
+            print(filtros['campoPesquisa'])
             condicao.append(Livro.titulo.ilike(f"%{filtros['campoPesquisa']}%"))
 
         if retornar_quantidade:
@@ -31,12 +34,20 @@ def processar_filtros(filtros, retornar_quantidade=False):
         elif filtros.get('checkOrdenarEditora', False):
             ordenacao = [Livro.editora.nome.desc()]
 
-        return Livro.query.filter(*condicao).order_by(*ordenacao).limit(filtros.get('limit', 0)).offset(filtros.get('skip', 0)).all()
+        livros = Livro.query.filter(*condicao).order_by(*ordenacao).limit(filtros['limit']).offset(filtros['skip']).all()
+
+        if len(livros) == 0 and len(filtros['campoPesquisa']) >= 3:
+            print('aqui')
+            livros = procurar_livros_internet(filtros['campoPesquisa'])
+
+        print('l', livros)
+
+        return livros
 
     elif filtros.get('checkLeitores', False) or filtros.get('checkAutores', False) or filtros.get('checkEditoras', False):
 
         condicao = []
-        if filtros['campoPesquisa'].strip() != "":
+        if filtros['campoPesquisa'] != "":
             condicao.append(Usuario.nome.ilike(f"%{filtros['campoPesquisa']}%"))
         if filtros.get('checkLeitores', False):
             condicao.append(Usuario.tipo == TipoUsuario.Leitor)
@@ -58,19 +69,19 @@ def processar_filtros(filtros, retornar_quantidade=False):
 
         print('ordenacao', ordenacao)
 
-        return Usuario.query.filter(*condicao).order_by(*ordenacao).limit(filtros.get('limit', 0)).offset(filtros.get('skip', 0)).all()
+        return Usuario.query.filter(*condicao).order_by(*ordenacao).limit(filtros['limit']).offset(filtros['skip']).all()
 
     elif filtros.get('checkPublicacoes', False):
         condicao = []
 
-        if filtros['campoPesquisa'].strip() != "":
+        if filtros['campoPesquisa'] != "":
             condicao.append(Publicacao.titulo.ilike(f"%{filtros['campoPesquisa']}%"))
 
         if retornar_quantidade:
-            return Usuario.query.filter(*condicao).count()
+            return Publicacao.query.filter(*condicao).count()
 
         ordenacao = []
-        return Publicacao.query.filter(*condicao).order_by(*ordenacao).limit(filtros.get('limit', 0)).offset(filtros.get('skip', 0)).all()
+        return Publicacao.query.filter(*condicao).order_by(*ordenacao).limit(filtros['limit']).offset(filtros['skip']).all()
 
     return []
 

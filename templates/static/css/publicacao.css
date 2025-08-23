@@ -1,14 +1,18 @@
 .publicacaoItem{
     min-width: 300px;
+    max-width: 600px;
     border: 1px solid var(--corDestaque);
     border-radius: 10px;
     padding: 10px;
+    margin-bottom: 30px;
+    background-image: linear-gradient(to bottom, var(--corDestaque), 40px, rgba(0,0,0,0), rgba(0,0,0,0), rgba(0,0,0,0));
 }
 
 .publicacaoItemCabecalho{
     display: flex;
     margin-bottom: 10px;
     align-items: center;
+
 }
 
 .publicacaoItemCabecalho img{
@@ -26,9 +30,98 @@
     margin-left: 5px;
     margin-right: 5px;
     font-weight: bold;
+    font-size: 20px;
 }
 
 .publicacaoItemCabecalho .datahora{
     font-size: 12px;
     font-weight: normal;
+}
+
+.publicacaoItemConteudo{
+    display: flex;
+    flex-wrap: wrap;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+.publicacaoItemConteudo > *{
+    width: 100%;
+}
+
+.publicacaoItemConteudo .publicacaoTitulo{
+    font-weight: bold;
+    font-size: 20px;
+}
+
+.publicacaoItemConteudo .publicacaoObjetos{
+    display: flex;
+    justify-content: center;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.publicacaoItemConteudo .publicacaoObjetos img{
+    width: 100px;
+}
+
+.publicacaoItemConteudo .publicacaoAcoes{
+    display: flex;
+    justify-content: space-around;
+    margin-top: 5px;
+    margin-bottom: 10px;
+}
+
+.publicacaoItemConteudo .publicacaoAcoes button{
+    width: 40px;
+    height: 40px;
+}
+
+
+/* Para a tela de adicionar */
+
+.acaoPublicacao{
+    border: 2px solid var(--corDestaque);
+}
+
+.tituloAcaoPublicacao{
+    background-color: var(--corPrimaria);
+    border-bottom: 2px solid var(--corDestaque);
+}
+
+#areaSelecionarLivro{
+    padding: 5px;
+}
+
+#areaSelecionarLivro div{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+#areaSelecionarLivro img{
+    width: 70px;
+}
+
+#areaAdicionar > div{
+    display: flex;
+}
+
+#areaAdicionar button{
+    background-color: unset;
+    border: unset;
+    display: flex;
+    flex-wrap: wrap;
+    width: max-content;
+    justify-content: center;
+    align-items: center;
+}
+
+#areaAdicionar button:hover{
+    background-color: var(--corHover);
+}
+
+#areaAdicionar button img{
+    width: 50px;
+    height: 50px;
 }

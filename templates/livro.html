@@ -1,16 +1,183 @@
 {% extends 'index.html' %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-    {% block conteudo %}
+{% block conteudo %}
+<div class="livro-detalhes">
+    <div class="livro-container">
+        <!-- Seção principal do livro -->
+        <div class="livro-principal">
+            <!-- Imagem do livro -->
+            <div class="livro-imagem">
+                <img src="{{livro.img}}" alt="Senhora" class="capa-livro">
+            </div>
+            
+            <!-- Informações do livro -->
+            <div class="livro-info">
+                <h1 class="livro-titulo">Título: {{ livro.titulo|default("Senhora") }}</h1>
+                <div class="livro-dados">
+                    <p><strong>Autor:</strong> {{ livro.autor|default("José de Alencar") }}</p>
+                    <p><strong>Editora:</strong> {{ livro.editora|default("Saraiva") }}</p>
+                    <p><strong>Data Publicação:</strong> {{ livro.data_publicacao|default("01/01/1874") }}</p>
+                    <p><strong>Estilo:</strong> {{ livro.estilo|default("Romance") }}</p>
+                    <p><strong>Número:</strong> {{ livro.numero|default("1") }}</p>
+                </div>
+            </div>
+            
+            <!-- Ações do livro -->
+            <div class="livro-acoes">
+                <div class="reacoes-container">
+                    <button class="btn-reacao emoji-btn" title="Muito bom">😍</button>
+                    <button class="btn-reacao emoji-btn" title="Bom">😊</button>
+                    <button class="btn-reacao emoji-btn" title="Ok">😐</button>
+                    <button class="btn-reacao emoji-btn" title="Ruim">😕</button>
+                    <button class="btn-reacao emoji-btn" title="Muito ruim">😠</button>
+                    <button class="btn-reacao emoji-btn" title="Terrível">😡</button>
+                </div>
+                <div class="acoes-principais">
+                    <button class="btn-acao" title="Compartilhar">
+                        <img src="static/icones/share-social-outline.svg" class="svg-sm">
+                    </button>
+                    <button class="btn-acao" title="Favoritar" onclick="abrirSalvarLivro('${livro.id}', this)">
+                        <img src="static/icones/bookmark-outline.svg" class="svg-sm">
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Descrição -->
+        <div class="livro-descricao">
+            <h2>Descrição</h2>
+            <p>{{ livro.descricao|default("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla iaculis urna a felis hendrerit efficitur. Curabitur nec lorem diam. Suspendisse id mattis diam, sed efficitur diam. Duis efficitur velit id est porta, ac semper lectus ullamcorper. Curabitur mollis nibh at est egestas viverra. Donec in tempus orci. Donec ullamcorper venenatis sagittis.") }}</p>
+        </div>
+        
+        <!-- Seção de comentários -->
+        <div class="comentarios-secao">
+            <div class="comentarios-header">
+                <h2>Comentários</h2>
+                <button class="btn-comentario" title="Adicionar comentário">
+                    <img src="static/icones/text-outline.svg" class="svg-sm">
+                </button>
+            </div>
+            
+            <!-- Formulário para novo comentário -->
+            <div class="novo-comentario" style="display: none;">
+                <div class="comentario-form">
+                    <div class="usuario-avatar">
+                        <img src="static/imagens/usuarios/default.jpg" alt="Seu avatar" class="avatar-pequeno">
+                    </div>
+                    <div class="comentario-input">
+                        <input type="text" placeholder="Atenção! Spoiler! Clique aqui para visualizar o comentário." class="input-comentario">
+                        <div class="comentario-acoes-form">
+                            <button class="btn-enviar-comentario">Enviar</button>
+                            <button class="btn-cancelar-comentario">Cancelar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Lista de comentários -->
+            <div class="comentarios-lista">
+                {% if comentarios %}
+                    {% for comentario in comentarios %}
+                    <div class="comentario">
+                        <img src="static/imagens/usuarios/feliz.png" alt="{{ comentario.usuario.nome|default('Heading') }}" class="avatar-pequeno">
+                        <div class="comentario-conteudo">
+                            <div class="comentario-cabecalho">
+                                <div class="usuario-nome">{{ comentario.usuario.nome|default("Heading") }}</div>
+                                <div class="comentario-opcoes">
+                                    <button class="btn-opcoes" title="Mais opções">
+                                        <img src="static/css/icones/ellipsis-vertical-outline.svg" class="svg-sm">
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="comentario-texto">
+                                {{ comentario.texto|default("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore.") }}
+                            </div>
+                            <div class="comentario-acoes">
+                                <button class="btn-reagir" title="Curtir">
+                                    <img src="static/icones/heart-outline.svg" class="svg-sm">
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <!-- Comentários de exemplo -->
+                    <div class="comentario">
+                        <div class="usuario-avatar">
+                            <img src="static/imagens/usuarios/default.jpg" alt="Usuário" class="avatar-pequeno">
+                        </div>
+                        <div class="comentario-conteudo">
+                            <div class="comentario-cabecalho">
+                                <div class="usuario-nome">Heading</div>
+                                <div class="comentario-opcoes">
+                                    <button class="btn-opcoes" title="Mais opções">
+                                        <img src="static/css/icones/ellipsis-vertical-outline.svg" class="svg-sm">
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="comentario-texto spoiler">
+                                Atenção! Spoiler! Clique aqui para visualizar o comentário.
+                            </div>
+                            <div class="comentario-acoes">
+                                <button class="btn-reagir" title="Curtir">
+                                    <img src="static/icones/heart-outline.svg" class="svg-sm">
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="comentario">
+                        <div class="usuario-avatar">
+                            <img src="static/imagens/usuarios/default.jpg" alt="Usuário" class="avatar-pequeno">
+                        </div>
+                        <div class="comentario-conteudo">
+                            <div class="comentario-cabecalho">
+                                <div class="usuario-nome">Heading</div>
+                                <div class="comentario-opcoes">
+                                    <button class="btn-opcoes" title="Mais opções">
+                                        <img src="static/css/icones/ellipsis-vertical-outline.svg" class="svg-sm">
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="comentario-texto">
+                                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore.
+                            </div>
+                            <div class="comentario-acoes">
+                                <button class="btn-reagir" title="Curtir">
+                                    <img src="static/icones/heart-outline.svg" class="svg-sm">
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="comentario">
+                        <div class="usuario-avatar">
+                            <img src="static/imagens/usuarios/default.jpg" alt="Usuário" class="avatar-pequeno">
+                        </div>
+                        <div class="comentario-conteudo">
+                            <div class="comentario-cabecalho">
+                                <div class="usuario-nome">Heading</div>
+                                <div class="comentario-opcoes">
+                                    <button class="btn-opcoes" title="Mais opções">
+                                        <img src="static/css/icones/ellipsis-vertical-outline.svg" class="svg-sm">
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="comentario-texto">
+                                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt.
+                            </div>
+                            <div class="comentario-acoes">
+                                <button class="btn-reagir" title="Curtir">
+                                    <img src="static/icones/heart-outline.svg" class="svg-sm">
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
 
-    Livro
-
-    {% endblock %}
-</body>
-</html>
+<script src="static/js/livro.js"></script>
+{% endblock %}

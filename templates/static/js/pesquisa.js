@@ -4,18 +4,32 @@ var btnsAlterarFiltros = document.getElementById("btnsAlterarFiltros");
 var areaPesquisa = document.getElementById("areaPesquisa");
 
 
-function executarPesquisa(pesquisa){
-    if (pesquisa){
-        campoPesquisa.value = pesquisa;
-    }
-
+function executarPesquisa(telaFiltro='padrao'){
+    console.log('ok')
+    fecharSobreTela('menuSuspenso', true);
     fecharSobreTela(caixaPesquisa, obrigarFechamento=true);
 
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = "pesquisa";
 
-    for (const [chave, valor] of Object.entries(retornarFiltrosPesquisa())) {
+    var filtros = retornarFiltrosPesquisa();
+    console.log('dass', filtros)
+    if (telaFiltro == "livros"){
+        filtros.checkLivros = true; filtros.checkLeitores = false; filtros.checkAutores = false; filtros.checkEditoras = false; filtros.checkPublicacoes = false;
+    }else if (telaFiltro == "leitores"){
+        filtros.checkLivros = false; filtros.checkLeitores = true; filtros.checkAutores = false; filtros.checkEditoras = false; filtros.checkPublicacoes = false;
+    }else if (telaFiltro == "autores"){
+        filtros.checkLivros = false; filtros.checkLeitores = false; filtros.checkAutores = true; filtros.checkEditoras = false; filtros.checkPublicacoes = false;
+    }else if (telaFiltro == "editoras"){
+        filtros.checkLivros = false; filtros.checkLeitores = false; filtros.checkAutores = false; filtros.checkEditoras = true; filtros.checkPublicacoes = false;
+    }else if (telaFiltro == "publicacoes"){
+        filtros.checkLivros = false; filtros.checkLeitores = false; filtros.checkAutores = false; filtros.checkEditoras = false; filtros.checkPublicacoes = true;
+    }
+
+    filtros.primeiroretorno = true;
+
+    for (const [chave, valor] of Object.entries(filtros)) {
         const input = document.createElement('input');
         input.type = 'hidden';
         input.name = chave;
@@ -24,6 +38,7 @@ function executarPesquisa(pesquisa){
     }
 
     document.body.appendChild(form);
+    console.log('aaaa', valoresFiltro.length == null, valoresFiltro == null, valoresFiltro.length == 0)
     form.submit();
 }
 
@@ -89,15 +104,17 @@ function atualizarCaixaPesquisa(valores){
 }
 
 function trocarTipoFiltro(nomeFiltro){
+
     if (nomeFiltro != null){
-        if (nomeFiltro=="livros"){ valoresFiltro.checkLivros = true; }
+        if (nomeFiltro=="livros"){valoresFiltro.checkLivros = true; }
         else if (nomeFiltro=="leitores"){ valoresFiltro.checkLeitores = true; }
         else if (nomeFiltro=="autores"){ valoresFiltro.checkAutores = true; }
         else if (nomeFiltro=="editoras"){ valoresFiltro.checkEditoras = true; }
         else if (nomeFiltro=="publicacoes"){ valoresFiltro.checkPublicacoes = true; }
+        executarPesquisa(nomeFiltro);
 
-        // realizar pesquisa
     }else{
+
         if (valoresFiltro.checkLivros) { nomeFiltro="livros"; }
         else if (valoresFiltro.checkLeitores) { nomeFiltro="leitores"; }
         else if (valoresFiltro.checkAutores) { nomeFiltro="autores"; }
@@ -111,6 +128,8 @@ function trocarTipoFiltro(nomeFiltro){
             btn.querySelector("hr").style.borderColor = "var(--corPrimaria)";
         }
     }
+
+    atualizarValoresCaixaFiltros(valoresFiltro);
 }
 trocarTipoFiltro();
 

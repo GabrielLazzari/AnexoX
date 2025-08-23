@@ -63,6 +63,8 @@
 
 .formUsuario .fileInput{
     background-image: url("icones/person-outline.svg");
+    width: 200px;
+    height: 200px;
 }
 
 input[type="file"] {
@@ -180,4 +182,78 @@ input[type="file"] {
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
+}
+
+
+#conteudoMostrarPreferencias{
+    padding-top: 10px;
+    padding-bottom: 10px;
+    text-align: center;
+}
+
+#conteudoMostrarPreferencias > div{
+    padding: 5px;
+}
+
+
+
+/* BLOCOS DE CONTUDO */
+/* Contuedo das listas */
+#interacoesPerfilVisualizacao > div{
+    display: none;
+}
+
+#interacoesPerfilVisualizacao > div.selecionado{
+    display: flex;
+    width: 100%;
+}
+
+#interacaoPerfilLivrosConteudo > *{
+    margin: 10px;
+}
+
+#interacaoPerfilLivrosConteudo > :nth-child(2){
+    flex-grow: 1;
+}
+
+#controleListasLivros{
+    border: 1px solid var(--corDestaque);
+    padding: 5px;
+}
+
+#areaDescricaoLista{
+    text-align: center;
+}
+
+.btnCriarLista{
+    border: 1px solid #82B366;
+    background-color: #D5E8D4;
+    padding: 5px;
+    width: 100%;
+    margin-bottom: 5px;
+}
+
+#sobretelaInfoLista{
+    border: 1px solid var(--corDestaque);
+}
+
+#areaVerLivrosLista{
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.listalivroitem{
+    display: flex;
+    align-items: center;
+    padding: 5px;
+}
+
+.listalivroitem.selecionado{
+    background-color: var(--corPrata);
+}
+
+.listalivroitem .tituloLista{
+    flex-grow: 1;
+    margin-left: 5px;
+    margin-right: 5px;
 }

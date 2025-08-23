@@ -38,7 +38,7 @@ button{
     border-radius: 5px;
 }
 
-input{
+input, select{
     border: 1px solid var(--corDestaque);
     padding: 4px;
 }
@@ -69,24 +69,70 @@ button:hover, .btnMenu:hover, #menuSuspenso > *:hover{
 }
 
 .sobreTela{
+    z-index: 998;
+    display: none;
+}
+
+.sobreTela.modal > div{
+    top: 10%;
+    position: absolute;
+}
+
+.sobreTela.aberto{
+    display: block;
+}
+
+.sobreTela.acao{
+    position: absolute;
+    max-width: 300px;
+    border: 1px solid var(--corDestaque);
+    padding: 5px;
+    background-color: var(--corFundo);
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+}
+
+.sobreTela.acao .acaoConteudo{
+    display: flex;
+    flex-direction: column;
+}
+
+.sobreTela.acao .acaoConteudo button{
+    background-color: unset;
+    border: unset;
+    text-align: left;
+}
+
+.sobreTela.acao .acaoConteudo button:hover{
+    background-color: var(--corHover);
+}
+
+.modal{
+    width: 100vw;
+    height: 100vh;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.5);
+    align-items: center;
+    justify-content: center;
     z-index: 999;
 }
 
-.sobreTela.fechado{
-    display: none;
+.modal.aberto{
+    display: flex;
 }
 
 #conteudo{
     position: relative;
     top: 30px;
     padding: 10px;
+    height: calc(100vh - 30px);
 }
 
 .btnMenu, .tituloBarra{
     background-color: var(--corPrimaria);
     border: 1px solid black;
     border-radius: 5px;
-    padding: 2px;
+    padding: 0;
+    padding-left: 2px;
 }
 
 .btnMenu{
@@ -101,6 +147,9 @@ button:hover, .btnMenu:hover, #menuSuspenso > *:hover{
     font-weight: bold;
     font-size: 16px;
     width: 100%;
+    padding-left: 5px;
+    padding-right: 5px;
+    margin-bottom: 5px;
 }
 
 .btnOpcaoFiltro{
@@ -121,7 +170,7 @@ button:hover, .btnMenu:hover, #menuSuspenso > *:hover{
     margin-bottom: 2px;
 }
 
-.btnOpcaoFiltro:hover hr, #interacoesPerfil button:hover hr{
+.btnOpcaoFiltro:hover hr, #interacoesPerfil button:hover hr, #areaAcessoRapido > button:hover hr, #areaAcessoRapido > a:hover hr{
     animation: hrPraDireita 0.5s 1;
 }
 
@@ -258,6 +307,11 @@ button:hover, .btnMenu:hover, #menuSuspenso > *:hover{
     border-radius: 5px;
 }
 
+#menuSuspenso button{
+    border: unset;
+    color: rgba(var(--bs-link-color-rgb), var(--bs-link-opacity, 1));
+}
+
 #menuSuspenso hr{
     border-radius: 0px;
     padding: 0px;
@@ -364,25 +418,26 @@ input[type="radio"]:checked::before, input[type="checkbox"]:checked::before {
 }
 
 
-#caixaNotificacoes{
+#caixaNotificacoes, .modal > div{
     background-color: var(--corFundo2);
+    padding: 5px;
+    border: 1px solid black;
+}
+
+#caixaNotificacoes{
     position: absolute;
     right: 0;
     margin-right: 10px;
-    padding: 5px;
-    border: 1px solid black;
 }
 
 .itemNotificacao{
     padding: 5px;
     border-radius: 5px;
     border: 1px solid black;
-    margin-top: 10px;
+    margin: 10px;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    margin-left: 10px;
-    margin-right: 10px;
 }
 
 .itemNotificacao img{
@@ -400,6 +455,68 @@ input[type="radio"]:checked::before, input[type="checkbox"]:checked::before {
     margin: 5px;
 }
 
+#conteudoConfiguracoes{
+    padding: 10px;
+}
+
+#conteudoConfiguracoes > *{
+    margin-bottom: 5px;
+    margin-top: 5px;
+}
+
+#conteudoConfiguracoes > div{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+#areaPlano{
+    display: block !important;
+}
+
+#tiposPlanos{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+}
+
+#tiposPlanos > *{
+    max-width: 300px;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    padding-top: 0px;
+    border: 1px solid var(--corDestaque);
+    border-radius: 10px;
+    margin: 5px;
+}
+
+.tipoPlanoTitulo{
+    font-weight: bold;
+    font-size: 20px;
+    color: var(--corDestaque);
+}
+
+#tiposPlanos > * ul{
+    flex-grow: 1;
+}
+
+#tiposPlanos > * ul li{
+    margin-bottom: 5px;
+}
+
+.tiposPlanosPreco div{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.tiposPlanosPreco div:first-child{
+    font-weight: bold;
+}
+
 .btnMaisInfo{
     background-color: unset;
     border: unset;
@@ -412,7 +529,9 @@ input[type="radio"]:checked::before, input[type="checkbox"]:checked::before {
 
 #areaAcessoRapido{
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-evenly;
+    margin-top: 15px;
 }
 
 #areaAcessoRapido > *{
@@ -421,7 +540,44 @@ input[type="radio"]:checked::before, input[type="checkbox"]:checked::before {
     padding: 5px;
 }
 
+#areaAcessoRapido > button, #areaAcessoRapido > a{
+    background-color: unset;
+    margin-bottom: 20px;
+    border: unset;
+}
+
+#areaAcessoRapido > button div, #areaAcessoRapido > a div{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    font-size: 30px;
+}
+
+#areaAcessoRapido > button:hover, #areaAcessoRapido > a:hover{
+    background-color: var(--corHover);
+}
+
+#areaAcessoRapido hr{
+    width: 100%;
+}
+
+#areaAcessoRapido > a{
+    color: black;
+    text-decoration: none;
+}
+
 #areaAcessoRapido img{
-    margin-left: 40px;
-    margin-right: 40px;
+    margin-right: 20px;
+    width: 100px;
+    height: 100px;
+}
+
+#conteudoLivrosEmAlta, #conteudoLivrosSugeridos{
+    display: flex;
+    justify-content: space-around;
+}
+
+#areaLivrosEmAlta, #areaLivrosSugeridos{
+    margin-bottom: 20px;
 }

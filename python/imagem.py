@@ -70,3 +70,10 @@ def retornar_tamanho_bytes(imagem, formato):
     buffer = io.BytesIO()
     imagem.save(buffer, format=formato)
     return buffer.tell() / (1024 * 1024)
+
+
+def imagem_to_base64(imagem, formato):
+    buffered = io.BytesIO()
+    imagem.save(buffered, format=formato)
+    return base64.b64encode(buffered.getvalue()).decode("utf-8")
+

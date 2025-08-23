@@ -19,8 +19,8 @@
     <form action="" method="post" id="formCadastro" class="formUsuario" enctype='multipart/form-data' ondrop="dropHandler(event)" ondragover="dragOverHandler(event)">
 
         <div style="max-width: 220px;">
-            <div>
-                Tipo
+            <div class="acaoPublicacao">
+                <div class="tituloAcaoPublicacao">Tipo</div>
                 <div class="tipoPerfilUsuario">
                     <div>
                         <input type="checkbox" id="checkTipoLeitor" name="tipoUsuario" value="0" checked>
@@ -39,19 +39,24 @@
                 </div>
             </div>
 
-            <div>
-                Adicionar
+            <div class="acaoPublicacao">
+                <div class="tituloAcaoPublicacao">Referênciar um livro</div>
                 <div>
-                    <button onclick="adicionarConteudoTexto()">Texto</button>
-                    <button onclick="adicionarConteudoImagem()">Imagem</button>
-                    <button onclick="adicionarConteudoVideo()">Vídeo</button>
+                    <div id="areaSelecionarLivro">
+                        <div>
+                            <img src="static/imagens/livros/OsCriadoresDeCoincidencias.jpeg" alt="">
+                            Os Criadores de Conincidências
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div>
-                Referênciar um livro
+            <div id="areaAdicionar" class="acaoPublicacao">
+                <div class="tituloAcaoPublicacao">Adicionar</div>
                 <div>
-                    <input type="text" placeholder="Selecionar um livro">
+                    <button type="button" onclick="adicionarConteudoTexto()"><img src="static/icones/text-outline.svg" title="Adicionar um Texto">Texto</button>
+                    <button type="button" onclick="adicionarConteudoImagem()"><img src="static/icones/image-outline.svg" title="Adicionar uma Imagem">Imagem</button>
+                    <button type="button" onclick="adicionarConteudoVideo()"><img src="static/icones/video-outline.svg" title="Adicionar um Vídeo">Vídeo</button>
                 </div>
             </div>
         </div>
@@ -64,7 +69,9 @@
             <div>
                 <label for="campoTitulo">Conteúdo</label>
                 <div id="estruturaConteudoPublicacao">
-
+                    <div class="conteudoTexto">
+                        Lorem, ipsum dolor sit amet consectetur adipisicing elit. Aliquam sint voluptatum qui iure quaerat. Qui quos odit eius, iure cum inventore doloremque aperiam quis maxime voluptatibus? Dolorem, sequi. Eaque, deserunt.
+                    </div>
                 </div>
             </div>
 
@@ -93,6 +100,8 @@
         function adicionarConteudoVideo(){
 
         }
+
+        var areaSelecionarLivro = document.getElementById("areaSelecionarLivro");
     </script>
 
     {% endblock %}
