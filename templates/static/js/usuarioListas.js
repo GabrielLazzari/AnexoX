@@ -134,8 +134,9 @@ function selecionarLista(divLista){
 function alterarListaTela(lista){
     fecharSobreTela('sobretelaGerenciarLista', true);
     fecharSobreTela('sobretelaInfoLista', true);
-    console.log(lista);
+    document.getElementById('areaDescricaoLista').innerHTML = lista.descricao;
     var l = document.querySelector('.listalivroitem[idlista="'+lista.id+'"]');
+    l.setAttribute("title", lista.descricao);
     if (l) {
         l.querySelector('.tituloLista').innerHTML = lista.nome;
     } else {

@@ -6,7 +6,9 @@ from sqlalchemy import Enum as SAEnum, event
 from unidecode import unidecode
 
 from python.banco import db
+from python.modelos.genero_literario import GeneroLiterario, EstilosLiterariosLivro
 from python.modelos.usuario import *
+from python.modelos.recomendacao import alterar_livro_em_alta
 
 
 class Visibilidade(PyEnum):
@@ -30,6 +32,7 @@ class Livro(db.Model):
     img_obj = None  # Pra quando procurar livros na internet e ainda nao gravar o livro no banco
     isbn = db.Column(db.String(13), nullable=True, default="")
     qtd_paginas = db.Column(db.Integer, nullable=True, default=0)
+    estilos_literarios = db.relationship('GeneroLiterario', secondary=EstilosLiterariosLivro.__table__)
     data_gravacao = db.Column(db.DateTime, default=datetime.now())
 
     def __init__(self, **kwargs):
@@ -116,14 +119,17 @@ class ListaLivro(db.Model):
         if livro is None:
             return 'Livro não encontrado ou já excluído'
 
+        print("vinculando", livro.__dict__)
+
         livro_lista = ListaLivroLivro(id_listalivro=idLista, id_livro=livro.id, usuario_id=idUsuario)
 
         livro_vinculado = db.session.query(ListaLivroLivro).filter_by(id_listalivro=livro_lista.id_listalivro, id_livro=livro.id, usuario_id=idUsuario).first()
         if livro_vinculado is not None:
             return 'Livro já vinculado a esta lista'
 
+        alterar_livro_em_alta(idUsuario, idLivro, adicionado=True)
+
         db.session.add(livro_lista)
-        db.session.commit()
 
         return ""
     
@@ -134,8 +140,8 @@ class ListaLivro(db.Model):
         ).first()
         
         if livro_lista:
+            alterar_livro_em_alta(livro_lista.usuario_id, idLivro, adicionado=False)
             db.session.delete(livro_lista)
-            db.session.commit()
 
         return ""
     
@@ -215,6 +221,16 @@ def inserir_lista_livros_estaticos(mapper, connection, target):
             {"usuario_id": target.id, "nome": "Adquiridos", "descricao": "Livros que possuo"},
         ]
     )
+
+
+@event.listens_for(ListaLivroLivro, 'after_insert')
+def inserir_livro_lista_livro_estatico(mapper, connection, target):
+    pass
+
+
+@event.listens_for(ListaLivroLivro, 'after_delete')
+def inserir_livro_lista_livro_estatico(mapper, connection, target):
+    pass
 
 
 import sqlite3

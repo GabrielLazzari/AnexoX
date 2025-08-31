@@ -10,6 +10,9 @@ from werkzeug.utils import secure_filename
 
 from python.banco import db
 from python.imagem import gravar_imagem
+from python.modelos.genero_literario import GeneroLiterario, PreferenciasLiterariasUsuario
+from python.modelos.notificacao import Notificacao, TipoNotificacao
+from python.modelos.recomendacao import alterar_pessoa_em_alta
 
 
 class TipoUsuario(PyEnum):
@@ -21,13 +24,6 @@ class TipoUsuario(PyEnum):
 class AcaoLogPreferencia(PyEnum):
     Inserido = 0
     Excluido = 1
-
-
-class PreferenciasLiterarias(db.Model):
-    __tablename__ = 'preferencia_literaria'
-    id = db.Column(db.Integer, primary_key=True)
-    id_usuario = db.Column(db.Integer, db.ForeignKey('usuario.id'))
-    id_genero_literario = db.Column(db.Integer, db.ForeignKey('genero_literario.id'))
 
 
 class Usuario(db.Model, UserMixin):
@@ -42,10 +38,15 @@ class Usuario(db.Model, UserMixin):
     email = db.Column(db.String(100), nullable=True, default="")
     cnpj = db.Column(db.String(14), nullable=True, default="")
     notificacoes = db.Column(db.Boolean, default=True)
-    notificacoes_personalisadas = db.Column(db.Boolean, default=True)
+    notificar_livro = db.Column(db.Boolean, default=True)
+    notificar_usuario_seguindo = db.Column(db.Boolean, default=True)
     verificado = db.Column(db.Boolean, default=False)
-    data_cadastro = db.Column(db.DateTime, default=datetime.min)
-    preferencias_literarias = db.relationship('GeneroLiterario', secondary=PreferenciasLiterarias.__table__, back_populates='usuarios')
+    data_cadastro = db.Column(db.DateTime, default=datetime.now)
+    preferencias_literarias = db.relationship('GeneroLiterario', secondary=PreferenciasLiterariasUsuario.__table__)
+    seguindo = False  # Usado apenas para indicar se o usuario logado esta seguindo este usuario
+    seguidor = False
+    qtd_seguindo = 0
+    qtd_seguidores = 0
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -55,7 +56,7 @@ class Usuario(db.Model, UserMixin):
 
     def dicionario(self, usuario_tela_logado=False):
         return {
-            'id': self.id,
+            'id': self.id if self.senha != "" else '0',
             'nome': self.nome,
             'img': self.img.replace("\\", "/") if self.img != "" else "static\\imagens\\usuarios\\anonimo.png",
             'email': self.email,
@@ -63,7 +64,11 @@ class Usuario(db.Model, UserMixin):
             'tipo': self.tipo.value,
             'preferencias': ";".join([p.descricao for p in self.preferencias_literarias]),
             'qr_compartilhar': self.gerar_qrcode_compartilhar(),
-            'usuario_tela_logado': usuario_tela_logado
+            'usuario_tela_logado': usuario_tela_logado,
+            'seguindo': self.seguindo,
+            'seguidor': self.seguidor,
+            'qtd_seguindo': self.qtd_seguindo,
+            'qtd_seguidores': self.qtd_seguidores
         }
 
     def validar_campos(self, usuario_autenticado=False):
@@ -149,38 +154,79 @@ class Usuario(db.Model, UserMixin):
         img.save(caminho)
         return caminho_estatico
 
-    def seguir_usuario(self, usuario_seguir_id):
+    def controle_seguir_usuario(self, usuario_seguir_id):
+        seguindo = False
+
         if self.id == usuario_seguir_id:
-            return "Não é possível seguir você mesmo."
+            return "Não é possível seguir você mesmo.", seguindo
+        
+        usuario_seguir = db.session.query(Usuario).filter_by(id=usuario_seguir_id).first()
+        if not usuario_seguir:
+            return "O usuário que você está tentando seguir não existe.", seguindo
 
         ja_seguindo = UsuarioSeguir.query.filter_by(usuario_seguidor_id=self.id, usuario_seguindo_id=usuario_seguir_id).first()
         if ja_seguindo:
-            return "Você já está seguindo este usuário."
+            db.session.delete(ja_seguindo)
 
-        novo_seguindo = UsuarioSeguir(
-            usuario_seguidor_id=self.id,
-            usuario_seguindo_id=usuario_seguir_id,
-            data_gravacao=datetime.now()
-        )
+        else:
+            novo_seguindo = UsuarioSeguir(
+                usuario_seguidor_id=self.id,
+                usuario_seguindo_id=usuario_seguir_id,
+                data_gravacao=datetime.now()
+            )
+
+            if self.notificacoes and self.notificar_usuario_seguindo and usuario_seguir.senha != "":
+                notificacao = Notificacao(
+                    usuario_id = usuario_seguir.id,
+                    titulo = "Novo seguidor",
+                    conteudo = f"{self.nome} começou a seguir você.",
+                    img = self.img,
+                    tipo =  TipoNotificacao.UsuarioSeguindo
+                )
+                db.session.add(notificacao)
+
+            db.session.add(novo_seguindo)
+            seguindo = True
         
-        db.session.add(novo_seguindo)
+        alterar_pessoa_em_alta(self.id, usuario_seguir.id, seguindo=seguindo)
+
         db.session.commit()
-        
-        return ""
+
+        return "", seguindo
     
-    def deixar_seguir_usuario(self, usuario_deixar_seguir_id):
-        if self.id == usuario_deixar_seguir_id:
-            return "Não é possível deixar de seguir você mesmo."
+    def atualizar_status_seguimento(self, usuario_contexto):
+        try:
+            self.qtd_seguindo = UsuarioSeguir.query.filter_by(usuario_seguidor_id=self.id).count()
+            self.qtd_seguidores = UsuarioSeguir.query.filter_by(usuario_seguindo_id=self.id).count()
 
-        seguindo = UsuarioSeguir.query.filter_by(usuario_seguidor_id=self.id, usuario_seguindo_id=usuario_deixar_seguir_id).first()
-        if not seguindo:
-            return "Você não está seguindo este usuário."
+            if not usuario_contexto or not hasattr(usuario_contexto, 'id'):
+                self.seguindo = False
+                self.seguidor = False
+                return
 
-        db.session.delete(seguindo)
-        db.session.commit()
+            self.seguindo = UsuarioSeguir.query.filter_by(
+                usuario_seguidor_id=usuario_contexto.id,
+                usuario_seguindo_id=self.id
+            ).first() is not None
 
-        return ""
+            self.seguidor = UsuarioSeguir.query.filter_by(
+                usuario_seguidor_id=self.id,
+                usuario_seguindo_id=usuario_contexto.id
+            ).first() is not None
 
+        except Exception:
+            self.seguindo = False
+            self.seguidor = False
+            self.qtd_seguindo = 0
+            self.qtd_seguidores = 0
+
+    def atualizar_preferencias_log(self, preferencias=None):
+        if preferencias is None:
+            preferencias = self.preferencias_literarias
+
+        for preferencia in preferencias:
+            pass
+            
 
 class PreferenciaLiterariaLog(db.Model):
     __tablename__ = 'preferencia_literaria_log'
@@ -193,15 +239,6 @@ class PreferenciaLiterariaLog(db.Model):
     acao = db.Column(SAEnum(AcaoLogPreferencia), nullable=False, default=AcaoLogPreferencia.Inserido)
 
 
-class GeneroLiterario(db.Model):
-    __tablename__ = 'genero_literario'
-    id = db.Column(db.Integer, primary_key=True)
-    descricao = db.Column(db.String(100), nullable=False)
-    icone = db.Column(db.String(256), nullable=True, default="")
-
-    usuarios = db.relationship('Usuario', secondary=PreferenciasLiterarias.__table__, back_populates='preferencias_literarias')
-
-
 class UsuarioSeguir(db.Model):
     __tablename__ = 'usuario_seguir'
     id = db.Column(db.Integer, primary_key=True)
@@ -209,29 +246,24 @@ class UsuarioSeguir(db.Model):
     usuario_seguindo_id = db.Column(db.Integer, db.ForeignKey('usuario.id'))
     data_gravacao = db.Column(db.DateTime, default=datetime.min)
 
-
-@event.listens_for(GeneroLiterario.__table__, 'after_create')
-def inserir_generos_literarios_estaticos(target, connection, **kw):
-    connection.execute(
-        GeneroLiterario.__table__.insert(),
-        [
-            {"descricao": "Romance", "icone": "static\\icones\\heart-outline.svg"},
-            {"descricao": "Suspense", "icone": ""},
-            {"descricao": "Mistério", "icone": "static\\icones\\footsteps-outline.svg"},
-            {"descricao": "Aventura", "icone": ""},
-            {"descricao": "Policial", "icone": ""},
-            {"descricao": "Ficção Científica", "icone": ""},
-            {"descricao": "Fantasia", "icone": ""},
-            {"descricao": "Técnicos / Estudos", "icone": ""},
-            {"descricao": "Bibliográficos / Auto Bibliográficos", "icone": ""},
-            {"descricao": "Terror", "icone": ""},
-            {"descricao": "Auto Ajuda", "icone": ""},
-            {"descricao": "Religioso", "icone": ""},
-            {"descricao": "Finanças", "icone": "static\\icones\\cash-outline.svg"},
-            {"descricao": "Literatura", "icone": ""},
-            {"descricao": "Infanto Juvenil", "icone": ""},
-            {"descricao": "Contos", "icone": ""},
-            {"descricao": "Poesia", "icone": ""},
-            {"descricao": "Histórico", "icone": ""},
-        ]
+    usuario_seguidor = db.relationship(
+        'Usuario',
+        foreign_keys=[usuario_seguidor_id]
     )
+
+    usuario_seguindo = db.relationship(
+        'Usuario',
+        foreign_keys=[usuario_seguindo_id]
+    )
+
+
+@event.listens_for(Usuario, 'load')
+def receive_load(usuario, context):
+    try:
+        from flask_login import current_user
+        # Só tenta atualizar se houver contexto de request (evita erro em scripts, shell, etc)
+        from flask import has_request_context
+        if has_request_context():
+            usuario.atualizar_status_seguimento(current_user)
+    except Exception:
+        pass

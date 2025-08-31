@@ -13,12 +13,45 @@
 }
 
 .paginacaoControle{
-    border: 3px solid var(--corDestaque);
+    border: 0px solid var(--corDestaque);
     background-color: white;
-    box-shadow: 0px -3px 15px rgba(0, 0, 0, 0.3);
-    width: 80%;
+    box-shadow: 0px -3px 15px rgba(0, 0, 0, 0.5);
+    width: 90%;
     height: 40px;
     position: relative;
     bottom: 40px;
     margin: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.paginacaoControle .paginacaoControleNumeracao{
+
+}
+
+.paginacaoControle .paginacaoControleBotoes{
+
+}
+
+.paginacaoControle .btnPagina{
+    width: 30px;
+    height: 30px;
+    border-radius: 100%;
+    border: 1px solid var(--corDestaque);
+    background-color: var(--corFundo);
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+.paginacaoControle .btnPagina:hover{
+    background-color: var(--corHover);
+}
+
+.paginacaoControle .btnPagina.selecionado{
+    background-color: var(--corDestaque);
+}
+
+.paginacaoControle .btnPagina .mover{
+    width: 15px;
 }

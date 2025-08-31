@@ -7,6 +7,8 @@
 
     <link rel="stylesheet" type="text/css" href="static/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="static/css/toastify/toastify.css">
+    <link rel="stylesheet" type="text/css" href="static/css/owl_carrossel/owl.carousel.min.css">
+    <link rel="stylesheet" type="text/css" href="static/css/owl_carrossel/owl.theme.default.min.css">
     <link rel="stylesheet" type="text/css" href="static/css/animacoes.css">
     <link rel="stylesheet" type="text/css" href="static/css/central.css">
     <link rel="stylesheet" type="text/css" href="static/css/comentario.css">
@@ -19,6 +21,7 @@
     <script src="static/js/jquery/jquery-3.7.1.min.js"></script>
     <script src="static/js/jquery/jquery.mask.min.js"></script>
     <script src="static/js/toastify/toastify.js"></script>
+    <script src="static/js/owl_carrossel/owl.carousel.min.js"></script>
 </head>
 <body>
     
@@ -48,7 +51,7 @@
             </button>
             <input id="campoPesquisa" type="text" placeholder="Pesquisar..." title="Pesquisar">
         </div>
-        <button id="btnNotificacoes" class="btnMenu btnAnimaRotate" onclick="abrirSobreTela('caixaNotificacoes')" title="Ver notificações"><img src="static/icones/notifications-outline.svg" class="svg-sm"></button>
+        <button id="btnNotificacoes" class="btnMenu btnAnimaRotate" name="acessarNotificacoes" onclick="abrirSobreTela('caixaNotificacoes')" title="Ver notificações"><img src="static/icones/notifications-outline.svg" class="svg-sm"></button>
         <a id="btnUsuario" class="btnMenu btnAnimaRotate" href="usuario?id=0" title="Ir para o meu perfil"><img src="static/icones/person-outline.svg" class="svg-sm"></a>
         <div id="caixaPesquisa" class="sobreTela">
             <div id="resultadoPesquisa">
@@ -57,52 +60,10 @@
                 <button class="previewPesquisaResultado" onclick="executarPesquisa('Diário de um Banana')">Diário de um Banana</button>
             </div>
             <div class="sutituloPesquisa">Livros</div>
-            <div id="resultadoLivros">
-                <a class="previewPesquisaLivro">
-                    <img src="static/imagens/livros/QuatroVidasDeUmCachorro.jpeg" alt="" class="previewPesquisaImgLivro">
-                    <div>
-                        <div class="previewPesquisaTituloLivro">Quatro Vidas de Um Cachorro</div>
-                        <br>
-                        <div class="previewPesquisaAutorLivro">W. Bruce Cameron</div>
-                    </div>
-                </a>
-
-                <a class="previewPesquisaLivro">
-                    <img src="static/imagens/livros/Senhora.png" alt="" class="previewPesquisaImgLivro">
-                    <div>
-                        <div class="previewPesquisaTituloLivro">Senhora</div>
-                        <br>
-                        <div class="previewPesquisaAutorLivro">José de Alencar</div>
-                    </div>
-                </a>
-
-                <a class="previewPesquisaLivro">
-                    <img src="static/imagens/livros/DiarioDeUmBanana.jpg" alt="" class="previewPesquisaImgLivro">
-                    <div>
-                        <div class="previewPesquisaTituloLivro">Diário de um Banana</div>
-                        <br>
-                        <div class="previewPesquisaAutorLivro">Jeff Kenney</div>
-                    </div>
-                </a>
-            </div>
+            <div id="resultadoLivros"></div>
 
             <div class="sutituloPesquisa">Pessoas</div>
-            <div id="resultadoUsuario">
-                <a href="usuario?id=1" class="previewPesquisaUsuario">
-                    <img src="static/imagens/usuarios/anonimo.png" alt="" class="previewPesquisaImgUsuario">
-                    <div class="previewPesquisaNomeUsuario">Nome Leitor</div>
-                </a>
-                
-                <a href="usuario?id=2" class="previewPesquisaUsuario">
-                    <img src="static/imagens/usuarios/feliz.png" alt="" class="previewPesquisaImgUsuario">
-                    <div class="previewPesquisaNomeUsuario">Nome Autor</div>
-                </a>
-
-                <a href="usuario?id=33" class="previewPesquisaUsuario">
-                    <img src="static/imagens/usuarios/robo.png" alt="" class="previewPesquisaImgUsuario">
-                    <div class="previewPesquisaNomeUsuario">Nome Editora</div>
-                </a>
-            </div>
+            <div id="resultadoUsuario"></div>
             <button id="btnPesquisaAprofundada">Pesquisa apronfundada de livros</button>
         </div>
 
@@ -149,7 +110,7 @@
                 <div><input type="checkbox" id="checkFinancas" class="checkFiltro"><label for="checkFinancas">Finanças</label></div>
                 <div><input type="checkbox" id="checkLiteratura" class="checkFiltro"><label for="checkLiteratura">Literatura</label></div>
                 <div><input type="checkbox" id="checkInfantojuvenil" class="checkFiltro"><label for="checkInfantojuvenil">Infanto Juvenil</label></div>
-                <button id="btnPesquisar" onclick="executarPesquisa(campoPesquisa.value.trim())">Pesquisar</button>
+                <button id="btnPesquisar" onclick="executarPesquisa()">Pesquisar</button>
             </div>
         </div>
     </div>
@@ -160,40 +121,24 @@
         <a id="btnInicioSuspenso" class="btnMenuSuspenso" href="/" onclick="fecharSobreTela('menuSuspenso', true);"><img src="static/icones/home-outline.svg" class="svg-sm"> Início</a>
         <a id="btnUsuarioSuspenso" class="btnMenuSuspenso" href="usuario?id=0" onclick="fecharSobreTela('menuSuspenso', true);"><img src="static/icones/person-outline.svg" class="svg-sm"> Meu Perfil</a>
         <button id="btnLivrosSuspenso" class="btnMenuSuspenso" onclick="executarPesquisa('livros')"><img src="static/icones/library-outline.svg" class="svg-sm"> Livros</button>
+        {% if current_user.is_authenticated %}
         <button id="btnLeitoresSuspenso" class="btnMenuSuspenso" onclick="executarPesquisa('leitores');"><img src="static/icones/glasses-outline.svg" class="svg-sm"> Leitores</button>
         <button id="btnAutoresSuspenso" class="btnMenuSuspenso" onclick="executarPesquisa('autores');"><img src="static/icones/people-outline.svg" class="svg-sm"> Autores</button>
         <button id="btnFeedSuspenso" class="btnMenuSuspenso" onclick="executarPesquisa('publicacoes');"><img src="static/icones/newspaper-outline.svg" class="svg-sm"> Publicações</button>
-        {% if current_user.is_authenticated %}
         <hr>
         <a id="btnMinhasListasSuspenso" class="btnMenuSuspenso" href="" onclick="fecharSobreTela('menuSuspenso', true);"><img src="static/icones/list-outline.svg" class="svg-sm"> Minhas Listas</a>
-        <a id="btnSeguindoSuspenso" class="btnMenuSuspenso" href="" onclick="fecharSobreTela('menuSuspenso', true);"><img src="static/icones/person-add-outline.svg" class="svg-sm"> Seguindo (0)</a>
-        <a id="btnSeguidoresSuspenso" class="btnMenuSuspenso" href="" onclick="fecharSobreTela('menuSuspenso', true);"><img src="static/icones/people-outline.svg" class="svg-sm"> Seguidores (0)</a>
+        <a id="btnSeguindoSuspenso" class="btnMenuSuspenso" href="" onclick="fecharSobreTela('menuSuspenso', true);"><img src="static/icones/person-add-outline.svg" class="svg-sm"> Seguindo ({{ current_user.qtd_seguindo }})</a>
+        <a id="btnSeguidoresSuspenso" class="btnMenuSuspenso" href="" onclick="fecharSobreTela('menuSuspenso', true);"><img src="static/icones/people-outline.svg" class="svg-sm"> Seguidores ({{ current_user.qtd_seguidores }})</a>
         <a id="btnMinhasPublicacoesSuspenso" class="btnMenuSuspenso" href="" onclick="fecharSobreTela('menuSuspenso', true);"><img src="static/icones/newspaper-outline.svg" class="svg-sm"> Meu Feed</a>
         <hr>
-        <button id="btnNotificacoesSuspenso" class="btnMenuSuspenso" onclick="abrirSobreTela('caixaNotificacoes');fecharSobreTela('menuSuspenso', true)"><img src="static/icones/notifications-outline.svg" class="svg-sm"> Notificações</button>
+        <button id="btnNotificacoesSuspenso" class="btnMenuSuspenso" name="acessarNotificacoes" onclick="abrirSobreTela('caixaNotificacoes');fecharSobreTela('menuSuspenso', true)"><img src="static/icones/notifications-outline.svg" class="svg-sm"> Notificações</button>
         <button id="btnConfiguracoesSuspenso" class="btnMenuSuspenso" onclick="abrirSobreTela('caixaConfiguracoes');fecharSobreTela('menuSuspenso', true);"><img src="static/icones/settings-outline.svg" class="svg-sm"> Configurações</button>
         {% endif %}
     </div>
 
     <div id="caixaNotificacoes" class="sobreTela">
-        <div class="tituloBarra">Notificações</div>
-        <div id="conteudoNotificacoes">
-            <div class="itemNotificacao">
-                <img src="static/imagens/sistema/googlechat.png" alt="">
-                <div>
-                    <div class="tituloItemNotificacao">Convite para Chat</div>
-                    <div class="conteudoItemNotificacao">Sala 123</div>
-                </div>
-            </div>
-
-            <div class="itemNotificacao">
-                <img src="static/imagens/livros/ArseneLupinOLadraoDeCasaca.jpeg" alt="">
-                <div>
-                    <div class="tituloItemNotificacao">Sugestão de Livro</div>
-                    <div class="conteudoItemNotificacao">Aresè Lupin: O Ladrão de Casaca<br>Maurice Leblanc</div>
-                </div>
-            </div>
-        </div>
+        <div class="tituloBarra">Notificações <span id="qtdNotificacoes">(0)</span></div>
+        <div id="conteudoNotificacoes">Nenhuma nova notificação</div>
     </div>
 
     {% if current_user.is_authenticated %}
@@ -357,17 +302,15 @@
 
         <div id="areaLivrosEmAlta">
             <div class="tituloBarra">Livros em Alta</div>
-            <div id="conteudoLivrosEmAlta" class="carrossel">
-
-            </div>
+            <div id="conteudoLivrosEmAlta" class="owl-carousel"></div>
         </div>
 
+        {% if current_user.is_authenticated %}
         <div id="areaLivrosSugeridos">
             <div class="tituloBarra">Livros Sugeridos</div>
-            <div id="conteudoLivrosSugeridos" class="carrossel">
-
-            </div>
+            <div id="conteudoLivrosSugeridos" class="owl-carousel"></div>
         </div>
+        {% endif %}
 
         <div class="anuncio">
 
@@ -378,60 +321,73 @@
     <script src="static/js/central.js"></script>
     <script src="static/js/pesquisa.js"></script>
     <script src="static/js/validadorCampos.js"></script>
+    <script src="static/js/notificacao.js"></script>
 
     <script>
-        function teste(livro){
-            return `
-                <div class="livroItem" href="livro/${livro.id})">
-                    <div>
-                        <img class="imgLivro" src="${livro.img}">
-                        <div class="controles">
-                            <button class="btnAnimaRotate" onclick="compartilharLivro('${livro.id}')" title="Compartilhar"><img src="static/icones/share-social-outline.svg" alt="" class="svg-m"></button>
-                            <button class="btnAnimaRotate" onclick="salvarLivro('${livro.id}')" title="Salvar na Lista"><img src="static/icones/bookmark-outline.svg" alt="" class="svg-m"></button>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="dataLabel">Título</div>
-                        <div class="dataContent">${livro.titulo}</div>
-                    </div>
-                    <hr>
-                    <div>
-                        <div class="dataLabel">Autor</div>
-                        <div class="dataContent"><a href="usuario?id=${livro.idAutor}">${livro.autor}</a></div>
-                    </div>
-                    <hr>
-                    <div>
-                        <div class="dataLabel">Editora</div>
-                        <div class="dataContent"><a href="usuario?id=${livro.idEditora}">${livro.editora}</a></div>
-                    </div>
-                </div>
-            `;
-        }
-
-        var conteudoLivrosEmAlta = document.getElementById('conteudoLivrosEmAlta');
-        var conteudoLivrosSugeridos = document.getElementById('conteudoLivrosSugeridos');
-        if (conteudoLivrosEmAlta != null && conteudoLivrosSugeridos != null){
-            for (var c=0; c<3; c++){
-                a = teste({id: 1, 
-                    img: 'static/imagens/livros/QuatroVidasDeUmCachorro.jpeg', titulo: 'Quatro Vidas de um Cachorro',
-                    idAutor: 1, autor: 'W. Bruce Cameron', editora: 'Harper Collins'
+        $(document).ready(function(){
+            var conteudoLivrosEmAlta = document.getElementById('conteudoLivrosEmAlta');
+            var conteudoLivrosSugeridos = document.getElementById('conteudoLivrosSugeridos');
+            if (conteudoLivrosEmAlta != null || conteudoLivrosSugeridos != null){
+                fetch('/sugestaoPesquisaLivros', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify()
                 })
-                conteudoLivrosEmAlta.innerHTML += a;
-                conteudoLivrosSugeridos.innerHTML += a;
+                .then(response => response.json())
+                .then(retorno => {
+                    for (var livro of retorno.livros){
+                        var livroHtml = conteudoHtmlLivro(livro);
+                        if (conteudoLivrosEmAlta != null){
+                            conteudoLivrosEmAlta.innerHTML += livroHtml;
+                        }
+
+                        if (conteudoLivrosSugeridos != null){
+                            conteudoLivrosSugeridos.innerHTML += livroHtml;
+                        }
+                    }
+                    
+                    if (conteudoLivrosEmAlta != null){
+                        $("#conteudoLivrosEmAlta").owlCarousel({
+                            loop: true,
+                            margin: 10,
+                            nav: true,
+                            dots: true,
+                            navText: ["‹", "›"],
+                            autoplay: true,
+                            autoplayTimeout: 3000,
+                            autoplayHoverPause: true,
+                            items: 3,
+                            responsive: {
+                                0: { items: 1 },
+                                600: { items: 2 },
+                                1000: { items: 3 }
+                            }
+                        });
+                    }
+
+                    if (conteudoLivrosSugeridos != null){
+                        $("#conteudoLivrosSugeridos").owlCarousel({
+                            loop: true,
+                            margin: 10,
+                            nav: true,
+                            dots: true,
+                            navText: ["‹", "›"],
+                            autoplay: true,
+                            autoplayTimeout: 3000,
+                            autoplayHoverPause: true,
+                            items: 3,
+                            responsive: {
+                                0: { items: 1 },
+                                600: { items: 2 },
+                                1000: { items: 3 }
+                            }
+                        });
+                    }
+                }).catch(error => { console.error('Erro:', error); });
             }
-        }
 
-        class carrossel{
-            constructor(el){
-                
-            }
-        }
-
-        Array.prototype.forEach.call(document.getElementsByClassName("carrossel"), function(carrossel){
-
-        })
-
-        toast = new toast();
+            toast = new toast();
+        });
     </script>
 </body>
 </html>

@@ -1,7 +1,9 @@
 #btnsAlterarFiltros{
     position: absolute;
+    display: flex;
 }
 
 #areaPesquisa{
+    margin-top: 40px;
     position: relative;
 }

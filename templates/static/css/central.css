@@ -430,6 +430,10 @@ input[type="radio"]:checked::before, input[type="checkbox"]:checked::before {
     margin-right: 10px;
 }
 
+#caixaNotificacoes #qtdNotificacoes, .itemNotificacao .descartarNotificacao{
+    float: right;
+}
+
 .itemNotificacao{
     padding: 5px;
     border-radius: 5px;
@@ -440,8 +444,12 @@ input[type="radio"]:checked::before, input[type="checkbox"]:checked::before {
     align-items: center;
 }
 
+.itemNotificacao:hover{
+    background-color: var(--corHover);
+}
+
 .itemNotificacao img{
-    width: 50px;
+    width: 60px;
     height: 70px;
     margin: 5px;
 }
@@ -449,6 +457,14 @@ input[type="radio"]:checked::before, input[type="checkbox"]:checked::before {
 .tituloItemNotificacao{
     font-weight: bold;
     margin: 5px;
+}
+
+.itemNotificacao .descartarNotificacao{
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .conteudoItemNotificacao{
@@ -573,11 +589,12 @@ input[type="radio"]:checked::before, input[type="checkbox"]:checked::before {
     height: 100px;
 }
 
-#conteudoLivrosEmAlta, #conteudoLivrosSugeridos{
-    display: flex;
-    justify-content: space-around;
-}
-
 #areaLivrosEmAlta, #areaLivrosSugeridos{
     margin-bottom: 20px;
+}
+
+#conteudoLivrosEmAlta, #conteudoLivrosSugeridos{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
 }

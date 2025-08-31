@@ -353,7 +353,6 @@
 .livroItem{
     width: 250px;
     min-height: 300px;
-    max-height: max-content;
     padding: 5px;
     margin: 15px;
     margin-top: 5px;
@@ -365,6 +364,7 @@
     margin-bottom: .625em;
     background-color: var(--corFundo2);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
 }
 
 .livroItem .areaCabecalho{
@@ -395,6 +395,7 @@
 
 .dataContent{
     text-align: right;
+    white-space: normal;
 }
 
 .livroItem .controles{

@@ -1,5 +1,6 @@
 
 from python.crawler import procurar_livros_internet
+from python.modelos.recomendacao import *
 from python.modelos.usuario import *
 from python.modelos.livro import *
 from python.modelos.publicacao import *
@@ -85,6 +86,95 @@ def processar_filtros(filtros, retornar_quantidade=False):
 
     return []
 
+
+def sugestoes_pesquisa(pesquisa, id_usuario=0, limite=3):
+
+    condicao_pesquisas = []
+    if id_usuario != 0:
+        condicao_pesquisas.append(HistoricoPesquisa.usuario_id == id_usuario)
+
+    livros = sugestao_pesquisa_livros(pesquisa, id_usuario, limite)
+    usuarios = [] if id_usuario == 0 else sugestao_pesquisa_usuarios(pesquisa, id_usuario, limite)
+
+    limite_pesquisa = 10
+    if len(livros) > 0:
+        limite_pesquisa -= 3
+    if len(usuarios) > 0:
+        limite_pesquisa -= 3
+
+    pesquisas = []
+    for pesquisa in HistoricoPesquisa.query.filter(*condicao_pesquisas).order_by(HistoricoPesquisa.data_criado.desc()).distinct(HistoricoPesquisa.pesquisa).limit(limite_pesquisa).all():
+        if not any(pesquisa.pesquisa == p.pesquisa for p in pesquisas):
+            pesquisas.append(pesquisa)
+
+    dados = {
+        'pesquisas': [pesquisa.dicionario() for pesquisa in pesquisas],
+        'livros': [livro.dicionario() for livro in livros],
+        'usuarios': [usuario.dicionario() for usuario in usuarios]
+    }
+
+    print(dados)
+
+    return dados
+
+
+def sugestao_pesquisa_livros(pesquisa="", id_usuario=0, limite=12):
+    condicao_livros = []
+
+    if id_usuario != 0:
+        if limite == 3:
+            condicao_livros.append(LivrosEmAlta.usuario_id == id_usuario)
+        else:
+            condicao_livros.append(LivrosEmAlta.usuario_id != id_usuario)
+
+    if pesquisa == "":
+        livros = []
+        for livro in LivrosEmAlta.query.filter(*condicao_livros).order_by(LivrosEmAlta.data_alterado.desc()).distinct(LivrosEmAlta.livro_id).limit(limite).all():
+            if not any(livro.livro.id == livro_alta.id for livro_alta in livros):
+                livros.append(livro.livro)
+        
+        if len(livros) <= limite:
+            for livro in LivrosEmAlta.query.filter().order_by(LivrosEmAlta.data_alterado.desc()).limit(limite - len(livros)).all():
+                if not any(livro.livro.id == livro_alta.id for livro_alta in livros):
+                    livros.append(livro.livro)
+
+        if len(livros) <= limite:
+            for livro in Livro.query.filter().order_by(Livro.data_gravacao.desc()).limit(limite - len(livros)).all():
+                if not any(livro.id == livro_alta.id for livro_alta in livros):
+                    livros.append(livro)
+
+    else:
+        livros = Livro.query.filter(Livro.titulo.ilike(f"%{pesquisa}%")).order_by(Livro.titulo.desc()).limit(limite).all()
+
+    return livros
+
+
+def sugestao_pesquisa_usuarios(pesquisa, id_usuario=0, limite=3):
+    condicao_usuarios = []
+
+    if id_usuario != 0:
+        condicao_usuarios.append(PessoasEmAlta.usuario_id == id_usuario)
+
+    if pesquisa == "":
+        usuarios = []
+        for pessoa in PessoasEmAlta.query.filter(*condicao_usuarios).order_by(PessoasEmAlta.data_alterado.desc()).limit(limite).all():
+            if not any(usuario.id == pessoa.pessoa.id for usuario in usuarios):
+                usuarios.append(pessoa.pessoa)
+        
+        if len(usuarios) <= limite:
+            for pessoa in PessoasEmAlta.query.filter().order_by(PessoasEmAlta.data_alterado.desc()).limit(limite - len(usuarios)).all():
+                if not any(usuario.id == pessoa.pessoa.id for usuario in usuarios):
+                    usuarios.append(pessoa.pessoa)
+
+        if len(usuarios) <= limite:
+            for usuario in Usuario.query.filter().order_by(Usuario.data_cadastro.desc()).limit(limite - len(usuarios)).all():
+                if not any(usuario_aux.id == usuario.id for usuario_aux in usuarios):
+                    usuarios.append(usuario)
+
+    else:
+        usuarios = Usuario.query.filter(Usuario.nome.ilike(f"%{pesquisa}%")).order_by(Usuario.nome.desc()).limit(3).all()
+
+    return usuarios
 
 
 '''import difflib

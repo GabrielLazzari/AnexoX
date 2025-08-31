@@ -3,15 +3,19 @@ import os
 
 from flask import Flask, render_template, request, redirect, session, flash, url_for, jsonify
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
+from functools import wraps
 from unidecode import unidecode
 from werkzeug.utils import secure_filename
 
 from python.banco import db
 from python.crawler import finalizar_crawler_drivers
 from python.modelos.usuario import *
+from python.modelos.genero_literario import *
 from python.modelos.livro import *
 from python.modelos.publicacao import *
-from python.pesquisa import processar_filtros
+from python.modelos.recomendacao import *
+from python.modelos.notificacao import *
+from python.pesquisa import processar_filtros, sugestoes_pesquisa, sugestao_pesquisa_livros
 
 app = Flask(__name__, static_folder='templates/static')
 app.secret_key = 'ola'
@@ -29,6 +33,19 @@ def hash(txt):
 @lm.user_loader
 def user_loader(id):
     return db.session.query(Usuario).filter_by(id=id).first()
+
+
+def conexao_commit(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        try:
+            result = f(*args, **kwargs)
+            db.session.commit()
+            return result
+        except Exception as e:
+            db.session.rollback()
+            raise
+    return wrapper
 
 
 @app.route('/')
@@ -128,42 +145,55 @@ def pesquisa():
             elif valor.lower() == 'false':
                 filtros[chave] = False
 
+    if filtros['campoPesquisa'].strip() != "":
+        id_usuario = current_user.id if current_user.is_authenticated else 0
+        adicionar_historico_pesquisa(id_usuario, filtros['campoPesquisa'].strip())
+
     if filtros.get('primeiroretorno', True):
         print('Primeiro retorno')
         filtros['qtdItens'] = processar_filtros(filtros, retornar_quantidade=True)
         return render_template('pesquisa.html', filtros=filtros)
     else:
+        if not current_user.is_authenticated:
+            if filtros['checkLeitores']:
+                return jsonify({"erro": "Para acessar os leitores, deve estar logado no sistema"})
+            elif filtros['checkAutores']:
+                return jsonify({"erro": "Para acessar os autores, deve estar logado no sistema"})
+            elif filtros['checkEditoras']:
+                return jsonify({"erro": "Para acessar as editoras, deve estar logado no sistema"})
+            elif filtros['checkPublicacoes']:
+                return jsonify({"erro": "Para acessar as publicações, deve estar logado no sistema"})
+
         print('Segundo retorno')
         retorno = processar_filtros(filtros)
         retorno = [r.dicionario() for r in retorno]
         print(filtros['limit'], filtros['skip'])
         #print(retorno)
-        return jsonify(retorno)
+        return jsonify({'erro': '', 'dados': retorno})
 
 
 @app.route('/sugestaoPesquisa', methods=['GET', 'POST'])
-def sugestao_pesquisa_livros():
+def sugestao_pesquisa():
     dados = request.get_json()
     print('sugestao', dados)
+    id_usuario = current_user.id if current_user.is_authenticated else 0
 
-    livros = Livro.query.filter(Livro.titulo.ilike(f"%{dados['valor']}%")).order_by(Livro.titulo.desc()).limit(3).all()
-    usuarios = Usuario.query.filter(Usuario.nome.ilike(f"%{dados['valor']}%")).order_by(Usuario.nome.desc()).limit(3).all()
+    retorno = sugestoes_pesquisa(dados['pesquisa'].strip(), id_usuario)
 
-    print(usuarios)
+    return jsonify(retorno)
 
-    a = {
-        'pesquisa': [],
-        'livros': [livro.dicionario() for livro in livros],
-        'usuarios': [usuario.dicionario() for usuario in usuarios]
-    }
 
-    print(a)
-
-    return jsonify(a)
+@app.route('/sugestaoPesquisaLivros', methods=['GET', 'POST'])
+def sugestao_pesquisa_livro():
+    id_usuario = current_user.id if current_user.is_authenticated else 0
+    livros = sugestao_pesquisa_livros(id_usuario=id_usuario)
+    return jsonify({ 'livros': [livro.dicionario() for livro in livros] })
 
 
 @app.route('/usuario', methods=['GET', 'POST'])
 def usuario():
+    if not current_user.is_authenticated:
+        return redirect(url_for("login", pagina="Usuário"))
 
     id_usuario = request.args.get('id', '0')
 
@@ -173,8 +203,6 @@ def usuario():
     print('usuario_atual', current_user, 'autenticado:', current_user.is_authenticated, 'anonimo:', current_user.is_anonymous)
 
     if id_usuario == '0' or (current_user.is_authenticated and int(id_usuario) == current_user.id):
-        if not current_user.is_authenticated:
-            return redirect(url_for("login", pagina="Usuário"))
 
         usuario = current_user
         usuario_tela_logado = True
@@ -184,6 +212,7 @@ def usuario():
         if not usuario:
             #flash("Usuário não encontrado", "error")
             return redirect(url_for("pesquisa"))
+        alterar_pessoa_em_alta(current_user.id, usuario.id, clicado=True)
 
     usuario.usuario_tela_logado = usuario_tela_logado
 
@@ -202,40 +231,39 @@ def excluir_usuario():
     return redirect(url_for("inicio"))
 
 
-@app.route('/seguirUsuario', methods=['GET', 'POST'])
+@app.route('/controleSeguirUsuario', methods=['GET', 'POST'])
 def seguir_usuario():
     if not current_user.is_authenticated:
         return jsonify({'erro': 'Deve estar logado para acessar esta funcionalidade.'})
     
     valores = request.get_json()
 
-    if (msg_erro := current_user.seguir_usuario(valores['idUsuarioSeguir'])) != "":
-        return jsonify({'erro': msg_erro})
+    msg_erro, seguindo = current_user.controle_seguir_usuario(valores['idUsuarioSeguir'])
     
-    return jsonify({'erro': ''})
-
-
-@app.route('/deixarSeguirUsuario', methods=['GET', 'POST'])
-def deixar_seguir_usuario():
-    if not current_user.is_authenticated:
-        return jsonify({'erro': 'Deve estar logado para acessar esta funcionalidade.'})
-    
-    valores = request.get_json()
-
-    if (msg_erro := current_user.deixar_seguir_usuario(valores['idUsuarioDeixarSeguir'])) != "":
-        return jsonify({'erro': msg_erro})
-    
-    return jsonify({'erro': ''})
+    return jsonify({'erro': msg_erro, 'seguindo': seguindo})
 
 
 @app.route('/retornarUsuariosSeguindo', methods=['GET', 'POST'])
 def retornar_usuarios_seguindo():
-    pass
+    valores = request.get_json()
+
+    usuarios_seguindo = UsuarioSeguir.query.filter_by(usuario_seguidor_id=int(valores["idUsuario"])).all()
+
+    print('u', {'usuarios': [u.usuario_seguindo.dicionario() for u in usuarios_seguindo]})
+    print('u', {'usuarios': [u.usuario_seguidor.dicionario() for u in usuarios_seguindo]})
+
+    return jsonify({'erro': '', 'usuarios': [u.usuario_seguindo.dicionario() for u in usuarios_seguindo]})
 
 
 @app.route('/retornarUsuariosSeguidores', methods=['GET', 'POST'])
 def retornar_usuarios_seguidores():
-    pass
+    valores = request.get_json()
+
+    usuarios_seguidores = UsuarioSeguir.query.filter_by(usuario_seguindo_id=int(valores["idUsuario"])).all()
+
+    print('dores', {'usuarios': [u.usuario_seguidor.dicionario() for u in usuarios_seguidores]})
+
+    return jsonify({'erro': '', 'usuarios': [u.usuario_seguidor.dicionario() for u in usuarios_seguidores]})
 
 
 @app.route('/livro', methods=['GET', 'POST'])
@@ -249,6 +277,10 @@ def livro():
     if id_livro and id_livro != '0':
         try:
             livro_db = db.session.query(Livro).filter_by(id=int(id_livro)).first()
+            if current_user.is_authenticated:
+                alterar_livro_em_alta(current_user.id, livro_db.id, clicado=True)
+            else:
+                alterar_livro_em_alta(0, livro_db.id, clicado=True)
         except:
             pass
 
@@ -400,6 +432,7 @@ def retornar_livros_lista():
 
 
 @app.route('/vincularLivroLista', methods=['GET', 'POST'])
+@conexao_commit
 def vincular_livro_lista():
     if not current_user.is_authenticated:
         return jsonify({'erro': 'Deve estar logado para acessar esta funcionalidade.'})
@@ -411,12 +444,14 @@ def vincular_livro_lista():
         return jsonify({'erro': 'Lista não encontrada'})
     
     if (msg_erro := lista.vincular_livro(valores['idLista'], valores['idLivro'], current_user.id)) != "":
+        print("erro aqui", msg_erro)
         return jsonify({'erro': msg_erro})
     
     return jsonify({'erro': ''})
 
 
 @app.route('/desvincularLivroLista', methods=['GET', 'POST'])
+@conexao_commit
 def desvincular_livro_lista():
     if not current_user.is_authenticated:
         return jsonify({'erro': 'Deve estar logado para acessar esta funcionalidade.'})
@@ -434,6 +469,7 @@ def desvincular_livro_lista():
 
 
 @app.route('/moverLivroLista', methods=['GET', 'POST'])
+@conexao_commit
 def mover_livro_lista():
     if not current_user.is_authenticated:
         return jsonify({'erro': 'Deve estar logado para acessar esta funcionalidade.'})
@@ -469,6 +505,37 @@ def criar_publicacao():
         db.session.commit()
 
         return redirect(url_for("usuario"))
+
+
+@app.route('/procurarNotificacoes', methods=['GET', 'POST'])
+def retornar_notificacoes():
+    if not current_user.is_authenticated:
+        return jsonify({'erro': 'Deve estar logado para acessar esta funcionalidade.'})
+
+    notificacoes = db.session.query(Notificacao).filter_by(usuario_id=current_user.id, lido=False).order_by(Notificacao.data_gravacao, Notificacao.lido).all()
+
+    print('nt', [n.dicionario() for n in notificacoes])
+
+    return jsonify({'erro': '', 'notificacoes': [n.dicionario() for n in notificacoes]})
+
+
+@app.route('/removerNotificacao', methods=['GET', 'POST'])
+def removerNotificacao():
+    if not current_user.is_authenticated:
+        return jsonify({'erro': 'Deve estar logado para acessar esta funcionalidade.'})
+
+    valores = request.get_json()
+
+    notificacao = db.session.query(Notificacao).filter_by(usuario_id=current_user.id, id=valores.get("idNotificacao")).first()
+    if not notificacao:
+        return jsonify({'erro': 'A notificação não existe ou já foi excluída.'})
+    
+    notificacao.lido = True
+    db.session.commit()
+
+    qtd_notificacoes = db.session.query(Notificacao).filter_by(usuario_id=current_user.id, lido=False).count()
+
+    return jsonify({'erro': '', 'qtdNotificacoes': qtd_notificacoes})
 
 
 if __name__ == "__main__":

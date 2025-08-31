@@ -22,7 +22,7 @@
 
     <div id="dataDados" style="display: none;">{{ filtros | tojson | safe if filtros else "{}" }}</div>
 
-    <div id="btnsAlterarFiltros" style="display: flex;">
+    <div id="btnsAlterarFiltros">
         <button id="btnFiltroRapidoLivros" class="btnMenu btnOpcaoFiltro" onclick="trocarTipoFiltro('livros')">Livros<hr></button>
         <button id="btnFiltroRapidoLeitores" class="btnMenu btnOpcaoFiltro" onclick="trocarTipoFiltro('leitores')">Leitores<hr></button>
         <button id="btnFiltroRapidoAutores" class="btnMenu btnOpcaoFiltro" onclick="trocarTipoFiltro('autores')">Autores<hr></button>
@@ -35,7 +35,7 @@
     <script>
         var valoresFiltro = JSON.parse(document.getElementById('dataDados')?.innerText || '{}');
         console.log(valoresFiltro)
-        new Paginacao(document.getElementById('areaPesquisa'), valoresFiltro, valoresFiltro.qtdItens);
+        const pag = new Paginacao(document.getElementById('areaPesquisa'), valoresFiltro, valoresFiltro.qtdItens);
     </script>
 
     {% endblock %}

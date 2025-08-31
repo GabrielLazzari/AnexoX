@@ -49,8 +49,11 @@
             <a href="cadastro">Editar Perfil</a>
             <button onclick="abrirSobreTela('caixaCompartilharPerfil');">Compartilhar Perfil</button>
             {% elif current_user.is_authenticated %}
+            {% if usuario.seguindo %}
+            <button id="btnSeguirUsuario">Deixar de Seguir</button>
+            {% else %}
             <button id="btnSeguirUsuario">Seguir</button>
-            <button id="btnDeixarSeguirUsuario">Deixar de Seguir</button>
+            {% endif %}
             <button>Conversar</button>
             {% else %}
             <button>Faça login para interagir</button>
@@ -61,8 +64,8 @@
 
     <div id="interacoesPerfil" class="blocoInfoPerfil">
         <button id="interacaoPerfilLivros" class="selecionado">Livros <hr></button>
-        <button id="interacaoPerfilSeguindo">Seguindo (0)<hr></button>
-        <button id="interacaoPerfilSeguidores">Seguidores (0)<hr></button>
+        <button id="interacaoPerfilSeguindo">Seguindo ({{ usuario.qtd_seguindo }})<hr></button>
+        <button id="interacaoPerfilSeguidores">Seguidores ({{ usuario.qtd_seguidores }})<hr></button>
         <button id="interacaoPerfilPublicacoes">Publicações <hr></button>
     </div>
 
@@ -80,7 +83,9 @@
                 </div>
             </div>
             <div>
+                {% if usuario.usuario_tela_logado %}
                 <button class="btnCriarLista" onclick="executarPesquisa('livros')">Adicionar Livro</button>
+                {% endif %}
                 <div id="areaDescricaoLista"></div>
                 <div id="areaVerLivrosLista">
 

@@ -4,8 +4,17 @@ var btnsAlterarFiltros = document.getElementById("btnsAlterarFiltros");
 var areaPesquisa = document.getElementById("areaPesquisa");
 
 
+function retornarFiltrosPesquisa(){
+    infos = {};
+    infos.campoPesquisa = campoPesquisa.value.trim();
+    Array.prototype.forEach.call(caixaFiltro.querySelectorAll("input"), function(inp){
+        infos[inp.id] = inp.checked;
+    })
+    
+    return infos;
+}
+
 function executarPesquisa(telaFiltro='padrao'){
-    console.log('ok')
     fecharSobreTela('menuSuspenso', true);
     fecharSobreTela(caixaPesquisa, obrigarFechamento=true);
 
@@ -46,7 +55,7 @@ function obterSugestaoNomes(valor){
     fetch('/sugestaoPesquisa', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({'valor': valor})
+        body: JSON.stringify({'pesquisa': valor})
 
     }).then(response => 
         response.json()
@@ -58,6 +67,7 @@ function obterSugestaoNomes(valor){
         console.error('Erro:', error);
     });
 }
+obterSugestaoNomes('');
 
 function atualizarCaixaPesquisa(valores){
     if (!valores){
@@ -65,9 +75,9 @@ function atualizarCaixaPesquisa(valores){
     }
     
     resultadoPesquisa.innerHTML = "";
-    for (var valor of valores.pesquisa){
+    for (var valor of valores.pesquisas){
         resultadoPesquisa.innerHTML += `
-            <button class="previewPesquisaResultado" onclick="executarPesquisa('${valor}')">${valor}</button>
+            <button class="previewPesquisaResultado" onclick="executarPesquisa('${valor.pesquisa}')">${valor.pesquisa}</button>
         `;
     }
 
@@ -150,9 +160,5 @@ function atualizarTamanhoBtnsAlterarFiltros(){
 window.addEventListener('resize', event => {
     atualizarTamanhoBtnsAlterarFiltros();
 });
-
-if (areaPesquisa != null && btnsAlterarFiltros != null){
-    areaPesquisa.style.top = btnsAlterarFiltros.getBoundingClientRect().top + "px";
-}
 
 atualizarTamanhoBtnsAlterarFiltros();
