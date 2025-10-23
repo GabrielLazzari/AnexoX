@@ -11,10 +11,14 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (btnComentario) {
         btnComentario.addEventListener('click', function() {
-            const isVisible = novoComentario.style.display !== 'none';
-            novoComentario.style.display = isVisible ? 'none' : 'block';
-            if (!isVisible) {
-                inputComentario.focus();
+            if (novoComentario){
+                const isVisible = novoComentario.style.display !== 'none';
+                novoComentario.style.display = isVisible ? 'none' : 'block';
+                if (!isVisible) {
+                    inputComentario.focus();
+                }
+            }else{
+                toast.erro("Deve estar logado para comentar.");
             }
         });
     }
@@ -30,15 +34,18 @@ document.addEventListener('DOMContentLoaded', function() {
         btnEnviar.addEventListener('click', function() {
             const textoComentario = inputComentario.value.trim();
             if (textoComentario) {
-                // Aqui você pode adicionar a lógica para enviar o comentário ao servidor
-                console.log('Enviando comentário:', textoComentario);
+                var idLivro = document.getElementById('idLivro').innerText;
+                var idComentarioPai = 0;
+                var comentario = btnEnviar.closest(".comentario");
+                if (comentario){
+                    var elResponder = comentario.querySelector("[idcomentariopai]");
+                    if (elResponder){
+                        idComentarioPai = elResponder.getAttribute("idcomentario");
+                    }
+                }
                 
-                // Simular adição do comentário na lista
-                adicionarComentario({
-                    usuario: { nome: 'Você', avatar: 'default.jpg' },
-                    texto: textoComentario,
-                    id: Date.now()
-                });
+                var spoiler = document.getElementById("checkSpoilerNovoComentario").checked;
+                comentar(document.querySelector('.comentarios'), textoComentario, 'livro', idLivro, spoiler, idComentarioPai)
                 
                 // Limpar formulário
                 inputComentario.value = '';
@@ -47,87 +54,40 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Funcionalidade para spoiler
-    const spoilers = document.querySelectorAll('.spoiler');
-    spoilers.forEach(spoiler => {
-        spoiler.addEventListener('click', function() {
-            this.classList.toggle('revelado');
-            if (this.classList.contains('revelado')) {
-                this.style.cursor = 'default';
-            } else {
-                this.style.cursor = 'pointer';
-            }
-        });
-    });
-    
     // Funcionalidade para reações (emojis)
     const botoesReacao = document.querySelectorAll('.btn-reacao');
     botoesReacao.forEach(btn => {
         btn.addEventListener('click', function() {
-            // Remove seleção anterior
-            botoesReacao.forEach(b => b.classList.remove('selecionado'));
-            // Adiciona seleção atual
-            this.classList.add('selecionado');
+            var reacao = this.title;
+
+            if (this.classList.contains("selecionado")){
+                this.classList.remove('selecionado');
+                reacao = ""
+            }else{
+                botoesReacao.forEach(b => b.classList.remove('selecionado'));
+                this.classList.add('selecionado');
+            }
             
-            // Aqui você pode adicionar lógica para salvar a reação
-            const reacao = this.textContent;
+            var idLivro = document.getElementById('idLivro').innerText;
+
+            // Aqui você pode adicionar lógica para salvar a reação            
             console.log('Reação selecionada:', reacao);
+            fetch('/gravarReacaoLivro', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    idLivro: idLivro,
+                    reacao: reacao
+                })
+            })
+            .then(response => response.json())
+            .then(retorno => {
+                if (retorno.erro){
+                    toast.erro(retorno.erro);
+                }
+            }).catch(error => { console.error('Erro:', error); });
         });
     });
-    
-    // Funcionalidade para curtir comentários
-    const botoesReagir = document.querySelectorAll('.btn-reagir');
-    botoesReagir.forEach(btn => {
-        btn.addEventListener('click', function() {
-            this.classList.toggle('curtido');
-            const icon = this.querySelector('img');
-            if (this.classList.contains('curtido')) {
-                // Trocar para ícone preenchido se disponível
-                icon.src = icon.src.replace('heart-outline', 'heart');
-            } else {
-                // Voltar para ícone outline
-                icon.src = icon.src.replace('heart.svg', 'heart-outline.svg');
-            }
-        });
-    });
-    
-    // Funcionalidade para favoritar livro
-    const btnFavoritar = document.querySelector('.btn-acao[title="Favoritar"]');
-    if (btnFavoritar) {
-        btnFavoritar.addEventListener('click', function() {
-            this.classList.toggle('favoritado');
-            const icon = this.querySelector('img');
-            if (this.classList.contains('favoritado')) {
-                // Trocar para ícone preenchido se disponível
-                icon.src = icon.src.replace('bookmark-outline', 'bookmark');
-                console.log('Livro favoritado');
-            } else {
-                // Voltar para ícone outline
-                icon.src = icon.src.replace('bookmark.svg', 'bookmark-outline.svg');
-                console.log('Livro removido dos favoritos');
-            }
-        });
-    }
-    
-    // Funcionalidade para compartilhar
-    const btnCompartilhar = document.querySelector('.btn-acao[title="Compartilhar"]');
-    if (btnCompartilhar) {
-        btnCompartilhar.addEventListener('click', function() {
-            // Implementar funcionalidade de compartilhamento
-            if (navigator.share) {
-                navigator.share({
-                    title: document.querySelector('.livro-titulo').textContent,
-                    text: 'Confira este livro incrível!',
-                    url: window.location.href
-                });
-            } else {
-                // Fallback para navegadores que não suportam Web Share API
-                navigator.clipboard.writeText(window.location.href).then(() => {
-                    alert('Link copiado para a área de transferência!');
-                });
-            }
-        });
-    }
     
     // Validação do formulário de comentário
     if (inputComentario) {
@@ -142,60 +102,23 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Função para adicionar comentário dinamicamente
-function adicionarComentario(comentario) {
-    const comentariosLista = document.querySelector('.comentarios-lista');
-    if (!comentariosLista) return;
-    
-    const novoComentarioHTML = `
-        <div class="comentario">
-            <div class="usuario-avatar">
-                <img src="static/imagens/usuarios/${comentario.usuario.avatar}" alt="${comentario.usuario.nome}" class="avatar-pequeno">
-            </div>
-            <div class="comentario-conteudo">
-                <div class="comentario-cabecalho">
-                    <div class="usuario-nome">${comentario.usuario.nome}</div>
-                    <div class="comentario-opcoes">
-                        <button class="btn-opcoes" title="Mais opções">
-                            <img src="static/css/icones/ellipsis-vertical-outline.svg" class="svg-sm">
-                        </button>
-                    </div>
-                </div>
-                <div class="comentario-texto">
-                    ${comentario.texto}
-                </div>
-                <div class="comentario-acoes">
-                    <button class="btn-reagir" title="Curtir">
-                        <img src="static/icones/heart-outline.svg" class="svg-sm">
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    // Adicionar no início da lista
-    comentariosLista.insertAdjacentHTML('afterbegin', novoComentarioHTML);
-    
-    // Adicionar event listeners aos novos botões
-    const novoComentarioElement = comentariosLista.firstElementChild;
-    const btnReagir = novoComentarioElement.querySelector('.btn-reagir');
-    if (btnReagir) {
-        btnReagir.addEventListener('click', function() {
-            this.classList.toggle('curtido');
-            const icon = this.querySelector('img');
-            if (this.classList.contains('curtido')) {
-                icon.src = icon.src.replace('heart-outline', 'heart');
-            } else {
-                icon.src = icon.src.replace('heart.svg', 'heart-outline.svg');
+var idLivro = document.getElementById('idLivro').innerText;
+valoresFiltro = {'telaOrigem': 'livro', 'itemOrigemId': idLivro}
+var areaComentarios = document.getElementById("areaComentarios");
+if (areaComentarios){
+    const pag = new Paginacao(areaComentarios, {
+        url: '/procurarComentarios',
+        filtros: valoresFiltro,
+        paginaAtual: valoresFiltro['paginaAtual'] ?? 1,
+        qtdTotalElementos: valoresFiltro.qtdItens,
+        conteudoHtml: conteudoHtmlComentario,
+        flex: false,
+        elScroolDeteccao: window,
+        qtdElPorPagina: 5,
+        logica: function(){
+            if (this.paginaAtual == 1 && this.dados.length == 0){
+                this.toggleMsg("Nenhum comentário encontrado para o livro. Seje o primeiro(a) a comentar.");
             }
-        });
-    }
-}
-
-// Função para animação suave ao rolar para comentários
-function rolarParaComentarios() {
-    const comentariosSecao = document.querySelector('.comentarios-secao');
-    if (comentariosSecao) {
-        comentariosSecao.scrollIntoView({ behavior: 'smooth' });
-    }
+        }
+    });
 }

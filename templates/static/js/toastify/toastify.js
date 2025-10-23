@@ -473,7 +473,7 @@ class toast{
     let toast_ = Toastify({
       node: content,
       className: "info",
-      duration: -1,
+      duration: 3000,
       close: true,
       gravity: "top", // `top` or `bottom`
       position: "right", // `left`, `center` or `right`
@@ -482,7 +482,7 @@ class toast{
         background: this.cor
       },
       onClick: function () {
-        //toast_.hideToast();
+        toast_.hideToast();
       }
     }).showToast();
   }

@@ -77,7 +77,7 @@ function atualizarCaixaPesquisa(valores){
     resultadoPesquisa.innerHTML = "";
     for (var valor of valores.pesquisas){
         resultadoPesquisa.innerHTML += `
-            <button class="previewPesquisaResultado" onclick="executarPesquisa('${valor.pesquisa}')">${valor.pesquisa}</button>
+            <button class="previewPesquisaResultado" onclick="document.getElementById('campoPesquisa').value = '${valor.pesquisa}';executarPesquisa()">${valor.pesquisa}</button>
         `;
     }
 
@@ -91,7 +91,7 @@ function atualizarCaixaPesquisa(valores){
                 <div>
                     <div class="previewPesquisaTituloLivro">${livro.titulo}</div>
                     <br>
-                    <div class="previewPesquisaAutorLivro">${livro.autor}</div>
+                    <div class="previewPesquisaAutorLivro">${livro.autor.nome}</div>
                 </div>
             </a>
         `;
@@ -155,6 +155,23 @@ function atualizarTamanhoBtnsAlterarFiltros(){
     }
 
     btnsAlterarFiltros.style.top = 7 + "px";
+}
+
+function marcarDesmarcarTodosEstilosLiterarios(){
+    //var checkTodosEstilos = document.getElementById("checkTodosEstilos");
+    var labelforCheckTodosEstilos = document.getElementById("labelforCheckTodosEstilos");
+    var marcar=false;
+    if (labelforCheckTodosEstilos.innerText.trim() == "Marcar Todos"){
+        marcar = true;
+        labelforCheckTodosEstilos.innerHTML = 'Desmarcar Todos';
+    }else{
+        labelforCheckTodosEstilos.innerHTML = 'Marcar Todos';
+    }
+
+    var comboCeckFiltrosEstilosLiterarios = document.getElementById("comboCeckFiltrosEstilosLiterarios");
+    Array.prototype.forEach.call(comboCeckFiltrosEstilosLiterarios.querySelectorAll("input[type='checkbox']"), function(btn){
+        btn.checked = marcar;
+    })
 }
 
 window.addEventListener('resize', event => {

@@ -1,22 +1,28 @@
 {% extends 'index.html' %}
 
 {% block conteudo %}
+
+<div style="display: none;" id="idLivro">{{livro.id}}</div>
+
 <div class="livro-detalhes">
     <div class="livro-container">
         <!-- Seção principal do livro -->
         <div class="livro-principal">
+            
             <!-- Imagem do livro -->
             <div class="livro-imagem">
-                <img src="{{livro.img}}" alt="Senhora" class="capa-livro">
+                <img src="{{livro.img}}" alt="{{ livro.titulo }}" class="capa-livro">
             </div>
             
             <!-- Informações do livro -->
             <div class="livro-info">
-                <h1 class="livro-titulo">Título: {{ livro.titulo|default("Senhora") }}</h1>
+                <h1 class="livro-titulo">{{ livro.titulo }}</h1>
                 <div class="livro-dados">
-                    <p><strong>Autor:</strong> {{ livro.autor|default("José de Alencar") }}</p>
-                    <p><strong>Editora:</strong> {{ livro.editora|default("Saraiva") }}</p>
-                    <p><strong>Data Publicação:</strong> {{ livro.data_publicacao|default("01/01/1874") }}</p>
+                    <p><strong>Autor:</strong> {% if livro.autor.id is not none %}<a href="usuario?id={{livro.autor.id}}">{{ livro.autor.nome }}</a>{% else %}{{ livro.autor.nome }}{% endif %}</p>
+                    <p><strong>Editora:</strong> {% if livro.autor.id is not none %}<a href="usuario?id={{livro.editora.id}}">{{ livro.editora.nome }}</a>{% else %}{{ livro.editora.nome }}{% endif %}</p>
+                    {% if livro.data_publicacao != "" %}
+                    <p><strong>Data Publicação:</strong> {{ livro.data_publicacao }}</p>
+                    {% endif %}
                     <p><strong>Estilo:</strong> {{ livro.estilo|default("Romance") }}</p>
                     <p><strong>Número:</strong> {{ livro.numero|default("1") }}</p>
                 </div>
@@ -25,47 +31,61 @@
             <!-- Ações do livro -->
             <div class="livro-acoes">
                 <div class="reacoes-container">
-                    <button class="btn-reacao emoji-btn" title="Muito bom">😍</button>
-                    <button class="btn-reacao emoji-btn" title="Bom">😊</button>
-                    <button class="btn-reacao emoji-btn" title="Ok">😐</button>
-                    <button class="btn-reacao emoji-btn" title="Ruim">😕</button>
-                    <button class="btn-reacao emoji-btn" title="Muito ruim">😠</button>
-                    <button class="btn-reacao emoji-btn" title="Terrível">😡</button>
+                    <button class="btn-reacao emoji-btn {% if reacao_usuario == 'muitobom' %}selecionado{% endif %}" title="Muito bom">😍</button>
+                    <button class="btn-reacao emoji-btn {% if reacao_usuario == 'bom' %}selecionado{% endif %}" title="Bom">😊</button>
+                    <button class="btn-reacao emoji-btn {% if reacao_usuario == 'ok' %}selecionado{% endif %}" title="Ok">😐</button>
+                    <button class="btn-reacao emoji-btn {% if reacao_usuario == 'ruim' %}selecionado{% endif %}" title="Ruim">😕</button>
+                    <button class="btn-reacao emoji-btn {% if reacao_usuario == 'muitoruim' %}selecionado{% endif %}" title="Muito ruim">😠</button>
+                    <button class="btn-reacao emoji-btn {% if reacao_usuario == 'nãogostei' %}selecionado{% endif %}" title="Terrível">😡</button>
                 </div>
                 <div class="acoes-principais">
-                    <button class="btn-acao" title="Compartilhar">
+                    <button class="btn-acao" title="Compartilhar" onclick="compartilharLivro(`{{livro.id}}`)">
                         <img src="static/icones/share-social-outline.svg" class="svg-sm">
                     </button>
-                    <button class="btn-acao" title="Favoritar" onclick="abrirSalvarLivro('${livro.id}', this)">
+                    <button id="btnAcaoSalvo" class="btn-acao {% if livro.livro_salvo %}salvo{% else %}{% endif %}" title="Salvar" onclick="abrirSalvarLivro('{{livro.id}}', this)">
                         <img src="static/icones/bookmark-outline.svg" class="svg-sm">
                     </button>
                 </div>
             </div>
         </div>
         
-        <!-- Descrição -->
+        {% if livro.descricao != "" %}
         <div class="livro-descricao">
             <h2>Descrição</h2>
-            <p>{{ livro.descricao|default("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla iaculis urna a felis hendrerit efficitur. Curabitur nec lorem diam. Suspendisse id mattis diam, sed efficitur diam. Duis efficitur velit id est porta, ac semper lectus ullamcorper. Curabitur mollis nibh at est egestas viverra. Donec in tempus orci. Donec ullamcorper venenatis sagittis.") }}</p>
+            <p>{{ livro.descricao | safe }}</p>
         </div>
+        {% endif %}
+
+        {% if livro.autor.descricao != "" %}
+        <div class="livro-sobre-autor">
+            <h2>Sobre o Autor: {{livro.autor.nome}}</h2>
+            <div>
+                <img src="{{ livro.autor.img }}">
+                <p>{{ livro.autor.descricao | safe }}</p>
+            </div>
+        </div>
+        {% endif %}
         
         <!-- Seção de comentários -->
         <div class="comentarios-secao">
             <div class="comentarios-header">
                 <h2>Comentários</h2>
-                <button class="btn-comentario" title="Adicionar comentário">
-                    <img src="static/icones/text-outline.svg" class="svg-sm">
+                <button class="btn-acao btn-comentario" title="Adicionar comentário">
+                    Comentar
                 </button>
             </div>
-            
+
+            {% if current_user.is_authenticated %}
             <!-- Formulário para novo comentário -->
             <div class="novo-comentario" style="display: none;">
                 <div class="comentario-form">
-                    <div class="usuario-avatar">
-                        <img src="static/imagens/usuarios/default.jpg" alt="Seu avatar" class="avatar-pequeno">
-                    </div>
+                    <img id="imgUsuarioResponder" src="{{img_usuario}}">
                     <div class="comentario-input">
-                        <input type="text" placeholder="Atenção! Spoiler! Clique aqui para visualizar o comentário." class="input-comentario">
+                        <div style="display: flex;">
+                            <input type="checkbox" id="checkSpoilerNovoComentario" class="checkCotemSpoiler">
+                            <label for="checkSpoilerNovoComentario">Contém Spoiler</label>
+                        </div>
+                        <input type="text" class="input-comentario">
                         <div class="comentario-acoes-form">
                             <button class="btn-enviar-comentario">Enviar</button>
                             <button class="btn-cancelar-comentario">Cancelar</button>
@@ -75,109 +95,22 @@
             </div>
             
             <!-- Lista de comentários -->
-            <div class="comentarios-lista">
-                {% if comentarios %}
-                    {% for comentario in comentarios %}
-                    <div class="comentario">
-                        <img src="static/imagens/usuarios/feliz.png" alt="{{ comentario.usuario.nome|default('Heading') }}" class="avatar-pequeno">
-                        <div class="comentario-conteudo">
-                            <div class="comentario-cabecalho">
-                                <div class="usuario-nome">{{ comentario.usuario.nome|default("Heading") }}</div>
-                                <div class="comentario-opcoes">
-                                    <button class="btn-opcoes" title="Mais opções">
-                                        <img src="static/css/icones/ellipsis-vertical-outline.svg" class="svg-sm">
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="comentario-texto">
-                                {{ comentario.texto|default("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore.") }}
-                            </div>
-                            <div class="comentario-acoes">
-                                <button class="btn-reagir" title="Curtir">
-                                    <img src="static/icones/heart-outline.svg" class="svg-sm">
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                {% else %}
-                    <!-- Comentários de exemplo -->
-                    <div class="comentario">
-                        <div class="usuario-avatar">
-                            <img src="static/imagens/usuarios/default.jpg" alt="Usuário" class="avatar-pequeno">
-                        </div>
-                        <div class="comentario-conteudo">
-                            <div class="comentario-cabecalho">
-                                <div class="usuario-nome">Heading</div>
-                                <div class="comentario-opcoes">
-                                    <button class="btn-opcoes" title="Mais opções">
-                                        <img src="static/css/icones/ellipsis-vertical-outline.svg" class="svg-sm">
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="comentario-texto spoiler">
-                                Atenção! Spoiler! Clique aqui para visualizar o comentário.
-                            </div>
-                            <div class="comentario-acoes">
-                                <button class="btn-reagir" title="Curtir">
-                                    <img src="static/icones/heart-outline.svg" class="svg-sm">
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="comentario">
-                        <div class="usuario-avatar">
-                            <img src="static/imagens/usuarios/default.jpg" alt="Usuário" class="avatar-pequeno">
-                        </div>
-                        <div class="comentario-conteudo">
-                            <div class="comentario-cabecalho">
-                                <div class="usuario-nome">Heading</div>
-                                <div class="comentario-opcoes">
-                                    <button class="btn-opcoes" title="Mais opções">
-                                        <img src="static/css/icones/ellipsis-vertical-outline.svg" class="svg-sm">
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="comentario-texto">
-                                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore.
-                            </div>
-                            <div class="comentario-acoes">
-                                <button class="btn-reagir" title="Curtir">
-                                    <img src="static/icones/heart-outline.svg" class="svg-sm">
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="comentario">
-                        <div class="usuario-avatar">
-                            <img src="static/imagens/usuarios/default.jpg" alt="Usuário" class="avatar-pequeno">
-                        </div>
-                        <div class="comentario-conteudo">
-                            <div class="comentario-cabecalho">
-                                <div class="usuario-nome">Heading</div>
-                                <div class="comentario-opcoes">
-                                    <button class="btn-opcoes" title="Mais opções">
-                                        <img src="static/css/icones/ellipsis-vertical-outline.svg" class="svg-sm">
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="comentario-texto">
-                                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt.
-                            </div>
-                            <div class="comentario-acoes">
-                                <button class="btn-reagir" title="Curtir">
-                                    <img src="static/icones/heart-outline.svg" class="svg-sm">
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                {% endif %}
+            <div id="areaComentarios" class="comentarios"></div>
+
+            <div id="sobretelaInfoComentario" class="sobreTela acao">
+                <div class="tituloBarra">Editar Comentário</div>
+                <div class="acaoConteudo">
+                    <button onclick="excluirComentario('livro')"><img src="static/icones/trash-outline.svg" class="svg-m"> Excluir</button>
+                </div>
             </div>
+            {% else %}
+            <p style="color: red;">Deve estar logado para ver os comentários. <a href="login?pagina=livro&id={{livro.id}}">Clique aqui para fazer login</a></p>
+            {% endif %}
         </div>
     </div>
 </div>
 
 <script src="static/js/livro.js"></script>
+<script src="static/js/comentario.js"></script>
+
 {% endblock %}

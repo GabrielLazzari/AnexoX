@@ -53,13 +53,12 @@
 
         <div>
             <div>
-                <label for="campoNome">Nome</label>
+                <label for="campoNome">Usuário</label>
                 <input type="text" name="campoNome" id="campoNome" value="{{usuario.nome}}" required>
             </div>
 
             {% if editando_usuario %}
             <div>
-            
                 <label for="campoSenha">Senha</label>
                 <button type="button" onclick="abrirSobreTela('areaSenha')">Alterar Senha</button>
             </div>
@@ -148,12 +147,23 @@
         }
 
         alterarTipoPerfil(document.querySelector('input[name="tipoUsuario"]:checked'));
+        
+        $(document).ready(function(){
+            fetch('/retornarGenerosLiterarios', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: {}
 
-        new MultiploSelect("preferenciasLiterarias",
-            ['Romance', 'Suspense', 'Mistério', 'Aventura', 'Policial', 'Ficção Científica', 'Fantasia', 
-            'Técnicos / Estudos', 'Bibliográficos / Auto Bibliográficos', 'Terror', 'Histórico', 
-            'Auto Ajuda', 'Religioso', 'Finanças', 'Literatura', 'Infanto Juvenil', 'Contos', 'Poesia']
-        );
+            }).then(response => 
+                response.json()
+
+            ).then(data => {
+                new MultiploSelect("preferenciasLiterarias", data.map(x => x.nome));
+
+            }).catch(error => {
+                console.log(error)
+            });
+        });
 
     </script>
 

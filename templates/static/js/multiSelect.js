@@ -142,7 +142,7 @@ style.textContent = `
     .multiselect .multiselectitens{
         position: absolute;
         display: none;
-        background-color: var(--corFundo);
+        background-image: var(--corFundo);
         overflow-y: auto;
         border: 2px solid var(--corDestaque);
         border-radius: 2px;

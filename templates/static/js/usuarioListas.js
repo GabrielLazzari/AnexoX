@@ -1,5 +1,7 @@
-function abrirSobreTelaLista(){
+function abrirSobreTelaLista(gravarLivro=false){
     var sobretelaInfoLista = document.getElementById('sobretelaInfoLista');
+    var btnSalvarLista = document.getElementById('btnSlavarLista');
+    gravarLivro ? btnSalvarLista.classList.add("gravar") : btnSalvarLista.removeAttribute("class");
     abrirSobreTela('sobretelaInfoLista');
     document.getElementById("idListaLivro").value = "0";
     sobretelaInfoLista.querySelector('.tituloBarra').innerHTML = "Criar Lista";
@@ -13,13 +15,11 @@ function abrirSobreTelaListaEditar(){
     abrirSobreTela('sobretelaInfoLista');
     document.getElementById("idListaLivro").value = idListaAtual;
     sobretelaInfoLista.querySelector('.tituloBarra').innerHTML = "Editar Lista";
-    
-    var idUsuario = document.getElementById('idUsuario').innerText;
 
     fetch('/retornarListaLivro', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({idLista: idListaAtual, idUsuario: idUsuario})
+        body: JSON.stringify({idLista: idListaAtual})
     })
     .then(response => response.json())
     .then(data => {
@@ -30,6 +30,8 @@ function abrirSobreTelaListaEditar(){
 }
 
 function salvarLista(){
+    var gravarLivro = event.target.classList.contains("gravar") ? true : false;
+
     var erroSalvarLista = document.getElementById("erroSalvarLista");
     erroSalvarLista.innerHTML = "";
     var nomeListaLivro = document.getElementById("nomeListaLivro");
@@ -55,11 +57,18 @@ function salvarLista(){
     })
     .then(response => response.json())
     .then(retorno => {
-        console.log('r', retorno)
         if (retorno.erro != "") {
             erroSalvarLista.innerHTML = retorno.erro;
         } else {
-            alterarListaTela(retorno.lista);
+            alterarListaTela(retorno.lista, gravarLivro);
+            fecharSobreTela("sobretelaInfoLista", true);
+            if (gravarLivro){
+                var idLivro = sobretelaSelecionarListaLivro.getAttribute("idlivro");
+                var idListaLivroAtual = sobretelaSelecionarListaLivro.getAttribute("idlistaatual");
+                salvarLivro(idLivro, retorno.lista.id, idListaLivroAtual);
+            }else{
+                toast.sucesso(`Lista ${retorno.alterada ? 'alterada' : 'salva'} com sucesso.`);
+            }
         }
     }).catch(error => { console.error('Erro:', error); });
 }
@@ -75,13 +84,22 @@ function retornarListas(){
     }).then(response => 
         response.json()
 
-    ).then(data => {
+    ).then(retorno => {
         areaListasUsuario.innerHTML = "";
-        for (var lista of data.listas){
-            carregarListaTela(lista);
-        }
-        if (areaListasUsuario.children.length > 0){
-            selecionarLista(areaListasUsuario.children[0])
+        if (retorno.buscar_apenas_livros){
+            document.getElementById("controleListasLivros").remove();
+            var areaVerLivrosLista = document.getElementById('areaVerLivrosLista');
+            areaVerLivrosLista.innerHTML = "";
+            for (var livro of retorno.livros){
+                areaVerLivrosLista.innerHTML += conteudoHtmlLivroUsuario(livro);
+            }
+        }else{
+            for (var lista of retorno.listas){
+                carregarListaTela(lista);
+            }
+            if (areaListasUsuario.children.length > 0){
+                selecionarLista(areaListasUsuario.children[0])
+            }
         }
 
     }).catch(error => {
@@ -91,56 +109,86 @@ function retornarListas(){
 
 var idListaAtual = 0;
 
-function carregarListaTela(lista){
-    if (!areaListasUsuario ){
-        return;
-    }
+function carregarListaTela(lista, gravarLivro=false){
 
-    var idUsuario = document.getElementById('idUsuario').innerText;
+    var areaListasUsuario = document.getElementById("areaListasUsuario");
+
+    var idUsuario = document.getElementById('idUsuario')
+    idUsuario = idUsuario ? idUsuario.innerText : 0;
 
     var div = document.createElement('div');
     div.className = "listalivroitem";
     div.setAttribute("idlista", lista.id);
     div.setAttribute("title", lista.descricao);
 
-    console.log(lista.usuario_id, idUsuario)
-
     div.innerHTML = `
-        ${lista.usuario_id == idUsuario ? '<button class="btnMaisInfo"></button>' : ''}
+        <button class="btnMaisInfo"></button>
         <div class="tituloLista">${lista.nome}</div>
     `;
 
-    areaListasUsuario.appendChild(div);
-    div.addEventListener('click', function(event){
-        selecionarLista(div);
-    });
-    var btnMaisInfo = div.querySelector('.btnMaisInfo');
-    if (btnMaisInfo){
-        btnMaisInfo.addEventListener('click', function(event){
-            abrirSobreTela('sobretelaGerenciarLista', this);
-            idListaAtual = lista.id;
+    if (areaListasUsuario && (gravarLivro && idUsuario.toString() == lista.usuario_id || !gravarLivro)){
+        areaListasUsuario.appendChild(div);
+        div.addEventListener('click', function(event){
+            selecionarLista(div);
         });
+        criarAcaoBtnMaisInfo(div, lista.id, lista.seguindo);
+    }
+
+    var sobretelaSelecionarListaLivro = document.getElementById("sobretelaSelecionarListaLivro");
+    if (sobretelaSelecionarListaLivro){
+        var idLivro = sobretelaSelecionarListaLivro.getAttribute("idlivro");
+        var idListaLivroAtual = sobretelaSelecionarListaLivro.getAttribute("idlistaatual");
+        if (idLivro){
+            sobretelaSelecionarListaLivro.querySelector(".acaoConteudo").innerHTML += `<button idlista="${lista.id}" onclick="salvarLivro('${idLivro}', ${lista.id}, ${idListaLivroAtual})">${lista.nome}</button>`;;
+        }
     }
 }
 
 function selecionarLista(divLista){
-    var selAntes = document.querySelector('.listalivroitem.selecionado');
+    var controleListasLivros = document.getElementById("controleListasLivros");
+    if (!controleListasLivros){
+        return;
+    }
+
+    var selAntes = controleListasLivros.querySelector('.listalivroitem.selecionado');
+    if (divLista == selAntes && divLista.innerHTML == selAntes.innerHTML){
+        return;
+    }
+
     if (selAntes) selAntes.classList.remove('selecionado');
     divLista.classList.add('selecionado');
     document.getElementById('areaDescricaoLista').innerHTML = divLista.getAttribute("title");
     carregarLivrosLista(divLista.getAttribute("idlista"));
 }
 
-function alterarListaTela(lista){
+function alterarListaTela(lista, gravarLivro=false){
     fecharSobreTela('sobretelaGerenciarLista', true);
-    fecharSobreTela('sobretelaInfoLista', true);
-    document.getElementById('areaDescricaoLista').innerHTML = lista.descricao;
+    if (!document.getElementById("sobretelaSelecionarListaLivro")){
+        fecharSobreTela('sobretelaInfoLista', true);
+    }
+
     var l = document.querySelector('.listalivroitem[idlista="'+lista.id+'"]');
-    l.setAttribute("title", lista.descricao);
     if (l) {
+        var selAntes = controleListasLivros.querySelector('.listalivroitem.selecionado');
+        if (selAntes == l){
+            
+        }
+        areaDescricaoLista = document.getElementById('areaDescricaoLista')
+        if (areaDescricaoLista){
+            areaDescricaoLista.innerHTML = lista.descricao;
+        }
+
+        l.setAttribute("title", lista.descricao);
         l.querySelector('.tituloLista').innerHTML = lista.nome;
     } else {
-        carregarListaTela(lista);
+        carregarListaTela(lista, gravarLivro);
+    }
+
+    if (!gravarLivro){
+        l = document.querySelector('.listalivroitem[idlista="'+lista.id+'"]');
+        if (l){
+            selecionarLista(l)
+        }
     }
 }
 
@@ -162,12 +210,26 @@ function excluirLista(){
         if (data.erro != "") {
             toast.erro(data.erro);
         } else {
-            document.querySelector('.listalivroitem[idlista="'+idListaAtual+'"]').remove();
+            var controleListasLivros = document.getElementById("controleListasLivros");
+            var selAtual = controleListasLivros.querySelector('.listalivroitem[idlista="'+idListaAtual+'"]');
             fecharSobreTela('sobretelaGerenciarLista', true);
             var areaVerLivrosLista = document.getElementById('areaVerLivrosLista');
             if (areaVerLivrosLista){
-                areaVerLivrosLista.innerHTML = "";
-            }            
+                //areaVerLivrosLista.innerHTML = "";
+            }
+            
+            var selAntes = controleListasLivros.querySelector('.listalivroitem.selecionado');
+            if (selAntes.getAttribute("idlista") != selAtual.getAttribute("idlista") && selAntes){
+                selecionarLista(selAntes);
+            } else if (selAtual.previousElementSibling != null){
+                selecionarLista(selAtual.previousElementSibling);
+            } else if (selAtual.nextElementSibling != null){
+                selecionarLista(selAtual.nextElementSibling);
+            }
+
+            Array.prototype.forEach.call(document.querySelectorAll('.listalivroitem[idlista="'+idListaAtual+'"]'), function(sel){
+                sel.remove()
+            })
         }
 
     }).catch(error => { console.error('Erro:', error); });
@@ -196,7 +258,7 @@ function carregarLivrosLista(idLista){
 var btnAux = null;
 function abrirSalvarLivro(idLivro, btn){
     abrirSobreTela('sobretelaSelecionarListaLivro', btn);
-    atualizarSobretelaSelecionarLista("salvarLivro", idLivro, '');
+    atualizarSobretelaSelecionarLista("salvarLivro", idLivro);
 }
 
 function abrirMoverLivro(idLivro, idListaAtual, btn){
@@ -207,46 +269,54 @@ function abrirMoverLivro(idLivro, idListaAtual, btn){
 
 function abrirDuplicarLivro(idLivro, idListaAtual, btn){
     abrirSobreTela('sobretelaSelecionarListaLivro', btn);
-    atualizarSobretelaSelecionarLista("duplicarLivro", idLivro, idListaAtual);
+    atualizarSobretelaSelecionarLista("duplicarLivro", idLivro);
 }
 
-function salvarLivro(idLivro, idLista){
-    console.log(idLivro, idLista)
+function salvarLivro(idLivro, idListaAlvo, idListaAtual=null){
     fecharSobreTela('sobretelaSelecionarListaLivro', true);
-    fetch('/vincularLivroLista', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({idLivro: idLivro, idLista: idLista})
 
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.erro != ""){
-            toast.erro(data.erro);
-        }
-    })
-    .catch(error => { console.error('Erro:', error); });
-}
+    if (idListaAtual != null && idListaAtual.toString() != "undefined" && idListaAtual.toString().trim() != ""){
+        fetch('/moverLivroLista', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({idLivro: idLivro, idListaAtual: idListaAtual, idListaMover: idListaAlvo})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.erro != ""){
+                toast.erro(data.erro);
+                return;
+            }else{
+                toast.sucesso("Livro movido com sucesso!")
+            }
 
-function moverLivro(idLivro, idListaAtual, idListaMover){
-    fecharSobreTela('sobretelaSelecionarListaLivro', true);
-    fetch('/moverLivroLista', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({idLivro: idLivro, idListaAtual: idListaAtual, idListaMover: idListaMover})
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.erro != ""){
-            toast.erro(data.erro);
-            return;
-        }
-        console.log('bt', btnAux)
-        var lvr = btnAux.closest('.livroItem');
-        lvr.remove();
-        btnAux = null;
-    })
-    .catch(error => { console.error('Erro:', error); });
+            var lvr = btnAux.closest('.livroItem');
+            lvr.remove();
+            btnAux = null;
+        })
+        .catch(error => { console.error('Erro:', error); });
+
+    }else{
+        fetch('/vincularLivroLista', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({idLivro: idLivro, idLista: idListaAlvo})
+
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.erro != ""){
+                toast.erro(data.erro);
+            }else{
+                toast.sucesso("Livro salvo com sucesso!");
+                var btnAcaoSalvo = document.getElementById("btnAcaoSalvo");
+                if (btnAcaoSalvo){
+                    btnAcaoSalvo.classList.add("salvo");
+                }
+            }
+        })
+        .catch(error => { console.error('Erro:', error); });
+    }
 }
 
 function removerLivroLista(idRelacao, idLivro, idLista, btn=null){
@@ -267,9 +337,61 @@ function removerLivroLista(idRelacao, idLivro, idLista, btn=null){
             toast.erro(data.erro);
         }else{
             lvr.remove();
+            toast.sucesso("Livro removido com sucesso!")
         }
     })
     .catch(error => { console.error('Erro:', error); });
+}
+
+function seguirLista(){
+    var idUsuario = document.getElementById('idUsuario').innerText;
+
+    fetch('/controleSeguirLista', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({idLista: idListaAtual, idUsuarioSeguir: idUsuario})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.erro != ""){
+            toast.erro(data.erro);
+        }else{
+            if (data.seguindo){
+                toast.sucesso("Você será notificado sobre as atualizações da lista.");
+            }
+            atualizarBtnSeguirLista(data.seguindo);
+
+            var controleListasLivros = document.getElementById("controleListasLivros");
+            var selAtual = controleListasLivros.querySelector('.listalivroitem[idlista="'+idListaAtual+'"]');
+            criarAcaoBtnMaisInfo(selAtual, data.idLista, data.seguindo);
+        }
+    })
+    .catch(error => { console.error('Erro:', error); });
+}
+
+function criarAcaoBtnMaisInfo(obj, idLista, seguindo){
+    var btnMaisInfo = obj.querySelector('.btnMaisInfo');
+    if (btnMaisInfo){
+        btnMaisInfo.addEventListener('click', function(event){
+            event.stopPropagation();
+            abrirSobreTela('sobretelaGerenciarLista', this);
+            idListaAtual = idLista;
+            atualizarBtnSeguirLista(seguindo);
+        });
+    }
+}
+
+function atualizarBtnSeguirLista(seguindo){
+    var btnSeguirLista = document.getElementById("btnSeguirLista");
+    if (btnSeguirLista){
+        if (seguindo){
+            btnSeguirLista.style.backgroundColor = "lightgreen";
+            btnSeguirLista.innerHTML = "Seguindo";
+        }else{
+            btnSeguirLista.style.backgroundColor = "unset";
+            btnSeguirLista.innerHTML = "Seguir";
+        }
+    }
 }
 
 function atualizarSobretelaSelecionarLista(acao, idLivro, idListaLivroAtual){
@@ -282,16 +404,19 @@ function atualizarSobretelaSelecionarLista(acao, idLivro, idListaLivroAtual){
         response.json()
 
     ).then(data => {
-        var area = document.getElementById("sobretelaSelecionarListaLivro").querySelector(".acaoConteudo");
+        var sobretelaSelecionarListaLivro = document.getElementById("sobretelaSelecionarListaLivro");
+        sobretelaSelecionarListaLivro.setAttribute("acao", acao);
+        sobretelaSelecionarListaLivro.setAttribute("idlivro", idLivro);
+        sobretelaSelecionarListaLivro.setAttribute("idlistaatual", idListaLivroAtual);
+        var area = sobretelaSelecionarListaLivro.querySelector(".acaoConteudo");
         area.innerHTML = "";
-        console.log('d', data)
         if (data.erro == ""){
             for (var lista of data.listas){
                 if (acao == "salvarLivro" || (acao == "duplicarLivro" && lista.id != idListaLivroAtual)){
-                    area.innerHTML += `<button onclick="salvarLivro(${idLivro}, ${lista.id})">${lista.nome}</button>`;
+                    area.innerHTML += `<button idlista="${lista.id}" onclick="salvarLivro('${idLivro}', ${lista.id})">${lista.nome}</button>`;
 
                 }else if (acao == "moverLivro" && lista.id != idListaLivroAtual){
-                    area.innerHTML += `<button onclick="moverLivro(${idLivro}, ${idListaLivroAtual}, ${lista.id})">${lista.nome}</button>`;
+                    area.innerHTML += `<button idlista="${lista.id}" onclick="salvarLivro('${idLivro}', ${lista.id}, ${idListaLivroAtual})">${lista.nome}</button>`;
                 }
             }
         }else{

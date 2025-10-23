@@ -1,4 +1,5 @@
 from sqlalchemy import Enum as SAEnum, event
+from unidecode import unidecode
 
 from python.banco import db
 
@@ -6,8 +7,18 @@ from python.banco import db
 class GeneroLiterario(db.Model):
     __tablename__ = 'genero_literario'
     id = db.Column(db.Integer, primary_key=True)
-    descricao = db.Column(db.String(100), nullable=False)
+    nome = db.Column(db.String(100), nullable=False, default="")
+    descricao = db.Column(db.String(500), nullable=True, default="")
     icone = db.Column(db.String(256), nullable=True, default="")
+
+    def dicionario(self):
+        return {
+            'id': self.id,
+            'nome': self.nome,
+            'nomeCampo': "check" + unidecode(self.nome.capitalize().replace(" ", "").replace("/", "")),
+            'descricao': self.descricao,
+            'icone': self.icone
+        }
 
 
 class PreferenciasLiterariasUsuario(db.Model):
@@ -29,23 +40,26 @@ def inserir_generos_literarios_estaticos(target, connection, **kw):
     connection.execute(
         GeneroLiterario.__table__.insert(),
         [
-            {"descricao": "Romance", "icone": "static\\icones\\heart-outline.svg"},
-            {"descricao": "Suspense", "icone": ""},
-            {"descricao": "Mistério", "icone": "static\\icones\\footsteps-outline.svg"},
-            {"descricao": "Aventura", "icone": ""},
-            {"descricao": "Policial", "icone": ""},
-            {"descricao": "Ficção Científica", "icone": ""},
-            {"descricao": "Fantasia", "icone": ""},
-            {"descricao": "Técnicos / Estudos", "icone": ""},
-            {"descricao": "Bibliográficos / Auto Bibliográficos", "icone": ""},
-            {"descricao": "Terror", "icone": ""},
-            {"descricao": "Auto Ajuda", "icone": ""},
-            {"descricao": "Religioso", "icone": ""},
-            {"descricao": "Finanças", "icone": "static\\icones\\cash-outline.svg"},
-            {"descricao": "Literatura", "icone": ""},
-            {"descricao": "Infanto Juvenil", "icone": ""},
-            {"descricao": "Contos", "icone": ""},
-            {"descricao": "Poesia", "icone": ""},
-            {"descricao": "Histórico", "icone": ""},
+            {"nome": "Romance", "descricao": "", "icone": "static\\icones\\heart-outline.svg"},
+            {"nome": "Suspense", "descricao": "", "icone": ""},
+            {"nome": "Mistério", "descricao": "", "icone": "static\\icones\\footsteps-outline.svg"},
+            {"nome": "Aventura", "descricao": "", "icone": ""},
+            {"nome": "Policial", "descricao": "", "icone": ""},
+            {"nome": "Ficção Científica", "descricao": "", "icone": ""},
+            {"nome": "Fantasia", "descricao": "", "icone": ""},
+            {"nome": "Técnicos / Estudos", "descricao": "", "icone": ""},
+            {"nome": "Bibliográficos / Auto Bibliográficos", "descricao": "", "icone": ""},
+            {"nome": "Terror", "descricao": "", "icone": ""},
+            {"nome": "Auto Ajuda", "descricao": "", "icone": ""},
+            {"nome": "Religioso", "descricao": "", "icone": ""},
+            {"nome": "Finanças", "descricao": "", "icone": "static\\icones\\cash-outline.svg"},
+            {"nome": "Literatura", "descricao": "", "icone": ""},
+            {"nome": "Infanto Juvenil", "descricao": "", "icone": ""},
+            {"nome": "Contos", "descricao": "", "icone": ""},
+            {"nome": "Poesia", "descricao": "", "icone": ""},
+            {"nome": "Histórico", "descricao": "", "icone": ""},
+            {"nome": "Ficção", "descricao": "", "icone": ""},
+            {"nome": "Drama", "descricao": "", "icone": ""},
+            {"nome": "Comédia", "descricao": "", "icone": ""},
         ]
     )

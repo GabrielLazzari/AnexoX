@@ -4,7 +4,8 @@
     --corDestaque: #a98d56;
     --corHover: #e6d49e;
     --corPrata: #ddd;
-    --corFundo: white;
+    --corPrataEscuro: #a4a4a4;
+    --corFundo: linear-gradient(135deg, #e0e7ff 0%, #f3f4f6 100%);
     --corFundo2: #f8f8f8;
     --corSelecionado: #6aeb6a;
 }
@@ -19,22 +20,16 @@
 }
 
 body{
-    background-color: var(--corFundo);
-}
-
-.corPrimaria{
-    background-color: var(--corPrimaria);
+    background-image: var(--corFundo);
+    height: 100vh;
 }
 
 button, #campoPesquisa{
     border: none;
-    background-color: unset;
-    padding: 2px;
 }
 
 button{
-    background-color: var(--corPrimaria);
-    border: 1px solid var(--corDestaque);
+    background-color: unset;
     border-radius: 5px;
 }
 
@@ -49,33 +44,52 @@ hr{
     border: 1px solid var(--corDestaque);
 }
 
-button:hover, .btnMenu:hover, #menuSuspenso > *:hover{
-    background-color: var(--corHover);
+.desativado{
+    pointer-events: none;
+    opacity: 0.5;
 }
 
-.btnAnimaRotate:hover{
-    animation: btnAnimacao 0.5s 1;
-    transform-origin: center center;
+button:hover, .btnMenu:hover, #menuSuspenso > *:hover{
+    background-color: var(--corHover);
 }
 
 #menu{
     position: fixed;
     display: flex;
-    width: calc(100% - 20px);
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 13px;
+    padding-bottom: 10px;
+    z-index: 998;
+    background-image: var(--corFundo);
+    background-attachment: fixed;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+}
+
+#menu > :nth-child(2){
     margin-left: 10px;
     margin-right: 10px;
-    z-index: 998;
-    background-color: var(--corFundo);
 }
 
 .sobreTela{
     z-index: 998;
     display: none;
+    overflow: auto;
 }
 
 .sobreTela.modal > div{
     top: 10%;
     position: absolute;
+    border-radius: 5px;
+}
+
+#sobretelaEscolherLivro > div{
+    width: 90%;
+    top: 5%;
+    bottom: 5%;
 }
 
 .sobreTela.aberto{
@@ -87,8 +101,9 @@ button:hover, .btnMenu:hover, #menuSuspenso > *:hover{
     max-width: 300px;
     border: 1px solid var(--corDestaque);
     padding: 5px;
-    background-color: var(--corFundo);
+    background-image: var(--corFundo);
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+    border-radius: 5px;
 }
 
 .sobreTela.acao .acaoConteudo{
@@ -122,25 +137,34 @@ button:hover, .btnMenu:hover, #menuSuspenso > *:hover{
 
 #conteudo{
     position: relative;
-    top: 30px;
+    top: 55px;
     padding: 10px;
-    height: calc(100vh - 30px);
+    height: calc(100vh - 55px);
 }
 
-.btnMenu, .tituloBarra{
-    background-color: var(--corPrimaria);
-    border: 1px solid black;
-    border-radius: 5px;
-    padding: 0;
-    padding-left: 2px;
+.areaBtnMenu{
+    display: flex;
+    align-items: center;
+}
+
+.areaBtnMenu:nth-of-type(2) > *{
+    margin-left: 10px;
+    margin-right: 10px;
+    align-items: self-start;
 }
 
 .btnMenu{
-    margin-top: 5px;
-    margin-bottom: 5px;
-    margin-left: 5px;
-    width: 25px;
-    height: 25px;
+    border: unset;
+    border-radius: 5px;
+    padding: 0;
+    padding-left: 2px;
+    padding-right: 2px;
+    margin-left: 3px;
+    margin-right: 3px;
+    height: 30px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
 }
 
 .tituloBarra{
@@ -149,13 +173,16 @@ button:hover, .btnMenu:hover, #menuSuspenso > *:hover{
     width: 100%;
     padding-left: 5px;
     padding-right: 5px;
-    margin-bottom: 5px;
+    margin-bottom: 10px;
+    border-bottom: 2px solid var(--corDestaque);
 }
 
 .btnOpcaoFiltro{
     width: max-content;
     height: max-content;
     margin-top: 0;
+    margin-left: 3px;
+    margin-right: 3px;
     font-weight: bold;
     font-size: 14px;
     text-align: center;
@@ -174,32 +201,39 @@ button:hover, .btnMenu:hover, #menuSuspenso > *:hover{
     animation: hrPraDireita 0.5s 1;
 }
 
-#menu > :nth-child(1){
-    margin-left: 0px;
+#btnUsuario{
+    padding: 0px;
+    border-radius: 100%;
+    border: unset;
+    object-fit: cover;
+    width: 25px;
+    height: 25px;
 }
 
-#menu :last-child{
-    margin-right: 5px;
-}
-
-::placeholder {
-    text-align: center; 
+#btnUsuario img{
+    width: 25px;
+    height: 25px;
+    border-radius: 100%;
 }
 
 #barraPesquisa{
-    width: unset;
-    flex-grow: 1;
     display: flex;
     padding: 0;
+    width: 30px;
+    overflow: hidden;
+    transition: 0.3s;
 }
 
 #campoPesquisa{
-    width: 100%;
     padding: 1px;
     padding-left: 5px;
     padding-right: 5px;
     margin: 2px;
     margin-left: 0;
+    background-color: unset;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    width: 100%;
 }
 
 #campoPesquisa:focus {
@@ -208,23 +242,25 @@ button:hover, .btnMenu:hover, #menuSuspenso > *:hover{
     background-color: white;
 }
 
-#btAbrirFiltros{
-    display: flex;
-    background-color: var(--corDestaque);
-    padding: 2px;
-    padding-left: 5px;
-    align-items: center;
+#btnLupaAbrirPesquisa{
+    padding: 5px;
+}
+
+#btnFiltrosAbrirFiltros{
+    margin-left: 10px;
+    margin-right: 10px;
 }
 
 #caixaPesquisa, #caixaFiltro{
     display: none;
     position: absolute;
-    background-color: var(--corPrimaria);
-    border: 1px solid black;
+    background-color: var(--corFundo2);
     padding: 10px;
     overflow-y: auto;
     overflow-x: hidden;
     border-radius: 5px;
+    transition: 0.3s;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
 }
 
 #caixaPesquisa:not(:empty).aberto{
@@ -283,7 +319,7 @@ button:hover, .btnMenu:hover, #menuSuspenso > *:hover{
 
 #menuSuspenso{
     background-color: var(--corPrimaria);
-    position: absolute;
+    position: fixed;
     top: 0;
     left: -200px;
     width: 200px;
@@ -305,6 +341,11 @@ button:hover, .btnMenu:hover, #menuSuspenso > *:hover{
     text-align: left;
     padding: 8px;
     border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+#menuSuspenso >*:hover{
+    transform: scale(1.03);
 }
 
 #menuSuspenso button{
@@ -389,6 +430,7 @@ input[type="radio"]:checked::before, input[type="checkbox"]:checked::before {
 
 .previewPesquisaImgLivro, .previewPesquisaImgUsuario{
     margin-right: 10px;
+    object-fit: cover;
 }
 
 .previewPesquisaImgLivro{
@@ -421,13 +463,15 @@ input[type="radio"]:checked::before, input[type="checkbox"]:checked::before {
 #caixaNotificacoes, .modal > div{
     background-color: var(--corFundo2);
     padding: 5px;
-    border: 1px solid black;
 }
 
 #caixaNotificacoes{
-    position: absolute;
+    position: fixed;
     right: 0;
     margin-right: 10px;
+    border-radius: 5px;
+    max-height: 60%;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);;
 }
 
 #caixaNotificacoes #qtdNotificacoes, .itemNotificacao .descartarNotificacao{
@@ -446,12 +490,14 @@ input[type="radio"]:checked::before, input[type="checkbox"]:checked::before {
 
 .itemNotificacao:hover{
     background-color: var(--corHover);
+    object-fit: cover;
 }
 
 .itemNotificacao img{
     width: 60px;
     height: 70px;
     margin: 5px;
+    object-fit: cover;
 }
 
 .tituloItemNotificacao{
@@ -537,8 +583,12 @@ input[type="radio"]:checked::before, input[type="checkbox"]:checked::before {
     background-color: unset;
     border: unset;
     background-image: url('icones/ellipsis-vertical-outline.svg');
-    width: 30px;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    width: 25px;
     height: 30px;
+    flex-shrink: 0;
 }
 
 /* PARTE DO BODY DO INDEX */
@@ -590,7 +640,16 @@ input[type="radio"]:checked::before, input[type="checkbox"]:checked::before {
 }
 
 #areaLivrosEmAlta, #areaLivrosSugeridos{
-    margin-bottom: 20px;
+    margin: 20px;
+    margin-bottom: 40px;
+    background-color: var(--corFundo2);
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    padding: 5px;
+}
+
+#areaLivrosEmAlta .tituloBarra, #areaLivrosSugeridos .tituloBarra{
+    font-size: 24px;
 }
 
 #conteudoLivrosEmAlta, #conteudoLivrosSugeridos{

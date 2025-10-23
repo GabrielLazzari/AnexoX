@@ -2,17 +2,27 @@
     overflow: hidden;
 }
 
-.paginacaoItens{
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
+.paginacao .paginacaoItens{
     overflow-x: hidden;
     overflow-y: auto;
     height: 100%;
     padding-bottom: 60px;
 }
 
-.paginacaoControle{
+.paginacao .paginacaoItensFlex{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.paginacao .paginacaoPesquisa{
+    width: 90%;
+    margin: auto;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.paginacao .paginacaoControle{
     border: 0px solid var(--corDestaque);
     background-color: white;
     box-shadow: 0px -3px 15px rgba(0, 0, 0, 0.5);
@@ -39,7 +49,7 @@
     height: 30px;
     border-radius: 100%;
     border: 1px solid var(--corDestaque);
-    background-color: var(--corFundo);
+    background-image: var(--corFundo);
     margin-left: 5px;
     margin-right: 5px;
 }
@@ -54,4 +64,16 @@
 
 .paginacaoControle .btnPagina .mover{
     width: 15px;
+}
+
+.btnCarregarMais{
+    background-color: unset;
+    border: unset;
+    border-radius: 5px;
+    color: var(--corDestaque);
+    font-weight: bold;
+}
+
+.btnCarregarMais:hover hr{
+    animation: hrPraDireita 0.5s 1;
 }

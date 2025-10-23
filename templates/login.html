@@ -8,26 +8,28 @@
     <title>Login</title>
 
     <link rel="stylesheet" type="text/css" href="static/css/animacoes.css">
-    <link rel="stylesheet" type="text/css" href="static/css/central.css">
+    <link rel="stylesheet" type="text/css" href="static/css/main.css">
 
 </head>
 <body>
     {% block conteudo %}
 
-    <div class="tituloPagina">Entrar</a></div>
+    <div class="imgFundoLogin" style="background-image: url('static/imagens/sistema/login2.png'); height: 100%;">
 
-    {% if pagina %}
-        <span style="color: red;">Para acessar a página de {{ pagina }} você deve estar logado.</span>
+    </div>
+
+        {% if pagina and pagina != "" %}
+        <span style="color: red; position: relative; background-color: var(--corFundo2);">Para acessar a página de {{ pagina }} você deve estar logado.</span>
     {% endif %}
 
     <form action="" method="post" id="formLogin" class="formUsuario">
-        <div style="width: 100%; max-width: unset; margin-bottom: 0px; display: flex; justify-content: center;">
+        <!--<div style="width: 100%; max-width: unset; margin-bottom: 0px; display: flex; justify-content: center;">
             <img src="static/imagens/sistema/login.png" alt="" style="width: 300px; ">
-        </div>
+        </div>-->
 
-        <div style="border: 1px solid var(--corDestaque);">
+        <div class="areaLogin">
             <div>
-                <label for="campoNome">Nome</label>
+                <label for="campoNome">Usuário</label>
                 <input type="text" name="campoNome" id="campoNome" value="{{nome}}" required>
             </div>
 

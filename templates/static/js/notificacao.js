@@ -12,12 +12,18 @@ function mudarCorIconeNotificacao(temNotificacao=false){
 }
 
 function conteudoHtmlNotificacao(notificacao){
+    var href = "";
+    var tag = "div";
+    if (notificacao.link != ""){
+        href = `href="${notificacao.link}"`
+        tag = "a"
+    }
     return `
         <div class="itemNotificacao" idNotificacao="${notificacao.id}">
             <img src="${notificacao.img}" alt="">
             <div>
                 <div class="tituloItemNotificacao">${notificacao.titulo}<button class="descartarNotificacao" onclick="removerNotificacao(this)">x</button></div>
-                <div class="conteudoItemNotificacao">${notificacao.conteudo}</div>
+                <${tag} ${href} class="conteudoItemNotificacao">${notificacao.conteudo}</${tag}>
             </div>
         </div>
     `;
@@ -65,13 +71,12 @@ function removerNotificacao(btn){
             toast.erro(retorno.erro);
         }else{
             if (retorno.qtdNotificacoes > 0){
-                conteudoNotificacoes.innerHTML = "";
                 mudarCorIconeNotificacao(true);
             }else{
                 conteudoNotificacoes.innerHTML = "Nenhuma nova notificação";
                 mudarCorIconeNotificacao(false);
             }
-            
+
             elqtdNotificacoes.innerHTML = `(${retorno.qtdNotificacoes})`
 
             nt.remove();

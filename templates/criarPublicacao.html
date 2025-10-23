@@ -2,6 +2,7 @@
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,100 +11,241 @@
     <link rel="stylesheet" type="text/css" href="static/css/animacoes.css">
     <link rel="stylesheet" type="text/css" href="static/css/central.css">
     <link rel="stylesheet" type="text/css" href="static/css/usuario.css">
+    <link rel="stylesheet" type="text/css" href="static/css/publicacao.css">
+
+
+
+
+
 </head>
+
 <body>
+
     {% block conteudo %}
+    <style src="static/css/editorjs/columns.css"></style>
+
+    <div id="conteudoLivro" style="display: none;">{{publicacao.conteudo}}</div>
+
+    <style>
+        .editorjs-wrapper {
+            border: 1px solid #eee;
+            border-radius: 5px;
+            padding: 0px;
+            margin-bottom: 10px;
+            box-shadow: 0 6px 18px #e8edfa80;
+        }
+
+        .ce-editorjsColumns_col {
+            border: 1px solid #eee;
+            border-radius: 5px;
+            gap: 10px;
+            padding-top: 10px;
+        }
+
+        .ce-editorjsColumns_col:focus-within {
+            box-shadow: 0 6px 18px #e8edfa80;
+        }
+
+        /*.cdx-simple-image__caption:has(.hidden) { display: none; }*/
+        .cdx-simple-image__caption {
+            display: none;
+        }
+
+        .ce-toolbar__actions {
+            padding: 0;
+        }
+
+        .codex-editor__redactor {
+            padding-bottom: 0px !important;
+        }
+
+        .select-plugin-livro{
+            border: 1px solid #eee;
+            padding: 5px;
+        }
+
+        .ce-toolbar {
+            /*left: auto !important;
+		right: -10px !important;  ajuste de distância lateral */
+        }
+    </style>
+    <style src="static/css/editorjs/editorjs-fix.css"></style>
+
+
+    <script src="static/js/editorjs/editorjs.js"></script>
+    <script src="static/js/editorjs/delimiter.js"></script>
+    <script src="static/js/editorjs/image.js"></script>
+    <script src="static/js/editorjs/editorjs-alert.js"></script>
+    <script src="static/js/editorjs/editorjs-selecionar-livro.js"></script>
+    <script src="static/js/editorjs/header.js"></script>
+    <script src="static/js/editorjs/link.js"></script>
+    <script src="static/js/editorjs/marker.js"></script>
+    <script src="static/js/editorjs/paragraph.js"></script>
+    <script src="static/js/editorjs/editorjs-columns.js"></script>
+    <script src="static/js/editorjs/list.js"></script>
 
     <div class="tituloPagina">Criar Publicação</div>
 
-    <form action="" method="post" id="formCadastro" class="formUsuario" enctype='multipart/form-data' ondrop="dropHandler(event)" ondragover="dragOverHandler(event)">
+    <div id="criarPublicacaoContainer">
+        <div id="criarPublicacaoEditorJs"></div>
+    </div>
 
-        <div style="max-width: 220px;">
-            <div class="acaoPublicacao">
-                <div class="tituloAcaoPublicacao">Tipo</div>
-                <div class="tipoPerfilUsuario">
-                    <div>
-                        <input type="checkbox" id="checkTipoLeitor" name="tipoUsuario" value="0" checked>
-                        <label for="checkTipoLeitor">Evento</label>
-                    </div>
-                    
-                    <div>
-                        <input type="checkbox" id="checkTipoAutor" name="tipoUsuario" value="1">
-                        <label for="checkTipoAutor">Anônimo</label>
-                    </div>
-                    
-                    <div>
-                        <input type="checkbox" id="checkTipoEditora" name="tipoUsuario" value="2">
-                        <label for="checkTipoEditora">Spoiler</label>
-                    </div>
-                </div>
-            </div>
+    <button class="ce-example__button" id="saveButton">
+        Salvar
+    </button>
 
-            <div class="acaoPublicacao">
-                <div class="tituloAcaoPublicacao">Referênciar um livro</div>
-                <div>
-                    <div id="areaSelecionarLivro">
-                        <div>
-                            <img src="static/imagens/livros/OsCriadoresDeCoincidencias.jpeg" alt="">
-                            Os Criadores de Conincidências
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="areaAdicionar" class="acaoPublicacao">
-                <div class="tituloAcaoPublicacao">Adicionar</div>
-                <div>
-                    <button type="button" onclick="adicionarConteudoTexto()"><img src="static/icones/text-outline.svg" title="Adicionar um Texto">Texto</button>
-                    <button type="button" onclick="adicionarConteudoImagem()"><img src="static/icones/image-outline.svg" title="Adicionar uma Imagem">Imagem</button>
-                    <button type="button" onclick="adicionarConteudoVideo()"><img src="static/icones/video-outline.svg" title="Adicionar um Vídeo">Vídeo</button>
-                </div>
-            </div>
-        </div>
+    <div id="sobretelaEscolherLivro" class="sobreTela modal">
         <div>
-            <div>
-                <label for="campoTitulo">Titulo</label>
-                <input type="text" name="campoTitulo" id="campoTitulo" value="{{publicacao.titulo}}" required>
-            </div>
-
-            <div>
-                <label for="campoTitulo">Conteúdo</label>
-                <div id="estruturaConteudoPublicacao">
-                    <div class="conteudoTexto">
-                        Lorem, ipsum dolor sit amet consectetur adipisicing elit. Aliquam sint voluptatum qui iure quaerat. Qui quos odit eius, iure cum inventore doloremque aperiam quis maxime voluptatibus? Dolorem, sequi. Eaque, deserunt.
-                    </div>
-                </div>
-            </div>
-
-            <div id="acoesLogin">
-                <button id="btnCancelarCadastro">Cancelar</button>
-                <button type="submit" id="btnSalvarCadastro">Salvar</button>
-            </div>
-
-            <span class="msgRetornoErro">{{ erro }}</span>
+            <div class="tituloBarra">Escolher um livro</div>
+            <div id="areaEscolherLivro"></div>
         </div>
-
-    </form>
+    </div>
 
     <script>
 
-        var estruturaConteudoPublicacao = document.getElementById('estruturaConteudoPublicacao');
+        let tools = {
+            header: Header,
+            // paragraph : editorjsParagraphLinebreakable,
+            paragraph: {
+                class: Paragraph,
+                inlineToolbar: true,
+            },
+            livro: {
+                class: SelecionarLivro,
+                config: {
+                    onClick: (data) => {
 
-        function adicionarConteudoTexto(){
+                    }
+                }
+            },
+            image: {
+                class: ImageTool,
+                config: {
+                    captionPlaceholder: 'Descricao',
+                    defaultCaption: '',
+                    uploader: {
+                        uploadByFile(file) {
+                            return new Promise((resolve, reject) => {
+                                const reader = new FileReader();
+                                reader.onload = () => {
+                                    // usamos base64 só para demonstração
+                                    resolve({
+                                        success: 1,
+                                        file: { url: reader.result }
+                                    });
+                                };
+                                reader.onerror = () => reject('Erro ao ler imagem');
+                                reader.readAsDataURL(file);
+                            });
+                        }
+                    }
+                }
+            },
+            delimiter: Delimiter,
+            marker: Marker,
+            alert: Alert,
 
+            columns: {
+                class: editorjsColumns,
+                config: {
+                    tools: {
+                        header: Header,
+                        alert: Alert,
+                        delimiter: Delimiter
+                    },
+                    EditorJsLibrary: EditorJS
+                }
+            },
+            list: {
+                class: EditorjsList,
+                inlineToolbar: true,
+                config: {
+                    defaultStyle: 'unordered'
+                },
+            }
         }
 
-        function adicionarConteudoImagem(){
-
+        var conteudoLivro = document.getElementById("conteudoLivro");
+        var dataEditor = {};
+        if (conteudoLivro && conteudoLivro.innerText.trim() != ""){
+            dataEditor = JSON.parse(conteudoLivro.innerText);
         }
 
-        function adicionarConteudoVideo(){
+        console.log(dataEditor)
 
-        }
+        editor = new EditorJS({
+            readOnly: false,
+            holder: 'criarPublicacaoEditorJs',
+            autofocus: true,
+            placeholder: 'Digite aqui seu texto ou adicione uma imagem...',
+            tools: tools,
+            data: dataEditor, // Imported from example_data.js
+
+            onReady: function () {
+                console.log("Delaying Save to launch Column Editors")
+
+                setTimeout(() => {
+                    //saveButton.click();
+                }, 2000)
+
+            },
+            onChange: function (e) {
+                console.log(e)
+                // console.log('something changed');
+            }
+        });
+
+        const saveButton = document.getElementById('saveButton');
+
+        saveButton.addEventListener('click', function () {
+            editor.save()
+                .then((savedData) => {
+                    //cPreview.show(savedData, document.getElementById("output"));
+                    console.log(savedData)
+                    fetch('/criarPublicacao', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            conteudo: savedData,
+                        })
+                    })
+                        .then(response => response.json())
+                        .then(retorno => {
+                            if (retorno.erro) {
+                                toast.erro(retorno.erro);
+                            } else {
+                                window.location.href = "usuario";
+                            }
+                        }).catch(error => { console.error('Erro:', error); });
+                })
+                .catch((error) => {
+                    console.error('Saving error', error);
+                });
+        });
+
+        var objPag = null;
 
         var areaSelecionarLivro = document.getElementById("areaSelecionarLivro");
+        if (areaSelecionarLivro) {
+            areaSelecionarLivro.addEventListener("click", function () {
+                abrirSobreTela('sobretelaEscolherLivro');
+                if (objPag == null) {
+                    objPag = new Paginacao("#areaEscolherLivro", {
+                        url: '/pesquisaLivros',
+                        conteudoHtml: conteudoHtmlLivroPesquisa,
+                        mostrarBarraPesquisa: true,
+                        clickItem: function (item) {
+                            areaSelecionarLivro.innerHTML = item.outerHTML;
+                            areaSelecionarLivro.firstChild.className = "livroSelecionadoPublicacao";
+                            fecharSobreTela('sobretelaEscolherLivro', true)
+                        }
+                    });
+                }
+            })
+        }
     </script>
 
     {% endblock %}
 </body>
+
 </html>

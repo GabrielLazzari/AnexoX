@@ -20,22 +20,50 @@
 
     {% block conteudo %}
 
+    <script src="static/js/publicacao.js"></script>
+
+    <style src="static/css/editorjs/editorjs-fix.css"></style>
+    <style>
+        .codex-editor__redactor{
+            padding-bottom: 0px !important;
+        }
+    </style>
+    <script src="static/js/editorjs/editorjs.js"></script>
+    <script src="static/js/editorjs/delimiter.js"></script>
+    <script src="static/js/editorjs/image.js"></script>
+    <script src="static/js/editorjs/editorjs-alert.js"></script>
+    <script src="static/js/editorjs/editorjs-selecionar-livro.js"></script>
+    <script src="static/js/editorjs/header.js"></script>
+    <script src="static/js/editorjs/link.js"></script>
+    <script src="static/js/editorjs/marker.js"></script>
+    <script src="static/js/editorjs/paragraph.js"></script>
+    <script src="static/js/editorjs/editorjs-columns.js"></script>
+    <script src="static/js/editorjs/list.js"></script>
+
     <div id="dataDados" style="display: none;">{{ filtros | tojson | safe if filtros else "{}" }}</div>
 
     <div id="btnsAlterarFiltros">
-        <button id="btnFiltroRapidoLivros" class="btnMenu btnOpcaoFiltro" onclick="trocarTipoFiltro('livros')">Livros<hr></button>
-        <button id="btnFiltroRapidoLeitores" class="btnMenu btnOpcaoFiltro" onclick="trocarTipoFiltro('leitores')">Leitores<hr></button>
-        <button id="btnFiltroRapidoAutores" class="btnMenu btnOpcaoFiltro" onclick="trocarTipoFiltro('autores')">Autores<hr></button>
-        <button id="btnFiltroRapidoEditoras" class="btnMenu btnOpcaoFiltro" onclick="trocarTipoFiltro('editoras')">Editoras<hr></button>
-        <button id="btnFiltroRapidoPublicacoes" class="btnMenu btnOpcaoFiltro" onclick="trocarTipoFiltro('publicacoes')">Publicações<hr></button>
+        <button id="btnFiltroRapidoLivros" class="btnOpcaoFiltro" onclick="trocarTipoFiltro('livros')">Livros<hr></button>
+        <button id="btnFiltroRapidoLeitores" class="btnOpcaoFiltro" onclick="trocarTipoFiltro('leitores')">Leitores<hr></button>
+        <button id="btnFiltroRapidoAutores" class="btnOpcaoFiltro" onclick="trocarTipoFiltro('autores')">Autores<hr></button>
+        <button id="btnFiltroRapidoEditoras" class="btnOpcaoFiltro" onclick="trocarTipoFiltro('editoras')">Editoras<hr></button>
+        <button id="btnFiltroRapidoPublicacoes" class="btnOpcaoFiltro" onclick="trocarTipoFiltro('publicacoes')">Publicações<hr></button>
     </div>
 
     <div id="areaPesquisa"></div>
 
+    <script src="static/js/comentario.js"></script>
     <script>
         var valoresFiltro = JSON.parse(document.getElementById('dataDados')?.innerText || '{}');
         console.log(valoresFiltro)
-        const pag = new Paginacao(document.getElementById('areaPesquisa'), valoresFiltro, valoresFiltro.qtdItens);
+
+        const pag = new Paginacao("#areaPesquisa", {
+            url: '/pesquisa',
+            filtros: valoresFiltro,
+            flex: valoresFiltro['checkPublicacoes'] ? false : true,
+            paginaAtual: valoresFiltro['paginaAtual'] ?? 1,
+            qtdTotalElementos: valoresFiltro.qtdItens
+        });
     </script>
 
     {% endblock %}

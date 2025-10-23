@@ -13,13 +13,26 @@
 <body>
     {% block conteudo %}
 
-    <div style="display: none;" id="idUsuario">{{usuario.id}}</div>
+    <style src="static/css/editorjs/editorjs-fix.css"></style>
+    <style>
+        .codex-editor__redactor{
+            padding-bottom: 0px !important;
+        }
+    </style>
+    <script src="static/js/editorjs/editorjs.js"></script>
+    <script src="static/js/editorjs/delimiter.js"></script>
+    <script src="static/js/editorjs/image.js"></script>
+    <script src="static/js/editorjs/editorjs-alert.js"></script>
+    <script src="static/js/editorjs/editorjs-selecionar-livro.js"></script>
+    <script src="static/js/editorjs/header.js"></script>
+    <script src="static/js/editorjs/link.js"></script>
+    <script src="static/js/editorjs/marker.js"></script>
+    <script src="static/js/editorjs/paragraph.js"></script>
+    <script src="static/js/editorjs/editorjs-columns.js"></script>
+    <script src="static/js/editorjs/list.js"></script>
 
-    {% if usuario.usuario_tela_logado %}
-    <div class="tituloPagina">Meu perfil <a href="logout">Sair do Perfil</a></div>
-    {% else %}
-    <div class="tituloPagina">Perfil de {{usuario.nome}}</div>
-    {% endif %}
+    <div style="display: none;" id="idUsuario">{{usuario.id}}</div>
+    <div style="display: none;" id="interacaoUsuario">{{interacao}}</div>
     
     <div id="informacoesPerfil" class="blocoInfoPerfil">
 
@@ -38,7 +51,7 @@
                 {% endfor %}
             </div>
             {% if usuario.preferencias|length  > 0 %}
-            <a onclick="abrirSobreTela('sobretelaMostrarPreferencias')">Visualizar Preferências</a>
+            <a class="abrirMaisPreferencias" onclick="abrirSobreTela('sobretelaMostrarPreferencias')">Visualizar Preferências</a>
             {% else %}
             <div>Nenhuma preferência</div>
             {% endif %}
@@ -48,6 +61,8 @@
             {% if usuario.usuario_tela_logado %}
             <a href="cadastro">Editar Perfil</a>
             <button onclick="abrirSobreTela('caixaCompartilharPerfil');">Compartilhar Perfil</button>
+            <a href="logout">Sair do Perfil</a>
+            <button onclick="recomendarLivro()">Recomendar Livro</button>
             {% elif current_user.is_authenticated %}
             {% if usuario.seguindo %}
             <button id="btnSeguirUsuario">Deixar de Seguir</button>
@@ -59,7 +74,6 @@
             <button>Faça login para interagir</button>
             {% endif %}
         </div>
-
     </div>
 
     <div id="interacoesPerfil" class="blocoInfoPerfil">
@@ -78,33 +92,33 @@
                 {% else %}
                 <div class="tituloBarra">Listas</div>
                 {% endif %}
-                <div id="areaListasUsuario">
-
-                </div>
+                <div id="areaListasUsuario"></div>
             </div>
             <div>
                 {% if usuario.usuario_tela_logado %}
-                <button class="btnCriarLista" onclick="executarPesquisa('livros')">Adicionar Livro</button>
+                <button class="btnCriarLista" onclick="abrirEscolherLivro()">Adicionar Livro</button>
                 {% endif %}
                 <div id="areaDescricaoLista"></div>
-                <div id="areaVerLivrosLista">
-
-                </div>
+                <div id="areaVerLivrosLista"></div>
             </div>
         </div>
 
-        <div id="interacaoPerfilSeguindoConteudo">
-            
-        </div>
+        <div id="interacaoPerfilSeguindoConteudo"></div>
 
-        <div id="interacaoPerfilSeguidoresConteudo">
-            
-        </div>
+        <div id="interacaoPerfilSeguidoresConteudo"></div>
 
         <div id="interacaoPerfilPublicacoesConteudo">
-            <a href="criarPublicacao">Criar Publicação</a>
-            <a href="criarPublicacao">Minhas Publicações</a>
-            <a href="criarPublicacao">Publicações Salvas</a>
+            {% if usuario.usuario_tela_logado %}
+            <div id="controlePublicacoes">
+                <div class="tituloBarra">Minhas Publicações</div>
+                <a href="criarPublicacao" class="btnCriarLista">Criar Publicação</a>
+                <div id="btnMinhasPublicacoes" class="listapublicacaoitem" idlistapublicacao="minhaspublicacoes" onclick="selecionarListaPubliacao(this)">Minhas Publicações</div>
+                <div id="areaListasPublicacoes"></div>
+            </div>
+            {% endif %}
+            <div id="areaVerPublicacoesLista">
+
+            </div>
         </div>
     </div>
 
@@ -128,21 +142,49 @@
         </div>
     </div>
 
-    {% if usuario.usuario_tela_logado %}
     <div id="sobretelaGerenciarLista" class="sobreTela acao">
         <div class="tituloBarra">Gerenciar Lista</div>
         <div class="acaoConteudo">
+            {% if usuario.usuario_tela_logado %}
             <button onclick="excluirLista()">
-                <img src="static/icones/duplicate-outline.svg" class="svg-m" alt=""> Excluir
+                <img src="static/icones/trash-outline.svg" class="svg-m" alt=""> Excluir
             </button>
             <button onclick="abrirSobreTelaListaEditar()">
                 <img src="static/icones/duplicate-outline.svg" class="svg-m" alt=""> Editar
             </button>
+            {% else %}
+            <button id="btnSeguirLista" onclick="seguirLista()" title="Quando houver uma atualização dessa lista, você será notificado(a)">
+                Seguir
+            </button>
+            {% endif %}
         </div>
     </div>
+
+    {% if usuario.usuario_tela_logado %}
+    <div id="sobretelaGerenciarListaPublicacoes" class="sobreTela acao">
+        <div class="tituloBarra">Gerenciar Lista</div>
+        <div class="acaoConteudo">
+            <button onclick="excluirListaPublicacao()">
+                <img src="static/icones/trash-outline.svg" class="svg-m" alt=""> Excluir
+            </button>
+            <button onclick="abrirSobreTelaListaPublicacoesEditar()">
+                <img src="static/icones/duplicate-outline.svg" class="svg-m" alt=""> Editar
+            </button>            
+        </div>
+    </div>
+
+    <div id="sobretelaEscolherLivro" class="sobreTela modal">
+        <div>
+            <div class="tituloBarra">Escolher um livro</div>
+            <div id="areaEscolherLivro"></div>
+        </div>
+    </div>
+
     {% endif %}
 
     <script src="static/js/usuario.js"></script>
+    <script src="static/js/comentario.js"></script>
+    <script src="static/js/publicacao.js"></script>
 
     {% endblock %}
 </body>

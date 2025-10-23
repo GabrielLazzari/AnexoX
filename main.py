@@ -1,27 +1,38 @@
+from datetime import timedelta
 import hashlib
+import json
 import os
 
-from flask import Flask, render_template, request, redirect, session, flash, url_for, jsonify
+from flask import Flask, g, render_template, request, redirect, session, flash, url_for, jsonify
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from functools import wraps
+from sqlalchemy import inspect
 from unidecode import unidecode
 from werkzeug.utils import secure_filename
 
+from publicacao import publicacao_bp
+
 from python.banco import db
-from python.crawler import finalizar_crawler_drivers
+from python.cache import init_cache, cache, session_key
+#from python.crawler import finalizar_crawler_drivers
+from python.modelos.comentario import *
 from python.modelos.usuario import *
 from python.modelos.genero_literario import *
 from python.modelos.livro import *
 from python.modelos.publicacao import *
+from python.modelos.reacao import *
 from python.modelos.recomendacao import *
 from python.modelos.notificacao import *
 from python.pesquisa import processar_filtros, sugestoes_pesquisa, sugestao_pesquisa_livros
 
 app = Flask(__name__, static_folder='templates/static')
+app.register_blueprint(publicacao_bp)
 app.secret_key = 'ola'
 lm = LoginManager(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///teste_sql_alchemy.db'
 app.config['UPLOAD_FOLDER'] = 'templates\\static\\imagens\\usuarios'
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
+init_cache(app)
 db.init_app(app)
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
@@ -33,6 +44,22 @@ def hash(txt):
 @lm.user_loader
 def user_loader(id):
     return db.session.query(Usuario).filter_by(id=id).first()
+
+
+def retornar_generos_literario():
+    generos = db.session.query(GeneroLiterario).filter_by().all()
+
+    return [g.dicionario() for g in generos]
+
+
+@app.before_request
+def carregar_dados():
+    g.generos = retornar_generos_literario()
+
+
+@app.context_processor
+def inject_variavel():
+    return dict(generos=g.get("generos", None))
 
 
 def conexao_commit(f):
@@ -57,28 +84,30 @@ def inicio():
 def login():
     pagina_solicitada = unidecode(request.args.get("pagina", "usuario").lower())
 
-    print(request.method)
+    print(pagina_solicitada, request.args)
 
     if request.method == "GET":
-        return render_template("login.html", pagina=request.args.get("pagina"), nome="", senha="")
+        return render_template("login.html", nome="", senha="", **request.args)
     elif request.method == "POST":
         nome = request.form['campoNome']
         senha = request.form['campoSenha']
 
         usuario = db.session.query(Usuario).filter_by(nome=nome, senha=hash(senha)).first()
         if not usuario:
-            return render_template("login.html", erro="Nome ou senha incorretos",
-                                   pagina=request.args.get("pagina"), nome=nome, senha=senha)
+            return render_template("login.html", erro="Nome ou senha incorretos", nome=nome, senha=senha, **request.args)
 
         login_user(usuario)
-        return redirect(url_for(pagina_solicitada))
+        dic_request = request.args.to_dict()
+        if "pagina" in dic_request:
+            del dic_request["pagina"]
+        print('pagina_solicitada', pagina_solicitada, dic_request)
+        return redirect(url_for(pagina_solicitada, **dic_request))
 
 
 @app.route("/cadastro", methods=["GET", "POST"])
 def cadastro():
     pagina_solicitada = unidecode(request.args.get("pagina", "usuario").lower())
 
-    print(request.form)
     if request.method == "GET":
         usuario = Usuario()
         if current_user.is_authenticated:
@@ -86,38 +115,20 @@ def cadastro():
         return render_template("cadastro.html", usuario=usuario.dicionario(), editando_usuario=current_user.is_authenticated)
 
     elif request.method == "POST":
-        if current_user.is_authenticated:
-            novo_usuario = db.session.query(Usuario).filter_by(id=current_user.id).first()
-            novo_usuario.nome = request.form['campoNome']
-            novo_usuario.email = request.form['campoEmail']
-            novo_usuario.cnpj = request.form['campoCnpj']
-            novo_usuario.tipo = TipoUsuario(int(request.form['tipoUsuario']))
-        else:
-            novo_usuario = Usuario(
-                nome=request.form['campoNome'],
-                senha=request.form['campoSenha'],
-                senha_confirmar=request.form['campoConfirmarSenha'],
-                email=request.form['campoEmail'],
-                cnpj=request.form['campoCnpj'],
-                tipo=TipoUsuario(int(request.form['tipoUsuario'])),
-            )
+        novo_usuario = Usuario(
+            id = current_user.id if current_user.is_authenticated else None,
+            nome=request.form['campoNome'],
+            senha=request.form['campoSenha'],
+            senha_confirmar=request.form['campoConfirmarSenha'],
+            email=request.form['campoEmail'],
+            cnpj=request.form['campoCnpj'],
+            tipo=TipoUsuario(int(request.form['tipoUsuario'])),
+            img = request.files.get('imagem', ''),
+            preferencias_literarias = request.form.get("campoPreferenciasLiterarias", "").replace(" ", "").split(";")
+        )
 
-        print(novo_usuario.__dict__)
-
-        if (msg_erro := novo_usuario.validar_campos()) != "":
+        if (msg_erro := novo_usuario.gravar()) != "":
             return render_template("cadastro.html", erro=msg_erro, usuario=novo_usuario.dicionario(), editando_usuario=current_user.is_authenticated)
-
-        if not current_user.is_authenticated:
-            usuario = db.session.query(Usuario).filter_by(nome=novo_usuario.nome, senha=hash(novo_usuario.senha)).first()
-            if usuario:
-                return render_template("cadastro.html", erro="Um usuário já existe cadastrado com esse nome", usuario=novo_usuario.dicionario(), editando_usuario=current_user.is_authenticated)
-
-            novo_usuario.senha = hash(novo_usuario.senha)
-            db.session.add(novo_usuario)
-
-        db.session.commit()
-        novo_usuario.atualizar_caminho_imagem(request.files.get('imagem', ''), app.config['UPLOAD_FOLDER'])
-        novo_usuario.atualizar_preferencias(request.form.get('campoPreferenciasLiterarias', "").split(";"))
 
         login_user(novo_usuario)
 
@@ -131,13 +142,64 @@ def logout():
     return redirect(url_for("inicio"))
 
 
+@app.route('/ajuda')
+def ajuda():
+    return render_template('ajuda.html')
+
+
+@app.route("/retornarGenerosLiterarios", methods=["GET", "POST"])
+def retornar_generos_literarios_tela():
+    return jsonify(retornar_generos_literario())
+
+
+def retornar_filtros_vazio(tipoFiltro="livros", livros=False, leitores=False, autores=False, editoras=False):
+    tipoFiltro = tipoFiltro.strip()
+    if livros or tipoFiltro == "" or "livro" in tipoFiltro:
+        livros=True; leitores=False; autores=False; editoras=False
+    elif leitores or "leitor" in tipoFiltro:
+        livros=False; leitores=True; autores=False; editoras=False
+    elif autores or "autor" in tipoFiltro:
+        livros=False; leitores=False; autores=True; editoras=False
+    elif editoras or "editora" in tipoFiltro:
+        livros=False; leitores=False; autores=False; editoras=True
+
+    dic_generos = {v.nomeCampo: False for v in retornar_generos_literario()}
+
+    dic_padrao = {
+        "campoPesquisa": "",
+        "campoPesquisaBusca": "",
+        "checkAutores": autores,
+        "checkCrescente": True,
+        "checkDecrescente": False,
+        "checkEditoras": editoras,
+        "checkEmalta": False,
+        "checkSugeridos": False,
+        "checkLeitores": leitores,
+        "checkLivros": livros,
+        "checkOrdenarAutor": False,
+        "checkOrdenarDatapublicacao": True,
+        "checkOrdenarEditora": False,
+        "checkOrdenarTitulo": False,
+        "checkPublicacoes": False,
+        "checkTodosEstilos": False,
+        "limit": 20,
+        "primeiroretorno": True,
+        "skip": 0,
+        "paginaAtual": 1
+    }
+
+    return dic_generos | dic_padrao
+
+
 @app.route('/pesquisa', methods=['POST', 'GET'])
 def pesquisa():
     filtros = request.form.to_dict()
-    print('pesquisa', filtros)
     if len(filtros) == 0:
-        filtros = request.get_json()
-        print(filtros)
+        if request.is_json:
+            filtros = request.get_json()
+        else:
+            tipoFiltro = request.args.get('tipoFiltro', 'livros')
+            filtros = retornar_filtros_vazio(tipoFiltro=tipoFiltro)
     else:
         for chave, valor in filtros.items():
             if valor.lower() == 'true':
@@ -145,9 +207,9 @@ def pesquisa():
             elif valor.lower() == 'false':
                 filtros[chave] = False
 
-    if filtros['campoPesquisa'].strip() != "":
+    if filtros.get('campoPesquisa', '').strip() != "":
         id_usuario = current_user.id if current_user.is_authenticated else 0
-        adicionar_historico_pesquisa(id_usuario, filtros['campoPesquisa'].strip())
+        adicionar_historico_pesquisa(id_usuario, filtros.get('campoPesquisa', "").strip())
 
     if filtros.get('primeiroretorno', True):
         print('Primeiro retorno')
@@ -167,15 +229,24 @@ def pesquisa():
         print('Segundo retorno')
         retorno = processar_filtros(filtros)
         retorno = [r.dicionario() for r in retorno]
-        print(filtros['limit'], filtros['skip'])
         #print(retorno)
         return jsonify({'erro': '', 'dados': retorno})
+
+
+@app.route('/pesquisaLivros', methods=['POST', 'GET'])
+def pesquisa_livros():
+    filtros = request.get_json()
+    filtros['checkLivros'] = True
+    print('filtrollll', filtros)
+    retorno = processar_filtros(filtros)
+    retorno = [r.dicionario() for r in retorno]
+    return jsonify({'erro': '', 'dados': retorno})
 
 
 @app.route('/sugestaoPesquisa', methods=['GET', 'POST'])
 def sugestao_pesquisa():
     dados = request.get_json()
-    print('sugestao', dados)
+
     id_usuario = current_user.id if current_user.is_authenticated else 0
 
     retorno = sugestoes_pesquisa(dados['pesquisa'].strip(), id_usuario)
@@ -192,12 +263,13 @@ def sugestao_pesquisa_livro():
 
 @app.route('/usuario', methods=['GET', 'POST'])
 def usuario():
-    if not current_user.is_authenticated:
-        return redirect(url_for("login", pagina="Usuário"))
-
     id_usuario = request.args.get('id', '0')
+    interacao = request.args.get('interacao', '')
+    pagina = None if request.args.get('ignore', None) is not None else "Usuário"
 
-    print("id", id_usuario)
+    if not current_user.is_authenticated:
+        return redirect(url_for("login", pagina=pagina, id=id_usuario))
+
     usuario_tela_logado = False
 
     print('usuario_atual', current_user, 'autenticado:', current_user.is_authenticated, 'anonimo:', current_user.is_anonymous)
@@ -211,22 +283,21 @@ def usuario():
         usuario = db.session.query(Usuario).filter_by(id=id_usuario).first()
         if not usuario:
             #flash("Usuário não encontrado", "error")
-            return redirect(url_for("pesquisa"))
+            return redirect(url_for("pesquisa", tipoFiltro='autor'))
         alterar_pessoa_em_alta(current_user.id, usuario.id, clicado=True)
 
     usuario.usuario_tela_logado = usuario_tela_logado
 
-    return render_template('usuario.html', usuario=usuario.dicionario(usuario_tela_logado=usuario_tela_logado))
+    return render_template('usuario.html', usuario=usuario.dicionario(usuario_tela_logado=usuario_tela_logado), interacao=interacao)
 
 
 @app.route('/excluirUsuario', methods=['GET', 'POST'])
 def excluir_usuario():
-    id_usuario = request.args.get('id', '0')
+    if not current_user.is_authenticated:
+        return jsonify({'erro': 'Você só pode excluir a si mesmo estando logado'})
 
-    usuario = db.session.query(Usuario).filter_by(id=id_usuario).first()
-    if usuario:
-        db.session.delete(usuario)
-        db.session.commit()
+    usuario = db.session.query(Usuario).filter_by(id=current_user.id).first()
+    usuario.excluir()
 
     return redirect(url_for("inicio"))
 
@@ -249,9 +320,6 @@ def retornar_usuarios_seguindo():
 
     usuarios_seguindo = UsuarioSeguir.query.filter_by(usuario_seguidor_id=int(valores["idUsuario"])).all()
 
-    print('u', {'usuarios': [u.usuario_seguindo.dicionario() for u in usuarios_seguindo]})
-    print('u', {'usuarios': [u.usuario_seguidor.dicionario() for u in usuarios_seguindo]})
-
     return jsonify({'erro': '', 'usuarios': [u.usuario_seguindo.dicionario() for u in usuarios_seguindo]})
 
 
@@ -261,9 +329,36 @@ def retornar_usuarios_seguidores():
 
     usuarios_seguidores = UsuarioSeguir.query.filter_by(usuario_seguindo_id=int(valores["idUsuario"])).all()
 
-    print('dores', {'usuarios': [u.usuario_seguidor.dicionario() for u in usuarios_seguidores]})
-
     return jsonify({'erro': '', 'usuarios': [u.usuario_seguidor.dicionario() for u in usuarios_seguidores]})
+
+
+@app.route('/gerarRecomendacaoLivro', methods=['GET', 'POST'])
+def gerar_recomendacao_livro():
+    if not current_user.is_authenticated:
+        return jsonify({'erro': 'Deve estar logado para acessar esta funcionalidade.'})
+    
+    calcular_recomendacao_livro()
+
+    return jsonify({})
+
+
+def retornar_idlivro_cache(id_livro):
+    livros_cache = cache.get(session_key('livro_cache'))
+    if isinstance(id_livro, str) and livros_cache is not None and id_livro in livros_cache:
+        livro = livros_cache[id_livro]
+        if isinstance(livro, Livro) and inspect(livro).transient:
+            livro.id = None
+            gravar_livro(livro)
+            db.session.flush()
+            livros_cache[id_livro] = livro.id
+            cache.set(session_key('livro_cache'), livros_cache)
+            return livro.id
+        elif isinstance(livro, Livro) and not inspect(livro).transient:
+            livros_cache[id_livro] = livro.id
+            cache.set(session_key('livro_cache'), livros_cache)
+            return livro.id
+        return livros_cache[id_livro]
+    return id_livro
 
 
 @app.route('/livro', methods=['GET', 'POST'])
@@ -272,62 +367,93 @@ def livro():
 
     print("id", id_livro)
 
-    # Tentar buscar o livro no banco de dados
-    livro_db = None
-    if id_livro and id_livro != '0':
-        try:
-            livro_db = db.session.query(Livro).filter_by(id=int(id_livro)).first()
+    img_usuario = ""
+    reacao_usuario = ""
+
+    livros_cache = cache.get(session_key('livro_cache'))
+
+    if isinstance(id_livro, str) and livros_cache is not None and id_livro in livros_cache:
+        if not isinstance(livros_cache[id_livro], Livro):
+            id_livro = livros_cache[id_livro]
+            return redirect(url_for("livro", id=id_livro))
+        else:
             if current_user.is_authenticated:
-                alterar_livro_em_alta(current_user.id, livro_db.id, clicado=True)
-            else:
-                alterar_livro_em_alta(0, livro_db.id, clicado=True)
-        except:
-            pass
+                img_usuario = current_user.img
+            return render_template('livro.html', livro=livros_cache[id_livro].dicionario(), img_usuario=img_usuario, reacao_usuario=reacao_usuario)
 
-    # Se encontrou o livro no banco, usar os dados reais
-    if livro_db:
-        livro_dados = livro_db.dicionario()
+    try:
+        id_livro = int(id_livro)
+    except:
+        return redirect(url_for("pesquisa"))
+
+    livro = db.session.query(Livro).filter_by(id=id_livro).first()
+    if livro is None:
+        return redirect(url_for("pesquisa"))
+
+    if current_user.is_authenticated:
+        alterar_livro_em_alta(current_user.id, livro.id, clicado=True)
+        img_usuario = current_user.img
+        reacao_usuario = db.session.query(Reacao).filter_by(usuario_id=current_user.id, origem=OrigemReacao.Livro, origem_id=livro.id).first()
+        if reacao_usuario:
+            reacao_usuario = reacao_usuario.reacao.nome.lower().replace(" ", "")
+        else:
+            reacao_usuario = ""
     else:
-        # Dados de exemplo para demonstração
-        livro_dados = {
-            'id': id_livro,
-            'titulo': 'Senhora',
-            'autor': 'José de Alencar',
-            'editora': 'Saraiva',
-            'data_publicacao': '01/01/1875',
-            'estilo': 'Romance',
-            'numero': '1',
-            'descricao': 'Senhora é um romance urbano de José de Alencar, publicado em 1875. A obra retrata a sociedade fluminense do século XIX, focando na história de Aurélia Camargo, uma moça que usa sua herança para comprar um marido, Fernando Seixas, como forma de vingança.',
-            'imagem': 'Senhora.png'
-        }
-    
-    # Comentários de exemplo (aqui você pode implementar um modelo de comentários)
-    comentarios_exemplo = [
-        {
-            'id': 1,
-            'texto': 'Excelente livro! A narrativa é envolvente e retrata muito bem a sociedade da época.',
-            'usuario': {
-                'nome': 'Ana Silva',
-                'avatar': 'default.jpg'
-            }
-        },
-        {
-            'id': 2,
-            'texto': 'Um clássico da literatura brasileira que todos deveriam ler. A crítica social é muito atual.',
-            'usuario': {
-                'nome': 'Carlos Santos',
-                'avatar': 'default.jpg'
-            }
-        }
-    ]
+        alterar_livro_em_alta(0, livro.id, clicado=True)
 
-    return render_template('livro.html', livro=livro_dados, comentarios=comentarios_exemplo)
+    return render_template('livro.html', livro=livro.dicionario(), img_usuario=img_usuario, reacao_usuario=reacao_usuario)
+
+
+@app.route('/gravarReacaoLivro', methods=['GET', 'POST'])
+def gravar_reacao_livro():
+    if not current_user.is_authenticated:
+        return jsonify({'erro': 'Deve estar logado para reagir o livro.'})
+    
+    valores = request.get_json()
+
+    reacao_tipo = db.session.query(ReacaoTipo).filter_by(nome=valores['reacao']).first()
+    if not reacao_tipo and valores['reacao'].strip() != "":
+        return jsonify({'erro': 'A reação não é permitida.'})
+
+    id_livro = retornar_idlivro_cache(valores['idLivro'])
+
+    livro = db.session.query(Livro).filter_by(id=int(id_livro)).first()
+    if livro is None:
+        return jsonify({'erro': 'O livro não existe ou foi alterado. Recarregue a página e tente novamente.'})
+    
+    reacao = db.session.query(Reacao).filter_by(usuario_id=current_user.id, origem=OrigemReacao.Livro, origem_id=livro.id).first()
+    if reacao:
+        if valores['reacao'].strip() == "":
+            db.session.delete(reacao)
+            alterar_livro_em_alta(current_user.id, livro.id, reagido=False)
+
+        elif reacao.reacao.nome != reacao_tipo.nome:
+            reacao.reacao = reacao_tipo
+
+        db.session.commit()
+
+    else:
+        nova_reacao = Reacao(
+            usuario_id = current_user.id,
+            reacao = reacao_tipo,
+            origem = OrigemReacao.Livro,
+            origem_id = livro.id
+        )
+        alterar_livro_em_alta(current_user.id, livro.id, reagido=True)
+        db.session.add(nova_reacao)
+        db.session.commit()
+    
+    return jsonify({'erro': ''})
 
 
 @app.route('/retornarListasLivro', methods=['GET', 'POST'])
-def retornar_listas_livro():    
+def retornar_listas_livro():
+    if not current_user.is_authenticated:
+        return jsonify({'erro': 'Deve estar logado para acessar esta funcionalidade.'})
+
     valores = request.get_json()
     id_usuario = int(valores.get('idUsuario', 0))
+    id_usuario_tela = int(valores.get('idUsuario', 0))
     id_usuario_atual = 0
     if current_user.is_authenticated:
         id_usuario_atual = current_user.id
@@ -335,20 +461,47 @@ def retornar_listas_livro():
     if id_usuario == 0 and current_user.is_authenticated:
         id_usuario = current_user.id
 
-    listas = db.session.query(ListaLivro).filter_by(usuario_id=id_usuario).all()
+    buscar_apenas_livros = False
+    livros = []
+    qtd_livros = db.session.query(Livro).filter_by(autor_id=id_usuario).count()
+
+    if id_usuario == current_user.id:
+        listas = db.session.query(ListaLivro).filter_by(usuario_id=id_usuario).all()
+    elif db.session.query(UsuarioSeguir).filter_by(usuario_seguidor_id=current_user.id, usuario_seguindo_id=id_usuario_tela).first():
+        listas = db.session.query(ListaLivro).filter(ListaLivro.usuario_id==id_usuario, or_(ListaLivro.visibilidade==VisibilidadeLivro.Seguindo, ListaLivro.visibilidade==VisibilidadeLivro.Publica)).all()
+    else:
+        listas = db.session.query(ListaLivro).filter_by(usuario_id=id_usuario, visibilidade=VisibilidadeLivro.Publica).all()
+
+    if qtd_livros > 0 and len(listas) == 0 and id_usuario_tela != current_user.id:
+        buscar_apenas_livros = True
+        livros = [l.dicionario() for l in db.session.query(Livro).filter_by(autor_id=id_usuario).all()]
+    elif qtd_livros > 0:
+        pass
+        #listas.insert(0, {
+        #    'id': 'livrosproprios',
+        #    'nome': "Meus Livros",
+        ##    'descricao': "Livros que eu escrevi",
+        #    'visibilidade': VisibilidadeLivro.Publica,
+        #    'usuario_id': id_usuario
+        #})
     
     return jsonify({
         'erro': '' if current_user.is_authenticated else 'Deve estar logado para acessar esta funcionalidade.',
-        'listas': [{**lista.dicionario(), 'usuario_id': id_usuario_atual} for lista in listas]
+        'listas': [{**lista.dicionario(), 'usuario_id': id_usuario_atual} for lista in listas],
+        'buscar_apenas_livros': buscar_apenas_livros,
+        'livros': livros
     })
 
 
 @app.route('/retornarListaLivro', methods=['GET', 'POST'])
-def retornar_lista_livro():    
-    valores = request.get_json()
-    usuario_id = int(valores.get('idUsuario', 0))
+def retornar_lista_livro():
+    if not current_user.is_authenticated:
+        return jsonify({'erro': 'Deve estar logado para acessar esta funcionalidade.'})
 
-    lista = db.session.query(ListaLivro).filter_by(id=valores['idLista'], usuario_id=usuario_id).first()
+    valores = request.get_json()
+    #usuario_id = int(valores.get('idUsuario', 0))
+
+    lista = db.session.query(ListaLivro).filter_by(id=valores['idLista'], usuario_id=current_user.id).first()
     if lista:
         lista = lista.dicionario()
         lista['usuario_id'] = current_user.id
@@ -365,11 +518,13 @@ def controle_lista_livro():
     valores = request.get_json()
     valores['id'] = int(valores.get('id', 0))
 
+    alterada = False
+
     nova_lista = ListaLivro(
         usuario_id=current_user.id,
         nome=valores['nome'].strip(),
         descricao=valores.get('descricao', '').strip(),
-        visibilidade = Visibilidade(int(valores.get('visibilidade', 0)))
+        visibilidade = VisibilidadeLivro(int(valores.get('visibilidade', 0)))
     )
 
     if (msg_erro := nova_lista.validar_campos()) != "":
@@ -392,10 +547,11 @@ def controle_lista_livro():
         lista.nome = nova_lista.nome
         lista.descricao = nova_lista.descricao
         lista.visibilidade = nova_lista.visibilidade
+        alterada = True
         
     db.session.commit()
 
-    return jsonify({'erro': '', 'lista': lista.dicionario()})
+    return jsonify({'erro': '', 'lista': lista.dicionario(), 'alterada': alterada})
 
 
 @app.route('/apagarListaLivro', methods=['GET', 'POST'])
@@ -409,14 +565,14 @@ def apagar_lista_livro():
     if not lista:
         return jsonify({'erro': 'Lista não encontrada ou já excluída'})
     
-    db.session.delete(lista)
-    db.session.commit()
+    if (msg_erro := lista.apagar_lista(current_user)) != "":
+        return jsonify({'erro': msg_erro})
 
     return jsonify({'erro': ''})
 
 
 @app.route('/retornarLivrosLista', methods=['GET', 'POST'])
-def retornar_livros_lista():    
+def retornar_livros_lista():
     valores = request.get_json()
     print(valores)
 
@@ -431,6 +587,15 @@ def retornar_livros_lista():
     return jsonify({'erro': '', 'livros': livros})
 
 
+@app.route('/retornarLivrosAutor', methods=['GET', 'POST'])
+def retornar_livros_autor():    
+    valores = request.get_json()
+
+    livros_autor = db.session.query(Livro).filter_by(id=int(valores['idAutor'])).first()
+
+    return jsonify([l.dicionario() for l in livros_autor])
+
+
 @app.route('/vincularLivroLista', methods=['GET', 'POST'])
 @conexao_commit
 def vincular_livro_lista():
@@ -443,7 +608,9 @@ def vincular_livro_lista():
     if not lista:
         return jsonify({'erro': 'Lista não encontrada'})
     
-    if (msg_erro := lista.vincular_livro(valores['idLista'], valores['idLivro'], current_user.id)) != "":
+    id_livro = retornar_idlivro_cache(valores['idLivro'])
+
+    if (msg_erro := lista.vincular_livro(valores['idLista'], id_livro, current_user)) != "":
         print("erro aqui", msg_erro)
         return jsonify({'erro': msg_erro})
     
@@ -462,7 +629,7 @@ def desvincular_livro_lista():
     if not lista:
         return jsonify({'erro': 'Lista não encontrada'})
     
-    if (msg_erro := lista.desvincular_livro(valores['idLivro'])) != "":
+    if (msg_erro := lista.desvincular_livro(valores['idLivro'], current_user)) != "":
         return jsonify({'erro': msg_erro})
     
     return jsonify({'erro': ''})
@@ -480,31 +647,220 @@ def mover_livro_lista():
     if not lista:
         return jsonify({'erro': 'Lista não encontrada'})
     
-    if (msg_erro := lista.mover_livro(valores['idLivro'], valores['idListaMover'])) != "":
+    if (msg_erro := lista.mover_livro(valores['idLivro'], valores['idListaMover'], current_user)) != "":
         return jsonify({'erro': msg_erro})
     
     return jsonify({'erro': ''})
 
 
-@app.route('/criarPublicacao', methods=['GET', 'POST'])
-def criar_publicacao():
-    if request.method == "GET":
-        return render_template("criarPublicacao.html", publicacao=Publicacao())
-    elif request.method == "POST" and current_user.is_authenticated:
-        nova_publicacao = Publicacao(
-            titulo=request.form['campoTitulo'],
-            usuario=current_user
+@app.route('/controleSeguirLista', methods=['GET', 'POST'])
+def seguir_lista():
+    if not current_user.is_authenticated:
+        return jsonify({'erro': 'Deve estar logado para seguir a lista.'})
+    
+    valores = request.get_json()
+
+    lista_livro = db.session.query(ListaLivro).filter_by(id=valores["idLista"], usuario_id=valores["idUsuarioSeguir"]).first()
+    if not lista_livro:
+        jsonify({'erro': "A lista não existe ou foi alterada. Recarregue a página e tente novamente"})
+
+    msg_erro, seguindo = lista_livro.controle_seguir_lista(current_user)
+    
+    return jsonify({'erro': msg_erro, 'seguindo': seguindo, 'idLista': lista_livro.id})
+
+
+@app.route('/procurarComentarios', methods=['GET', 'POST'])
+def retornar_comentarios():
+    return retorno_comentarios()
+
+
+@app.route('/procurarRespostas', methods=['GET', 'POST'])
+def retornar_respostas():
+    return retorno_comentarios(True)
+
+
+def retorno_comentarios(resposta=False):
+    if not current_user.is_authenticated:
+        return jsonify({'erro': 'Deve estar logado para ver os comentários.'})
+    
+    filtros = request.get_json()
+    filtros['limit'] = filtros.get('limit', '5')
+    filtros['skip'] = filtros.get('skip', '0')
+
+    if filtros.get('primeiroretorno', True):
+        filtros['qtdItens'] = db.session.query(Comentario).filter_by().count()
+
+    print('ffc', filtros)
+
+    nivel_comentario = 1
+    filtros_query = [
+        Comentario.origem_id == filtros.get("itemOrigemId", "0"),
+        Comentario.origem == OrigemComentario(OrigemComentario[filtros['telaOrigem'].capitalize()].value)
+    ]
+
+    if resposta:
+        nivel_comentario = 2
+        filtros_query.append(Comentario.comentario_pai_id == filtros.get('idComentarioPai', '0'))
+    filtros_query.append(Comentario.nivel_comentario == nivel_comentario)
+
+    comentarios = db.session.query(Comentario).filter(*filtros_query).order_by().limit(filtros['limit']).offset(filtros['skip']).all()
+
+    return jsonify({'erro': '', 'dados': [c.dicionario() for c in comentarios]})
+
+
+@app.route('/gravarComentario', methods=['GET', 'POST'])
+def gravar_comentario():
+    if not current_user.is_authenticated:
+        return jsonify({'erro': 'Deve estar logado para comentar.'})
+    
+    valores = request.get_json()
+    print('vv', valores)
+
+    comentario = Comentario(
+        usuario_id = current_user.id,
+        usuario = current_user,
+        conteudo = valores['conteudo'],
+        origem = OrigemComentario(OrigemComentario[valores['telaOrigem'].capitalize()].value),
+        origem_id = valores['itemOrigemId'],
+        comentario_pai_id = valores['comentarioPaiId'],
+        spoiler = valores['spoiler'],
+        nivel_comentario = 1
+    )
+
+    print('origem', comentario.__dict__)
+
+    if (msg_erro := comentario.validar_campos()) != "":
+        return jsonify({'erro': msg_erro})
+
+    if comentario.origem == OrigemComentario.Livro:
+        comentario.origem_id = retornar_idlivro_cache(comentario.origem_id)
+
+        if isinstance(comentario.origem_id, str) and 'cache' in comentario.origem_id:
+            return jsonify({'erro': 'Erro de duplicidade de livro ao gravar comentário. Recarregue a tela ou tente executar novamente a consulta.'})
+
+        livro_banco = db.session.query(Livro).filter_by(id=comentario.origem_id).first()
+        if not livro_banco:
+            return jsonify({'erro': 'O livro não existe ou foi alterado em banco de dados. Recarregue a tela ou tente executar novamente a consulta.'})
+
+    notificar = False
+
+    if comentario.comentario_pai_id != 0:
+        # Foi definido que sera permitido apenas um nivel de gravacao re respostas por isso recupera com nivel_comentario=1
+        comentario_pai = db.session.query(Comentario).filter_by(id=comentario.comentario_pai_id, origem=comentario.origem, nivel_comentario=1).first()
+        if not comentario_pai:
+            return jsonify({'erro': 'O comentário para ser respondido foi alterado ou não existe mais.'})
+        
+        if current_user.id != comentario_pai.usuario_id:
+            notificar = True
+
+        comentario.nivel_comentario = comentario_pai.nivel_comentario + 1
+
+    if comentario.origem == OrigemComentario.Livro:
+        alterar_livro_em_alta(current_user.id, comentario.origem_id, comentado=True)
+
+    db.session.add(comentario)
+    if notificar:
+        db.session.flush()
+
+        tipo = TipoNotificacao.ComentarioLivro
+        link = f"livro?id={comentario_pai.origem_id}&comentario={comentario.id}"
+        if comentario.origem == OrigemComentario.Publicacao:
+            tipo = TipoNotificacao.ComentarioPublicacao
+            link = f"publicacao?id={comentario_pai.origem_id}&comentario={comentario.id}"
+
+        notificacao = Notificacao(
+            usuario_id = comentario_pai.usuario_id,
+            usuario_interagiu_id = current_user.id,
+            titulo = "Resposta em comentário",
+            conteudo = f"{current_user.nome} respondeu ao seu comentário.",
+            img = current_user.img,
+            tipo = tipo,
+            link = link,
+            obj_id = comentario.id
+        )
+        db.session.add(notificacao)
+    db.session.commit()
+
+    return jsonify({'comentario': comentario.dicionario()})
+
+
+@app.route('/excluirComentario', methods=['GET', 'POST'])
+def remover_comentario():
+    if not current_user.is_authenticated:
+        return jsonify({'erro': 'Deve estar logado para interagir com comentários.'})
+    
+    valores = request.get_json()
+
+    print('orr', OrigemComentario[valores['origem'].capitalize()].value, valores['origem'], valores['idComentario'])
+    comentario = db.session.query(Comentario).filter_by(id=valores['idComentario'], usuario_id=current_user.id, origem=OrigemComentario(OrigemComentario[valores['origem'].capitalize()].value)).first()
+    if not comentario:
+        return jsonify({'erro': 'O comentário não existe ou já foi excluído.'})
+
+    for comnetario_child in db.session.query(Comentario).filter_by(comentario_pai_id=comentario.id, nivel_comentario=2, origem=OrigemComentario(OrigemComentario[valores['origem'].capitalize()].value)).all():
+        db.session.delete(comnetario_child)
+
+    if comentario.origem == OrigemComentario.Livro:
+        alterar_livro_em_alta(current_user.id, comentario.origem_id, comentado=True)
+
+    db.session.delete(comentario)
+    db.session.commit()
+
+    return jsonify({})
+
+
+@app.route('/reagirComentario', methods=['GET', 'POST'])
+def reagir_comentario():
+    if not current_user.is_authenticated:
+        return jsonify({'erro': 'Deve estar logado para interagir com comentários.'})
+    
+    valores = request.get_json()
+    id_comentario = valores['idComentario']
+
+    print('id_comentario', id_comentario)
+
+    comentario = db.session.query(Comentario).filter_by(id=id_comentario).first()
+    if not comentario:
+        return jsonify({'erro': 'O comentário não existe mais.'})
+
+    reacao_banco = db.session.query(Reacao).filter_by(usuario_id=current_user.id, origem_id=id_comentario, origem=OrigemReacao.Comentario).first()
+    if reacao_banco:
+        db.session.delete(reacao_banco)
+    else:
+        reacao = Reacao(
+            usuario_id = current_user.id,
+            origem_id = id_comentario,
+            origem = OrigemReacao.Comentario,
+            reacao = db.session.query(ReacaoTipo).filter_by(nome="Coração").first()
         )
 
-        print(nova_publicacao.__dict__)
+        db.session.add(reacao)
 
-        if (msg_erro := nova_publicacao.validar_campos()) != "":
-            return render_template("criarPublicacao.html", erro=msg_erro, publicacao=nova_publicacao)
+        if comentario.usuario_id != current_user.id:
 
-        db.session.add(nova_publicacao)
-        db.session.commit()
+            tipo = TipoNotificacao.ReacaoComentarioLivro
+            link = f"livro?id={comentario.origem_id}&comentario={comentario.id}"
+            if comentario.origem == OrigemComentario.Publicacao:
+                tipo = TipoNotificacao.ReacaoComentarioPublicacao
+                link = f"publicacao?id={comentario.origem_id}&comentario={comentario.id}"
 
-        return redirect(url_for("usuario"))
+            notificacao_banco = Notificacao.query.filter_by(usuario_id=comentario.usuario_id, tipo=tipo, link=link).first()
+
+            if notificacao_banco is None:
+                notificacao = Notificacao(
+                    usuario_id = comentario.usuario_id,
+                    usuario_interagiu_id = current_user.id,
+                    titulo = "Reação em comentário",
+                    conteudo = f"{current_user.nome} reagiu ao seu comentário.",
+                    img = current_user.img,
+                    tipo = tipo,
+                    link = link,
+                    obj_id = comentario.id
+                )
+                db.session.add(notificacao)
+
+    db.session.commit()
+
+    return jsonify({})
 
 
 @app.route('/procurarNotificacoes', methods=['GET', 'POST'])
@@ -512,7 +868,7 @@ def retornar_notificacoes():
     if not current_user.is_authenticated:
         return jsonify({'erro': 'Deve estar logado para acessar esta funcionalidade.'})
 
-    notificacoes = db.session.query(Notificacao).filter_by(usuario_id=current_user.id, lido=False).order_by(Notificacao.data_gravacao, Notificacao.lido).all()
+    notificacoes = db.session.query(Notificacao).filter_by(usuario_id=current_user.id, lido=False).order_by(Notificacao.data_gravacao.desc(), Notificacao.lido).all()
 
     print('nt', [n.dicionario() for n in notificacoes])
 
@@ -541,9 +897,14 @@ def removerNotificacao():
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
-        #garvar_livros_aux()
+
+        #gravar_livros_aux2()
+        #gravar_imagem_autor(
+        #    ''
+        #    ,"Machado de Assis")
+
 
 app.run(debug=True, host="0.0.0.0", port=144)
 
-finalizar_crawler_drivers()
+#finalizar_crawler_drivers()
 print("fim")

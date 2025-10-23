@@ -1,4 +1,9 @@
+import uuid
 
+from flask import session
+from unidecode import unidecode
+
+from python.cache import cache, session_key
 from python.crawler import procurar_livros_internet
 from python.modelos.recomendacao import *
 from python.modelos.usuario import *
@@ -9,39 +14,48 @@ from python.modelos.publicacao import *
 def processar_filtros(filtros, retornar_quantidade=False):
     #.limit(10)  # pega 10 registros
     #.offset(20)  # pulando os primeiros 20
-
-    filtros['campoPesquisa'] = filtros.get('campoPesquisa', '').strip()
+    
+    filtros['campoPesquisa'] = filtros.get('campoPesquisa', '')
+    filtros['campoPesquisaBusca'] = unidecode(filtros['campoPesquisa'].strip().lower().replace(" ", ""))
     filtros['id_usuario'] = filtros.get('id_usuario', '0')
     filtros['limit'] = filtros.get('limit', '20')
     filtros['skip'] = filtros.get('skip', '0')
 
     if filtros.get('checkLivros', False):
-
         condicao = []
-        if filtros['campoPesquisa'] != "":
-            print(filtros['campoPesquisa'])
-            condicao.append(Livro.titulo.ilike(f"%{filtros['campoPesquisa']}%"))
+        ids_generos_consultar = retornar_ids_generos_consultar(filtros)
+
+        if filtros['campoPesquisaBusca'] != "":
+            condicao.append(Livro.titulo_aux.ilike(f"%{filtros['campoPesquisaBusca']}%"))
 
         if retornar_quantidade:
+            if len(ids_generos_consultar) > 0:
+                condicao.append(GeneroLiterario.id.in_(retornar_ids_generos_consultar(filtros)))
+                return Livro.query.join(Livro.estilos_literarios).filter(*condicao).count()
+            
             return Livro.query.filter(*condicao).count()
 
-        ordenacao = []
-        if filtros.get('checkOrdenarDatapublicacao', False):
-            ordenacao = [Livro.data_publicacao.desc()]
-        elif filtros.get('checkOrdenarTitulo', False):
-            ordenacao = [Livro.descricao.desc()]
-        elif filtros.get('checkOrdenarAutor', False):
-            ordenacao = [Livro.autor.nome.desc()]
-        elif filtros.get('checkOrdenarEditora', False):
-            ordenacao = [Livro.editora.nome.desc()]
+        ordenacao = retornar_ordenacao(filtros)
 
-        livros = Livro.query.filter(*condicao).order_by(*ordenacao).limit(filtros['limit']).offset(filtros['skip']).all()
+        if len(ids_generos_consultar) > 0:
+            condicao.append(GeneroLiterario.id.in_(retornar_ids_generos_consultar(filtros)))
+            livros = Livro.query.join(Livro.estilos_literarios).filter(*condicao).order_by(*ordenacao).limit(filtros['limit']).offset(filtros['skip']).all()
+        else:
+            livros = Livro.query.filter(*condicao).order_by(*ordenacao).limit(filtros['limit']).offset(filtros['skip']).all()
 
-        if len(livros) == 0 and len(filtros['campoPesquisa']) >= 3:
-            print('aqui')
+        if len(livros) == 0 and len(filtros['campoPesquisaBusca']) >= 3:
             livros = procurar_livros_internet(filtros['campoPesquisa'])
-
-        print('l', livros)
+            livros_cache = {}
+            for pos, l in enumerate(livros):
+                titulo_aux = "|" + unidecode(l.titulo.lower().replace(" ", "")) + "|"
+                livro_banco = db.session.query(Livro).filter(or_(Livro.titulo_aux.like(f"%{titulo_aux}%"), Livro.descricao == l.descricao)).first()
+                if livro_banco:
+                    livros_cache['cache' + str(pos)] = livro_banco.id
+                    livros[pos] = livro_banco
+                else:
+                    l.id = 'cache' + str(pos)
+                    livros_cache[l.id] = l
+            cache.set(session_key('livro_cache'), livros_cache)
 
         return livros
 
@@ -49,7 +63,7 @@ def processar_filtros(filtros, retornar_quantidade=False):
 
         condicao = []
         if filtros['campoPesquisa'] != "":
-            condicao.append(Usuario.nome.ilike(f"%{filtros['campoPesquisa']}%"))
+            condicao.append(Usuario.nome_aux.ilike(f"%{filtros['campoPesquisa']}%"))
         if filtros.get('checkLeitores', False):
             condicao.append(Usuario.tipo == TipoUsuario.Leitor)
         elif filtros.get('checkAutores', False):
@@ -57,18 +71,10 @@ def processar_filtros(filtros, retornar_quantidade=False):
         elif filtros.get('checkEditoras', False):
             condicao.append(Usuario.tipo == TipoUsuario.Editora)
 
-        print('condicao', condicao)
-
         if retornar_quantidade:
             return Usuario.query.filter(*condicao).count()
 
-        ordenacao = []
-        if filtros.get('checkOrdenarDatapublicacao', False):
-            ordenacao = [Usuario.data_cadastro.desc()]
-        elif filtros.get('checkOrdenarTitulo', False):
-            ordenacao = [Usuario.nome.desc()]
-
-        print('ordenacao', ordenacao)
+        ordenacao = retornar_ordenacao(filtros)
 
         return Usuario.query.filter(*condicao).order_by(*ordenacao).limit(filtros['limit']).offset(filtros['skip']).all()
 
@@ -76,20 +82,60 @@ def processar_filtros(filtros, retornar_quantidade=False):
         condicao = []
 
         if filtros['campoPesquisa'] != "":
-            condicao.append(Publicacao.titulo.ilike(f"%{filtros['campoPesquisa']}%"))
+            condicao.append(Publicacao.conteudo.ilike(f"%{filtros['campoPesquisa']}%"))
 
         if retornar_quantidade:
             return Publicacao.query.filter(*condicao).count()
 
-        ordenacao = []
+        ordenacao = retornar_ordenacao(filtros)
+
         return Publicacao.query.filter(*condicao).order_by(*ordenacao).limit(filtros['limit']).offset(filtros['skip']).all()
 
     return []
 
 
+def retornar_ids_generos_consultar(filtros):
+    ids = []
+
+    generos = [g.dicionario() for g in GeneroLiterario.query.filter().all()]
+    for genero in generos:
+        if filtros.get(genero['nomeCampo'], False):
+            ids.append(genero['id'])
+    
+    return ids
+
+
+def retornar_ordenacao(filtros):
+    ordenacao = []
+
+    if filtros.get('checkLivros', False):
+        if filtros.get('checkOrdenarTitulo', False):
+            ordenacao = [Livro.titulo_aux.desc()] if filtros.get('checkDecrescente', False) else [Livro.titulo_aux]
+        elif filtros.get('checkOrdenarAutor', False):
+            ordenacao = [Livro.nome_autor.desc()] if filtros.get('checkDecrescente', False) else [Livro.nome_autor]
+        elif filtros.get('checkOrdenarEditora', False):
+            ordenacao = [Livro.nome_editora.desc()] if filtros.get('checkDecrescente', False) else [Livro.nome_editora]
+        else:
+            ordenacao = [Livro.data_publicacao] if filtros.get('checkDecrescente', False) else [Livro.data_publicacao.desc()]
+
+    elif filtros.get('checkLeitores', False) or filtros.get('checkAutores', False) or filtros.get('checkEditoras', False):
+        if filtros.get('checkOrdenarTitulo', False) or filtros.get('checkOrdenarAutor', False) or filtros.get('checkOrdenarEditora', False):
+            ordenacao = [Usuario.nome_aux.desc()] if filtros.get('checkDecrescente', False) else [Usuario.nome_aux]
+        else:
+            ordenacao = [Usuario.data_cadastro] if filtros.get('checkDecrescente', False) else [Usuario.data_cadastro.desc()]
+
+    elif filtros.get('checkPublicacoes', False):
+        pass
+
+    return ordenacao
+
 def sugestoes_pesquisa(pesquisa, id_usuario=0, limite=3):
 
+    pesquisa = unidecode(pesquisa.strip().lower().replace(" ", ""))
+
     condicao_pesquisas = []
+    if pesquisa != "":
+        condicao_pesquisas.append(HistoricoPesquisa.pesquisa.ilike(f"%{pesquisa}%"))
     if id_usuario != 0:
         condicao_pesquisas.append(HistoricoPesquisa.usuario_id == id_usuario)
 
@@ -112,8 +158,6 @@ def sugestoes_pesquisa(pesquisa, id_usuario=0, limite=3):
         'livros': [livro.dicionario() for livro in livros],
         'usuarios': [usuario.dicionario() for usuario in usuarios]
     }
-
-    print(dados)
 
     return dados
 
@@ -144,7 +188,7 @@ def sugestao_pesquisa_livros(pesquisa="", id_usuario=0, limite=12):
                     livros.append(livro)
 
     else:
-        livros = Livro.query.filter(Livro.titulo.ilike(f"%{pesquisa}%")).order_by(Livro.titulo.desc()).limit(limite).all()
+        livros = Livro.query.filter(Livro.titulo_aux.ilike(f"%{pesquisa}%")).order_by(Livro.titulo.desc()).limit(limite).all()
 
     return livros
 
@@ -172,7 +216,7 @@ def sugestao_pesquisa_usuarios(pesquisa, id_usuario=0, limite=3):
                     usuarios.append(usuario)
 
     else:
-        usuarios = Usuario.query.filter(Usuario.nome.ilike(f"%{pesquisa}%")).order_by(Usuario.nome.desc()).limit(3).all()
+        usuarios = Usuario.query.filter(Usuario.nome_aux.ilike(f"%{pesquisa}%")).order_by(Usuario.nome.desc()).limit(3).all()
 
     return usuarios
 

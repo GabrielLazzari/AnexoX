@@ -4,14 +4,15 @@ import os.path
 import io
 
 from PIL import Image, ImageOps
+from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 from unidecode import unidecode
 
 
-def gravar_imagem(nome, conteudo, caminho="", livro=True):
+def gravar_imagem(nome, conteudo, caminho="", transformar='livro'):
     nome = unidecode(secure_filename(nome.title().replace(" ", "")))
 
-    imagem, formato = processar_imagem(conteudo, livro)
+    imagem, formato, formato_gravar = processar_imagem(conteudo, transformar)
 
     if imagem is None:
         return ""
@@ -23,20 +24,22 @@ def gravar_imagem(nome, conteudo, caminho="", livro=True):
         return ""
 
     os.makedirs(caminho, exist_ok=True)
-    caminho = os.path.join(caminho, nome + '.' + formato)
+    caminho = os.path.join(caminho, nome + '.' + formato_gravar)
 
     print(caminho, imagem.size, tamanho_bytes)
-    imagem.save(caminho)
+    imagem.save(caminho, optimize=True, compress_level=9)
 
     return caminho
 
 
-def processar_imagem(conteudo, transformar=True):
+def processar_imagem(conteudo, transformar='livro'):
     if conteudo is None:
         return None, ""
 
     if isinstance(conteudo, Image.Image):
         imagem = conteudo
+    elif isinstance(conteudo, FileStorage):
+        imagem = Image.open(conteudo)
     else:
         if conteudo.strip() == "" or "," not in conteudo:
             return None, ""
@@ -45,17 +48,25 @@ def processar_imagem(conteudo, transformar=True):
         imagem = Image.open(io.BytesIO(base64.b64decode(encoded)))
 
     formato = imagem.format.lower()
+    formato_gravar = "jpg"
 
-    if transformar:
+    if transformar == "livro":
         imagem = transformar_formato(imagem)
         imagem = redimensionar(imagem)
+    elif transformar == "perfil":
+        imagem = transformar_formato(imagem)
+        imagem = redimensionar(imagem, novo_tamanho=(500, 500))
+        #formato_gravar = formato
 
-    return imagem, formato
+    if formato == "png" and formato_gravar != "jpg":
+        imagem = imagem.quantize(colors=128)
+
+    return imagem, formato, formato_gravar
 
 
 def transformar_formato(imagem):
     if imagem.format.lower() == "png":
-        return imagem.convert("RGB")
+        imagem = imagem.convert("RGB")
     return imagem
 
 

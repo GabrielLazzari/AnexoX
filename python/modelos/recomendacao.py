@@ -1,6 +1,10 @@
 from datetime import datetime
 
+#from sklearn.svm import LinearSVC
+#from sklearn.model_selection import train_test_split
+
 from python.banco import db
+#from python.modelos.livro import Livro
 
 
 class LivrosEmAlta(db.Model):
@@ -23,6 +27,14 @@ class LivrosRecomendados(db.Model):
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'))
     livro_id = db.Column(db.Integer, db.ForeignKey('livro.id'))
     livro = db.relationship('Livro', foreign_keys=[livro_id])
+    data_criado = db.Column(db.DateTime, default=datetime.now)
+
+
+class LivrosModeloRecomendacao(db.Model):
+    __tablename__ = 'r_livros_modelo_recomendacao'
+    id = db.Column(db.Integer, primary_key=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'))
+    livro_id = db.Column(db.Integer, db.ForeignKey('livro.id'))
     data_criado = db.Column(db.DateTime, default=datetime.now)
 
 
@@ -78,6 +90,8 @@ def alterar_livro_em_alta(usuario_id, livro_id, clicado=None, adicionado=None, r
         db.session.commit()
 
     if adicionado is not None:
+        if livro.adicionado is None:
+            livro.adicionado = 0
         livro.adicionado += 1 if adicionado else -1
         if livro.adicionado < 0:
             livro.adicionado = 0
@@ -87,6 +101,8 @@ def alterar_livro_em_alta(usuario_id, livro_id, clicado=None, adicionado=None, r
         db.session.commit()
 
     if comentado is not None:
+        if livro.comentado is None:
+            livro.comentado = 0
         livro.comentado += 1 if comentado else -1
         if livro.comentado < 0:
             livro.comentado = 0
@@ -129,3 +145,18 @@ def adicionar_historico_pesquisa(usuario_id, pesquisa):
     ))
 
     db.session.commit()
+
+
+def calcular_recomendacao_livro():
+    gerar_recomendacao = False
+
+    if gerar_recomendacao:
+        pass
+
+
+def gerar_modelo_recomendacao():
+    
+    for livo in db.session.query(Livro).filter_by().all():
+        pass
+
+    pass

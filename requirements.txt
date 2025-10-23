@@ -3,7 +3,10 @@ selenium
 Unidecode
 requests
 pandas
+scikit-learn
 pillow
 Flask
+Flask-Caching
 flask-sqlalchemy
 flask-login
+qrcode

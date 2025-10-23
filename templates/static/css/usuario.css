@@ -4,6 +4,13 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
+
+    z-index: 1;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
 }
 
 .formUsuario *{
@@ -59,6 +66,7 @@
     background: url("icones/image-outline.svg") no-repeat center center;
     background-size: 100% 100%;
     border: 1px solid var(--corDestaque);
+    background-size: cover;
 }
 
 .formUsuario .fileInput{
@@ -71,7 +79,22 @@ input[type="file"] {
     display: none;
 }
 
+.areaLogin{
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+    background-color: var(--corFundo2);
+}
 
+.imgFundoLogin{
+    background-image: url(static/imagens/sistema/login2.png);
+    height: 100%;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    /* z-index: 0; */
+    left: -0px;
+    filter: brightness(1.9);
+}
 
 
 .blocoInfoPerfil{
@@ -81,6 +104,10 @@ input[type="file"] {
 
 .blocoInfoPerfil > *{
     padding: 20px;
+}
+
+#informacoesPerfil{
+    margin-bottom: 20px;
 }
 
 #informacoesPerfil > *{
@@ -95,14 +122,15 @@ input[type="file"] {
     align-items: center;
 }
 
-#dadosPerfil img, .usuarioItem img{
+#dadosPerfil img, .usuarioItem .imgUsuario{
     width: 150px;
     height: 150px;
     border-radius: 100%;
     border: 2px solid var(--corDestaque);
-    margin-bottom: 5px;
+    margin-bottom: 10px;
     padding: 5px;
     box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.5);
+    object-fit: cover;
 }
 
 #dadosPerfil div{
@@ -111,6 +139,13 @@ input[type="file"] {
 
 #acoesPerfil{
     max-width: 300px;
+}
+
+#acoesPerfil > *{
+    text-decoration: none;
+    text-align: center;
+    width: 100%;
+    display: block;
 }
 
 #informacoesPerfil button{
@@ -172,19 +207,6 @@ input[type="file"] {
     border-radius: 10px;
 }
 
-
-
-.usuarioItem{
-    width: 150px;
-    height: 150px;
-    margin: 25px;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-}
-
-
 #conteudoMostrarPreferencias{
     padding-top: 10px;
     padding-bottom: 10px;
@@ -195,6 +217,86 @@ input[type="file"] {
     padding: 5px;
 }
 
+
+/* Usuario em lista */
+.usuarioItem{
+    width: 100%;
+    margin: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 10px;
+    padding: 10px;
+    background-color: var(--corFundo2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.usuarioItem .usuarioItemDetalhes{
+    text-align: center;
+    margin-bottom: 5px;
+    margin-left: 5px;
+    margin-right: 5px;
+    font-size: 18px;
+}
+
+.usuarioItem .usuarioItemAcoes{
+    display: flex;
+    flex-direction: column;
+}
+
+.usuarioItem .usuarioItemAcoes > *{
+    width: 100%;
+}
+
+.usuarioItem .usuarioItemAcoes .btnAcao{
+    margin-bottom: 5px;
+    background-color: var(--corDestaque);
+    border: unset;
+    padding: 5px;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.usuarioItem .usuarioItemAcoes .btnAcao:hover{
+    background-color: var(--corPrataEscuro);
+}
+
+.usuarioItem .usuarioItemAcoes .textoSegue{
+    color: var(--corDestaque);
+    text-align: center;
+}
+
+@media screen and (min-width: 1100px) {
+    .usuarioItem {
+        width: 44%;
+    }
+}
+
+@media screen and (max-width: 600px) {
+    .usuarioItem > *{
+        flex-grow: 1;
+    }
+
+    .usuarioItem .areaImg{
+        text-align: center;
+    }
+
+    .usuarioItem .usuarioItemAcoes{
+        width: 100%;
+    }
+}
+
+.usuarioItem .usuarioItemConversar{
+    width: 100%;
+    height: fit-content;
+    border: 1px solid var(--corPrata) !important;
+    background: var(--corFundo2) !important;
+}
+
+.usuarioItem .usuarioItemConversar:hover{
+    background-color: var(--corHover);
+}
 
 
 /* BLOCOS DE CONTUDO */
@@ -216,8 +318,9 @@ input[type="file"] {
     flex-grow: 1;
 }
 
-#controleListasLivros{
+#controleListasLivros, #controlePublicacoes{
     border: 1px solid var(--corDestaque);
+    border-radius: 5px;
     padding: 5px;
 }
 
@@ -244,18 +347,38 @@ input[type="file"] {
     flex-wrap: wrap;
 }
 
-.listalivroitem{
+.listalivroitem, .listapublicacaoitem{
     display: flex;
     align-items: center;
     padding: 5px;
+    border-radius: 5px;
+    border: unset;
 }
 
-.listalivroitem.selecionado{
+.listalivroitem:hover, .listapublicacaoitem:hover{
+    background-color: var(--corHover);
+}
+
+.listalivroitem.selecionado, .listapublicacaoitem.selecionado{
     background-color: var(--corPrata);
 }
 
-.listalivroitem .tituloLista{
+.listalivroitem .tituloLista, .listapublicacaoitem .tituloLista{
     flex-grow: 1;
     margin-left: 5px;
     margin-right: 5px;
+}
+
+
+/* Conteudo dos seguindo e seguidores */
+
+#interacaoPerfilSeguindoConteudo, #interacaoPerfilSeguidoresConteudo{
+    flex-wrap: wrap;
+}
+
+
+/* Conteudo das publicacoes */
+
+#areaVerPublicacoesLista{
+    margin: auto;
 }

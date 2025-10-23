@@ -47,15 +47,3 @@ def criar_generos_literario():
         conexao.execute(text("""INSERT INTO genero_literario VALUES (null, 'Poesia');"""))
 
         conexao.commit()
-
-
-def criar_generos_literario2():
-    descricoes = ['Romance', 'Suspense', 'Mistério', 'Aventura', 'Policial', 'Ficção Científica', 'Fantasia',
-            'Técnicos / Estudos', 'Bibliográficos / Auto Bibliográficos', 'Terror', 'Histórico',
-            'Auto Ajuda', 'Religioso', 'Finanças', 'Literatura', 'Infanto Juvenil', 'Contos', 'Poesia']
-
-    for desc in descricoes:
-        existe = GeneroLiterario.query.filter_by(descricao=desc).first()
-        if not existe:
-            db.session.add(GeneroLiterario(descricao=desc))
-    db.session.commit()

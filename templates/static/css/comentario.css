@@ -1,12 +1,18 @@
 .comentario{
-    padding: 10px;
+    padding: 15px;
     display: flex;
     margin-top: 10px;
+    gap: 10px;
+    background-image: var(--corFundo);
+    border-radius: 8px;
+    border: 1px solid var(--corPrata);
+    width: 100%;
 }
 
 .comentarioTab{
     width: calc(100% - 50px);
     float: right;
+    margin-bottom: 10px;
 }
 
 .comentario > div{
@@ -19,7 +25,7 @@
     align-items: center;
 }
 
-.comentario img{
+.comentario img, .novo-comentario img{
     width: 30px;
     height: 30px;
     border-radius: 100%;
@@ -33,6 +39,11 @@
     margin-right: 10px;
     font-weight: bold;
     font-size: 18px;
+}
+
+.comentario .btnComentarioSpoiler{
+    background-color: unset;
+    color: grey;
 }
 
 .comentario .comentarioConteudo{

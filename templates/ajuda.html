@@ -1,0 +1,92 @@
+{% extends 'index.html' %}
+{% block conteudo %}
+<div class="conteudoAjuda">
+    <link rel="stylesheet" href="static/css/ajuda.css">
+
+    <div class="blocoConteudoAjuda">
+        <h3>Apresentação</h3>
+        <div>Olá</div>
+        <div>Estamos muito felizes por você querer fazer parte dessa comunidade literária.</div>
+        <div>Esperamos que descubra muitos novos livros no sistema.</div>
+        <div>E caso tenha alguma dúvida disponibilizamos algumas perguntas a baixo.</div>
+        <div>Aproveite e boa leitura!</div>
+    </div>
+
+    <div class="blocoConteudoAjuda">
+        <h3>Como ver os livros disponibilizados no sistema?</h3>
+        <div>Para ver os livros, após acessar o sistema, clicar em livros ou na barra de pesuisa procurar por um livro desejado.</div>
+        <video class="videoAjuda" src="static/ajuda/videos/3_VerLivro.mp4" controls></video>
+    </div>
+
+    <div class="blocoConteudoAjuda">
+        <h3>Como criar o cadastro no sistema?</h3>
+        <div>Para realizar a maioria das interações no sistema é necessário estar logado.</div>
+        <div>As principais interações são:</div>
+        <ul>
+            <li>Salvar um livro;</li>
+            <li>Ver autores, editoras e outros leitores;</li>
+            <li>Seguir autores, editoras e outros leitores;</li>
+            <li>Ver e criar publicações;</li>
+            <li>Comentar em livros e publicações.</li>
+        </ul>
+        <div>Para se cadatrar basta acessar a tela de <a href="login">Login</a>, clicar em <a href="cadastro">Primeiro Acesso</a> e preencher suas informações.</div>
+        <video class="videoAjuda" src="static/ajuda/videos/1_PrimeiroAcesso.mp4" controls></video>
+    </div>
+
+    <div class="blocoConteudoAjuda">
+        <h3>Como fazer o login no sistema?</h3>
+        <div>Para realizar o login, é necessário ter criado uma conta no passo anterior.</div>
+        <div>Quando se cadastra pela primeira vez o sistema automáticamente redireciona para a página do seu perfil, mas caso a página do perfil não apareça, acesse a tela de <a href="login">Login</a> e coloque seu nome e sua senha.</div>
+        <video class="videoAjuda" src="static/ajuda/videos/2_Login.mp4" controls></video>
+    </div>
+
+    <div class="blocoConteudoAjuda">
+        <h3>Realizar busca das informações no sistema</h3>
+        <div>Caso você deseje encontrar algum livro, editora, autor ou amigo leitor, basta clicar na lupa <button><img onclick="abrirCampoPesquisa()" src="static/icones/search-outline.svg" class="svg-sm"></button> e digitar o que deseja.</div>
+        <video class="videoAjuda" src="static/ajuda/videos/Pesquisa.mp4" controls></video>
+    </div>
+
+    <div class="blocoConteudoAjuda">
+        <h3>O que eu faço quando um livro que procuro não aparecer?</h3>
+        <div>Caso o livro desejado não esteja gravado no sistema, não se preocupe, digite o nome do livro, pressione enter e aguarde algusn minutos.</div>
+        <div>Nosso sistema irá realizar uma busca na internete e retornar alguns resultados.</div>
+        <div>OBS: Por ser uma busca na internet pode ser que leve algum tempo até concluir, então não feche a tela.</div>
+        <div>Caso o livro não apareça nos resultados, tente colocar o nome do autor ou da editora junto a pesquisa por exemplo.</div>
+    </div>
+
+    <div class="blocoConteudoAjuda">
+        <h3>Como salvar meus livros?</h3>
+        <div>Você pode organizar os livros que gosta em listas no sistema, e essas listas pode mantelas pra si para todos verem ou só para os amigos que você segue</div>
+        <h4>Passo 1: Criar uma lista para salvar os livros</h4>
+         <video class="videoAjuda" src="static/ajuda/videos/Criar_Listas.mp4" controls></video>
+        <h4>Passo 2: Salvar o livro nessa lista</h4>
+        <div>Dentro da lista você pode salvar quais qer livros que quiser.</div>
+        <video class="videoAjuda" src="static/ajuda/videos/Salvar_Livros_Listas.mp4" controls></video>
+    </div>
+
+    <div class="blocoConteudoAjuda">
+        <h3>Como seguir meus amigos leitores, e meus autores e editoras favoritos?</h3>
+        <div>Você pode seguir outros leitores, autores e editoras para ver o que eles estão lendo e publicando.</div>
+        <div>Para isso basta acessar o perfil da pessoa, autor ou editora e clicar no botão de seguir <button class="btn-seguir">Seguir</button>.</div>
+        <div>Depois de seguir, você pode ver as publicações deles na sua página inicial</div>
+        <video class="videoAjuda" src="static/ajuda/videos/Seguir_Pessoas.mp4" controls></video>
+    </div>
+
+    <div class="blocoConteudoAjuda">
+        <h3>Como comentar em livros e publicações?</h3>
+        <div>Você pode iteragir com outros leitores nos livros ou nas publicações comentando sobre o que você acha.</div>
+        <div>Para isso basta abrir a caixa de texto abaixo do livro da publicação escrever o que deseja e enviar.</div>
+        <div>Você pode também responder um comentário clicando em Responder, ou reagir clicando no coração ❤️.</div>
+        <video class="videoAjuda" src="static/ajuda/videos/Comentar.mp4" controls></video>
+    </div>
+
+    <div class="blocoConteudoAjuda">
+        <h3>Como criar uma publicação?</h3>
+        <div>Você pode compartilhar com seus amigos e outras pessoas seus livros favoritos ou expressar alguma ideia de algum livro criando uma publicação.</div>
+        <div>Para isso, acesse a tela de <a href="criarPublicacao">Nova Publicação</a> e escreva o que quiser, mas sempre com respeito.</div>
+        <div>Você pode clicar no botão de <button><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M12 7V12M12 17V12M17 12H12M12 12H7"></path></svg></button> para estrutura sua publicação como achar melhor.</div>
+        <video class="videoAjuda" src="static/ajuda/videos/Publicacao.mp4" controls></video>
+    </div>
+</div>
+
+{% endblock %}
