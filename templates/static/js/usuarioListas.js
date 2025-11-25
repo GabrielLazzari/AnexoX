@@ -1,7 +1,7 @@
 function abrirSobreTelaLista(gravarLivro=false){
     var sobretelaInfoLista = document.getElementById('sobretelaInfoLista');
     var btnSalvarLista = document.getElementById('btnSlavarLista');
-    gravarLivro ? btnSalvarLista.classList.add("gravar") : btnSalvarLista.removeAttribute("class");
+    gravarLivro ? btnSalvarLista.classList.add("gravar") : btnSalvarLista.className = "btnPrimario";
     abrirSobreTela('sobretelaInfoLista');
     document.getElementById("idListaLivro").value = "0";
     sobretelaInfoLista.querySelector('.tituloBarra').innerHTML = "Criar Lista";
@@ -10,7 +10,12 @@ function abrirSobreTelaLista(gravarLivro=false){
     document.getElementById("visibilidade").value = "0";
 }
 
-function abrirSobreTelaListaEditar(){
+async function abrirSobreTelaListaEditar(){
+    if (!await usuarioEstaLogado()){
+        toast.info("Refaça o seu login para editar");
+        return;
+    }
+
     var sobretelaInfoLista = document.getElementById('sobretelaInfoLista');
     abrirSobreTela('sobretelaInfoLista');
     document.getElementById("idListaLivro").value = idListaAtual;
@@ -86,12 +91,17 @@ function retornarListas(){
 
     ).then(retorno => {
         areaListasUsuario.innerHTML = "";
+        controleAreaVerLivrosLista = document.getElementById('controleAreaVerLivrosLista')
         if (retorno.buscar_apenas_livros){
             document.getElementById("controleListasLivros").remove();
+            controleAreaVerLivrosLista.className = "col-lg-12";
             var areaVerLivrosLista = document.getElementById('areaVerLivrosLista');
             areaVerLivrosLista.innerHTML = "";
             for (var livro of retorno.livros){
                 areaVerLivrosLista.innerHTML += conteudoHtmlLivroUsuario(livro);
+            }
+            if (retorno.livros == 0){
+                controleAreaVerLivrosLista.innerHTML = "Nenhum livro encontrado.";
             }
         }else{
             for (var lista of retorno.listas){
@@ -99,6 +109,8 @@ function retornarListas(){
             }
             if (areaListasUsuario.children.length > 0){
                 selecionarLista(areaListasUsuario.children[0])
+            }else{
+                controleAreaVerLivrosLista.innerHTML = "Nenhuma lista encontrada.";
             }
         }
 
@@ -116,7 +128,7 @@ function carregarListaTela(lista, gravarLivro=false){
     var idUsuario = document.getElementById('idUsuario')
     idUsuario = idUsuario ? idUsuario.innerText : 0;
 
-    var div = document.createElement('div');
+    var div = document.createElement('li');
     div.className = "listalivroitem";
     div.setAttribute("idlista", lista.id);
     div.setAttribute("title", lista.descricao);
@@ -145,6 +157,9 @@ function carregarListaTela(lista, gravarLivro=false){
 }
 
 function selecionarLista(divLista){
+
+    //alterarInteracaoPerfil("interacaoPerfilLivrosConteudo");
+
     var controleListasLivros = document.getElementById("controleListasLivros");
     if (!controleListasLivros){
         return;
@@ -158,6 +173,7 @@ function selecionarLista(divLista){
     if (selAntes) selAntes.classList.remove('selecionado');
     divLista.classList.add('selecionado');
     document.getElementById('areaDescricaoLista').innerHTML = divLista.getAttribute("title");
+    document.getElementById('areaTituloLista').innerHTML = divLista.querySelector(".tituloLista").innerText;
     carregarLivrosLista(divLista.getAttribute("idlista"));
 }
 
@@ -172,6 +188,10 @@ function alterarListaTela(lista, gravarLivro=false){
         var selAntes = controleListasLivros.querySelector('.listalivroitem.selecionado');
         if (selAntes == l){
             
+        }
+        areaTituloLista = document.getElementById("areaTituloLista");
+        if (areaTituloLista){
+            areaTituloLista.innerHTML = lista.nome;
         }
         areaDescricaoLista = document.getElementById('areaDescricaoLista')
         if (areaDescricaoLista){
@@ -241,17 +261,32 @@ function carregarLivrosLista(idLista){
     var areaVerLivrosLista = document.getElementById('areaVerLivrosLista');
     areaVerLivrosLista.innerHTML = "";  
 
-    fetch('/retornarLivrosLista', {
+    /*fetch('/retornarLivrosLista', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({idLista: idLista, idUsuario: idUsuario})
     })
     .then(response => response.json())
     .then(retorno => {
-        for (var livro of retorno.livros){
+        for (var livro of retorno.dados){
             areaVerLivrosLista.innerHTML += conteudoHtmlLivroUsuario(livro);
         }
-    }).catch(error => { console.error('Erro:', error); });
+    }).catch(error => { console.error('Erro:', error); });*/
+
+    new Paginacao("#areaVerLivrosLista", {
+        url: '/retornarLivrosLista',
+        filtros: {
+            idLista: idLista, idUsuario: idUsuario
+        },
+        conteudoHtml: conteudoHtmlLivroUsuario,
+        mostrarBarraPesquisa: true,
+        elScroolDeteccao: window,
+        logica: function(){
+            if (this.paginaAtual == 1 && this.dados.length == 0){
+                this.toggleMsg("Nenhum livro salvo nesta lista.");
+            }
+        }
+    });
 }
 
 

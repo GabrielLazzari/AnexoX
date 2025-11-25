@@ -10,6 +10,12 @@ class SelecionarLivro {
         return !0
     }
 
+    static get sanitize() {
+        return {
+            value: true
+        };
+    }
+
     constructor({ data, api, config, readOnly }) {
         this.data = {
             value: data.value || 'Clique para escolher um livro'

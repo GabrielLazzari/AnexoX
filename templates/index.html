@@ -1,474 +1,531 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>AcervoX</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AcervoX</title> 
+    
+    <link rel="stylesheet" type="text/css" href="static/css/template/1template.css">
+    <link rel="stylesheet" type="text/css" href="static/css/template/2bookjar.css">
+    <link rel="stylesheet" type="text/css" href="static/css/template/icones_extra.css">
 
-  <!-- Bootstrap 5 CSS (CDN) -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="static/css/bootstrap/bootstrap.min.css">
 
-  <!-- Plugins / custom CSS (mantidos para compatibilidade / overrides) -->
-  <link rel="stylesheet" type="text/css" href="static/css/bootstrap.min.css">
-  <link rel="stylesheet" type="text/css" href="static/css/toastify/toastify.css">
-  <link rel="stylesheet" type="text/css" href="static/css/owl_carrossel/owl.carousel.min.css">
-  <link rel="stylesheet" type="text/css" href="static/css/owl_carrossel/owl.theme.default.min.css">
-  <link rel="stylesheet" type="text/css" href="static/css/animacoes.css">
-  <link rel="stylesheet" type="text/css" href="static/css/central.css">
-  <link rel="stylesheet" type="text/css" href="static/css/comentario.css">
-  <link rel="stylesheet" type="text/css" href="static/css/paginacao.css">
-  <link rel="stylesheet" type="text/css" href="static/css/pesquisa.css">
-  <link rel="stylesheet" type="text/css" href="static/css/publicacao.css">
-  <link rel="stylesheet" type="text/css" href="static/css/usuario.css">
-  <link rel="stylesheet" type="text/css" href="static/css/global_cent_livro.css">
+    <link rel="stylesheet" type="text/css" href="static/css/toastify/toastify.css">
+    <link rel="stylesheet" type="text/css" href="static/css/owl_carrossel/owl.carousel.min.css">
+    <link rel="stylesheet" type="text/css" href="static/css/owl_carrossel/owl.theme.default.min.css">
+    <link rel="stylesheet" type="text/css" href="static/css/animacoes.css">
+    <link rel="stylesheet" type="text/css" href="static/css/central.css">
+    <link rel="stylesheet" type="text/css" href="static/css/comentario.css">
+    <link rel="stylesheet" type="text/css" href="static/css/paginacao.css">
+    <link rel="stylesheet" type="text/css" href="static/css/pesquisa.css">
+    <link rel="stylesheet" type="text/css" href="static/css/publicacao.css">
+    <link rel="stylesheet" type="text/css" href="static/css/usuario.css">
+    <link rel="stylesheet" type="text/css" href="static/css/global_cent_livro.css">
 
-  <!-- jQuery + plugins usados no projeto -->
-  <script src="static/js/jquery/jquery-3.7.1.min.js"></script>
-  <script src="static/js/jquery/jquery.mask.min.js"></script>
-  <script src="static/js/toastify/toastify.js"></script>
-  <script src="static/js/owl_carrossel/owl.carousel.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="static/css/template/animate.css">
+
+    <script src="static/js/jquery/jquery-3.7.1.min.js"></script>
+    <script src="static/js/jquery/jquery.mask.min.js"></script>
+    <script src="static/js/toastify/toastify.js"></script>
+    <script src="static/js/owl_carrossel/owl.carousel.min.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="static/css/nice_select/nice-select.css">
+    <script src="static/js/nice_select/jquery.nice-select.min.js"></script>
 </head>
-<body class="bg-light">
+<body class="bg-one">
+    
+    <script src="static/js/animacaoLetras.js"></script>
+    <script src="static/js/multiSelect.js"></script>
+    <script src="static/js/imagem.js"></script>
+    <script src="static/js/paginacao.js"></script>
+    <script src="static/js/usuarioListas.js"></script>
+    <script>
+        $(document).ready(function(){
+            toast = new toast();
 
-  <!-- Navbar principal (Bootstrap) -->
-  <nav id="menu" class="navbar navbar-expand-lg navbar-white bg-white border-bottom shadow-sm fixed-top">
-    <div class="container-fluid">
-      <div class="d-flex align-items-center">
-        <!-- offcanvas toggle (menu) -->
-        <button class="btn btn-light me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuSuspenso" aria-controls="menuSuspenso" id="btnMenu" title="Mostrar mais ações">
-          <img src="static/icones/menu-outline.svg" class="svg-mm" alt="menu">
-        </button>
+            var estilosLiterarios = []
 
-        <!-- Marca -->
-        <a class="navbar-brand fw-bold text-primary me-3" href="/">AcervoX</a>
+            function atualizarEstilosLiterarios(){
+                fetch('/retornarGenerosLiterarios', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
 
-        <!-- Barra de pesquisa compacta -->
-        <form class="d-flex align-items-center me-3" role="search" onsubmit="event.preventDefault(); executarPesquisa();">
-          <div class="input-group input-group-sm" id="barraPesquisa" style="width: 280px;">
-            <button class="btn btn-outline-secondary" type="button" id="btnLupaAbrirPesquisa" title="Pesquisar" onclick="abrirCampoPesquisa()">
-              <img src="static/icones/search-outline.svg" class="svg-sm" alt="buscar">
-            </button>
-            <input id="campoPesquisa" type="text" class="form-control form-control-sm" placeholder="Pesquisar..." title="Pesquisar">
-            <button class="btn btn-outline-secondary" type="button" id="btnFiltrosAbrirFiltros" data-bs-toggle="offcanvas" data-bs-target="#caixaFiltro" aria-controls="caixaFiltro" title="Filtros avançados">
-              <img src="static/icones/filter-outline.svg" class="svg-smm" alt="filtros">
-            </button>
-          </div>
-        </form>
-      </div>
+                }).then(response => 
+                    response.json()
 
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuTopRight" aria-controls="menuTopRight" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
+                ).then(data => {
+                    estilosLiterarios = data;
 
-      <div class="collapse navbar-collapse" id="menuTopRight">
-        <ul class="navbar-nav ms-auto align-items-center">
-          <li class="nav-item"><a id="btnInicio" class="nav-link" href="/">Início</a></li>
-          <li class="nav-item"><a id="btnLivros" class="nav-link" href="#" onclick="executarPesquisa('livros')">Livros</a></li>
-          <li class="nav-item"><a id="btnFeed" class="nav-link" href="#" onclick="executarPesquisa('publicacoes')">Publicações</a></li>
-
-          {% if current_user.is_authenticated %}
-          <li class="nav-item">
-            <button id="btnNotificacoes" class="btn btn-link nav-link position-relative" onclick="abrirSobreTela('caixaNotificacoes')" title="Notificações">
-              <img src="static/icones/notifications-outline.svg" class="svg-sm" alt="notificações">
-              <span id="qtdNotificacoesTop" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display:none">0</span>
-            </button>
-          </li>
-          {% endif %}
-
-          <li class="nav-item dropdown">
-            <a id="btnUsuario" class="nav-link dropdown-toggle d-flex align-items-center" href="usuario?id=0&ignore" role="button" data-bs-toggle="dropdown" aria-expanded="false" title="Perfil">
-              <img src="{% if current_user.is_authenticated %}{{current_user.img}}{% else %}static/icones/person-outline.svg{% endif %}" class="rounded-circle border" style="width:36px;height:36px;object-fit:cover" alt="usuário">
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end">
-              <li><a class="dropdown-item" href="usuario?id=0">Meu Perfil</a></li>
-              <li><a class="dropdown-item" href="#" onclick="executarPesquisa('publicacoes')">Meu Feed</a></li>
-              <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item" href="ajuda">Ajuda</a></li>
-            </ul>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </nav>
-
-  <!-- Offcanvas: menu lateral (mantém id menuSuspenso para compatibilidade) -->
-  <div id="menuSuspenso" class="offcanvas offcanvas-start" tabindex="-1" aria-labelledby="menuSuspensoLabel">
-    <div class="offcanvas-header">
-      <h5 id="menuSuspensoLabel" class="offcanvas-title">Menu</h5>
-      <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Fechar" onclick="fecharSobreTela('menuSuspenso', true)"></button>
-    </div>
-    <div class="offcanvas-body">
-      <div class="list-group">
-        <a class="list-group-item list-group-item-action" href="/" onclick="fecharSobreTela('menuSuspenso', true)">Início</a>
-        <a class="list-group-item list-group-item-action" href="usuario?id=0" onclick="fecharSobreTela('menuSuspenso', true)">Meu Perfil</a>
-        <button class="list-group-item list-group-item-action" onclick="executarPesquisa('livros')">Livros</button>
-        {% if current_user.is_authenticated %}
-        <button class="list-group-item list-group-item-action" onclick="executarPesquisa('leitores')">Leitores</button>
-        <button class="list-group-item list-group-item-action" onclick="executarPesquisa('autores')">Autores</button>
-        <button class="list-group-item list-group-item-action" onclick="executarPesquisa('publicacoes')">Publicações</button>
-        <hr>
-        <a class="list-group-item list-group-item-action" href="usuario?id=0">Minhas Listas</a>
-        <a class="list-group-item list-group-item-action" href="usuario?id=0&interacao=PerfilSeguindo">Seguindo ({{ current_user.qtd_seguindo }})</a>
-        <a class="list-group-item list-group-item-action" href="usuario?id=0&interacao=PerfilSeguidores">Seguidores ({{ current_user.qtd_seguidores }})</a>
-        <a class="list-group-item list-group-item-action" href="usuario?id=0&interacao=PerfilPublicacoes">Meu Feed</a>
-        <hr>
-        <button class="list-group-item list-group-item-action" onclick="abrirSobreTela('caixaNotificacoes');fecharSobreTela('menuSuspenso', true)">Notificações</button>
-        <button class="list-group-item list-group-item-action" onclick="abrirSobreTela('caixaConfiguracoes');fecharSobreTela('menuSuspenso', true)">Configurações</button>
-        {% endif %}
-      </div>
-    </div>
-  </div>
-
-  <!-- Offcanvas: filtros (mantém id caixaFiltro) -->
-  <div id="caixaFiltro" class="offcanvas offcanvas-end" tabindex="-1" aria-labelledby="caixaFiltroLabel">
-    <div class="offcanvas-header">
-      <h5 id="caixaFiltroLabel" class="offcanvas-title">Filtros</h5>
-      <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Fechar"></button>
-    </div>
-    <div class="offcanvas-body">
-      <form id="formFiltros" class="mb-3">
-        <fieldset class="mb-3">
-          <legend class="small fw-bold">Livros</legend>
-          <div class="form-check">
-            <input class="form-check-input checkFiltro" type="checkbox" id="checkEmalta">
-            <label class="form-check-label" for="checkEmalta">Em alta</label>
-          </div>
-          <div class="form-check">
-            <input class="form-check-input checkFiltro" type="checkbox" id="checkSugeridos">
-            <label class="form-check-label" for="checkSugeridos">Sugeridos</label>
-          </div>
-        </fieldset>
-
-        <fieldset class="mb-3">
-          <legend class="small fw-bold">Tipo de Busca</legend>
-          <div class="form-check">
-            <input class="form-check-input" type="radio" name="tipofiltro" id="checkLivros" checked>
-            <label class="form-check-label" for="checkLivros">Livros</label>
-          </div>
-          <div class="form-check">
-            <input class="form-check-input" type="radio" name="tipofiltro" id="checkLeitores">
-            <label class="form-check-label" for="checkLeitores">Leitores</label>
-          </div>
-          <div class="form-check">
-            <input class="form-check-input" type="radio" name="tipofiltro" id="checkAutores">
-            <label class="form-check-label" for="checkAutores">Autores</label>
-          </div>
-        </fieldset>
-
-        <fieldset class="mb-3">
-          <legend class="small fw-bold">Estilos Literários</legend>
-          <div class="form-check mb-2">
-            <input class="form-check-input checkFiltro" type="checkbox" id="checkTodosEstilos" onclick="marcarDesmarcarTodosEstilosLiterarios()">
-            <label class="form-check-label" for="checkTodosEstilos">Marcar Todos</label>
-          </div>
-          <div id="listaGeneros" class="d-flex flex-column">
-            {% for g in generos %}
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="{{g.nomeCampo}}">
-              <label class="form-check-label" for="{{g.nomeCampo}}">{{g.nome}}</label>
-            </div>
-            {% endfor %}
-          </div>
-        </fieldset>
-
-        <div class="d-grid">
-          <button id="btnPesquisar" type="button" class="btn btn-primary" onclick="executarPesquisa()">Pesquisar</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Caixa de pesquisa rápida (mantém id caixaPesquisa) -->
-  <div id="caixaPesquisa" class="position-absolute start-50 translate-middle-x mt-5" style="z-index:1050; width:90%; max-width:900px; display:none;">
-    <div class="card shadow">
-      <div class="card-body">
-        <div id="resultadoPesquisa" class="mb-3"></div>
-        <h6 class="fw-bold">Livros</h6>
-        <div id="resultadoLivros" class="mb-3"></div>
-        <h6 class="fw-bold">Pessoas</h6>
-        <div id="resultadoUsuario" class="mb-3"></div>
-        <div class="d-flex justify-content-end">
-          <button id="btnPesquisaAprofundada" class="btn btn-outline-secondary">Pesquisa aprofundada de livros</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Notificações (mantém id caixaNotificacoes) -->
-  <div id="caixaNotificacoes" class="card position-fixed end-3 top-5 shadow-lg" style="width:320px; display:none; z-index:1060;">
-    <div class="card-header d-flex justify-content-between align-items-center">
-      <span class="fw-bold">Notificações</span>
-      <span id="qtdNotificacoes" class="badge bg-secondary">(0)</span>
-    </div>
-    <div id="conteudoNotificacoes" class="card-body text-muted">Nenhuma nova notificação</div>
-  </div>
-
-  <!-- Conteúdo principal -->
-  <main id="conteudo" class="container" style="padding-top:90px; padding-bottom:48px;">
-    {% block conteudo %}
-    <div class="row g-4">
-      <!-- Acesso rápido / Links principais -->
-      <div id="areaAcessoRapido" class="col-12 d-flex flex-wrap gap-3 justify-content-center">
-        <a class="card text-center text-decoration-none text-dark" style="width:220px;" onclick="executarPesquisa('livros')" role="button">
-          <div class="card-body">
-            <img src="static/icones/library-outline.svg" class="mb-2" style="width:64px;height:64px" alt="Livros">
-            <h6 class="card-title">Livros</h6>
-          </div>
-        </a>
-
-        <a class="card text-center text-decoration-none text-dark" style="width:220px;" onclick="executarPesquisa('publicacoes')" role="button">
-          <div class="card-body">
-            <img src="static/icones/newspaper-outline.svg" class="mb-2" style="width:64px;height:64px" alt="Feed">
-            <h6 class="card-title">Feed</h6>
-          </div>
-        </a>
-
-        <a class="card text-center text-decoration-none text-dark" style="width:220px;" href="usuario?id=0">
-          <div class="card-body">
-            <img src="static/icones/person-outline.svg" class="mb-2" style="width:64px;height:64px" alt="Perfil">
-            <h6 class="card-title">Meu Perfil</h6>
-          </div>
-        </a>
-      </div>
-
-      <!-- Livros em alta -->
-      <div id="areaLivrosEmAlta" class="col-12">
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-              <h4 class="mb-0">Livros em Alta</h4>
-            </div>
-            <div id="conteudoLivrosEmAlta" class="owl-carousel"></div>
-          </div>
-        </div>
-      </div>
-
-      {% if current_user.is_authenticated %}
-      <!-- Livros sugeridos -->
-      <div id="areaLivrosSugeridos" class="col-12">
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <h4 class="mb-3">Livros Sugeridos</h4>
-            <div id="conteudoLivrosSugeridos" class="owl-carousel"></div>
-          </div>
-        </div>
-      </div>
-      {% endif %}
-
-      <!-- Exemplo: detalhe de livro (usando o card de referência solicitado) -->
-      <div class="col-12">
-        <div class="card mb-3">
-          <div class="row g-0">
-            <div class="col-md-4">
-              <img src="{{livro.img}}" class="img-fluid rounded-start" alt="{{ livro.titulo }}">
-            </div>
-            <div class="col-md-8">
-              <div class="card-body">
-                <h5 class="card-title">{{ livro.titulo }}</h5>
-                <ul class="list-group list-group-flush mb-3">
-                  <li class="list-group-item"><strong>Autor:</strong> Giuliano Pereira</li>
-                  <li class="list-group-item"><strong>Editora:</strong> Polidashow Productions</li>
-                  <li class="list-group-item"><strong>Ano:</strong> 2025</li>
-                  <li class="list-group-item"><strong>Páginas:</strong> 150</li>
-                </ul>
-                <p class="card-text"><small class="text-muted">Livro lançado em 21 de outubro de 2025.</small></p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-    {% endblock %}
-  </main>
-
-  <!-- Modais e sobre-telas convertidas para bootstrap (mantendo IDs usados pelo JS) -->
-  <div id="caixaConfiguracoes" class="modal fade sobreTela" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Configurações</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-        </div>
-        <div class="modal-body" id="conteudoConfiguracoes">
-          <!-- Conteúdo original mantido (inputs / planos) -->
-          <div class="mb-3">
-            <div class="form-check">
-              <input class="form-check-input checkFiltro" type="checkbox" id="checkReceberNotificacoes">
-              <label class="form-check-label" for="checkReceberNotificacoes">Receber notificações personalizadas</label>
-            </div>
-            <a href="excluirUsuario?id{{current_user.id}}" class="d-block mt-2 text-danger">Deletar Perfil</a>
-          </div>
-
-          <div id="areaPlano">
-            <h6>Planos</h6>
-            <div class="row g-3">
-              <div class="col-md-4">
-                <div class="card h-100">
-                  <div class="card-body d-flex flex-column">
-                    <h6 class="card-title tipoPlanoTitulo">Padrão</h6>
-                    <ul class="mb-3">
-                      <li>Acesso a livros</li>
-                      <li>Acesso a publicações</li>
-                      <li>Criar listas</li>
-                    </ul>
-                    <div class="mt-auto">
-                      <div class="d-flex justify-content-between align-items-center mb-2">
-                        <strong>Preço</strong><span>Gratuito</span>
-                      </div>
-                      <button class="btn btn-outline-primary w-100">Contratar</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <!-- Outros planos -->
-              <div class="col-md-4">
-                <div class="card h-100">
-                  <div class="card-body d-flex flex-column">
-                    <h6 class="card-title tipoPlanoTitulo">Médio</h6>
-                    <ul class="mb-3">
-                      <li>Alterar estilo</li>
-                      <li>Mais recursos em publicações</li>
-                    </ul>
-                    <div class="mt-auto">
-                      <div class="d-flex justify-content-between align-items-center mb-2">
-                        <strong>Preço</strong><span>A verificar</span>
-                      </div>
-                      <button class="btn btn-outline-primary w-100">Contratar</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="col-md-4">
-                <div class="card h-100">
-                  <div class="card-body d-flex flex-column">
-                    <h6 class="card-title tipoPlanoTitulo">Premium</h6>
-                    <ul class="mb-3">
-                      <li>Aumentar alcance</li>
-                      <li>Relatórios</li>
-                    </ul>
-                    <div class="mt-auto">
-                      <div class="d-flex justify-content-between align-items-center mb-2">
-                        <strong>Preço</strong><span>A verificar</span>
-                      </div>
-                      <button class="btn btn-outline-primary w-100">Contratar</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div> <!-- /row -->
-          </div> <!-- /areaPlano -->
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Mantém outras sobreTelas/ações com classes Bootstrap para aparência, mantendo IDs para scripts -->
-  <div id="sobretelaInfoLista" class="modal fade sobreTela" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title tituloBarra">Criar Lista</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-        </div>
-        <div class="modal-body">
-          <form id="formCriarLista">
-            <input type="hidden" id="idListaLivro" value="0">
-            <div class="mb-3">
-              <label for="nomeListaLivro" class="form-label">Nome</label>
-              <input type="text" id="nomeListaLivro" class="form-control" required>
-            </div>
-            <div class="mb-3">
-              <label for="descricaoListaLivro" class="form-label">Descrição</label>
-              <input type="text" id="descricaoListaLivro" class="form-control">
-            </div>
-            <div class="mb-3">
-              <label for="visibilidade" class="form-label">Status</label>
-              <select id="visibilidade" class="form-select">
-                <option value="0">Privada</option>
-                <option value="1">Seguindo</option>
-                <option value="2">Pública</option>
-              </select>
-            </div>
-            <div id="erroSalvarLista" class="text-danger mb-2"></div>
-            <div class="d-flex justify-content-end gap-2">
-              <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-              <button type="button" id="btnSlavarLista" class="btn btn-primary" onclick="salvarLista()">Salvar</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Outros modais/ações (sobretelaSalvarPublicacao, sobretelaInfoPublicacao, etc.) podem ser convertidos similarmente. 
-       Mantive IDs originais para compatibilidade com seu JS. -->
-
-  <!-- VLibras / Acessibilidade -->
-  <div vw class="enabled">
-    <div vw-access-button class="active"></div>
-    <div vw-plugin-wrapper>
-      <div class="vw-plugin-top-wrapper"></div>
-    </div>
-  </div>
-
-  <!-- Bootstrap Bundle JS (inclui Popper) -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-
-  <!-- Scripts do projeto (mantidos) -->
-  <script src="static/js/multiSelect.js"></script>
-  <script src="static/js/imagem.js"></script>
-  <script src="static/js/paginacao.js"></script>
-  <script src="static/js/usuarioListas.js"></script>
-  <script src="static/js/central.js"></script>
-  <script src="static/js/pesquisa.js"></script>
-  <script src="static/js/validadorCampos.js"></script>
-  <script src="static/js/notificacao.js"></script>
-
-  <script>
-    $(document).ready(function(){
-      toast = new toast();
-
-      // mantém a lógica original: ids, fetches e inicialização do carousel
-      var estilosLiterarios = []
-
-      function atualizarEstilosLiterarios(){
-        fetch('/retornarGenerosLiterarios', { method: 'POST', headers: {'Content-Type':'application/json'} })
-          .then(response => response.json())
-          .then(data => estilosLiterarios = data)
-          .catch(()=> estilosLiterarios = []);
-      }
-
-      // Exemplo: abrir caixaPesquisa visualmente quando resultado adicionado
-      window.abrirCampoPesquisa = function(){
-        $('#caixaPesquisa').toggle(); // mantém compatibilidade simples com seu código
-      }
-
-      // Inicialização de carrossel preservada
-      var conteudoLivrosEmAlta = document.getElementById('conteudoLivrosEmAlta');
-      var conteudoLivrosSugeridos = document.getElementById('conteudoLivrosSugeridos');
-      if (conteudoLivrosEmAlta != null || conteudoLivrosSugeridos != null){
-        fetch('/sugestaoPesquisaLivros', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify()
+                }).catch(error => {
+                    estilosLiterarios = []
+                });
+            }
+            //atualizarEstilosLiterarios();
         })
-        .then(response => response.json())
-        .then(retorno => {
-          for (var livro of retorno.livros){
-            var livroHtml = conteudoHtmlLivro(livro);
-            if (conteudoLivrosEmAlta) conteudoLivrosEmAlta.innerHTML += livroHtml;
-            if (conteudoLivrosSugeridos) conteudoLivrosSugeridos.innerHTML += livroHtml;
-          }
+    </script>
 
-          if (conteudoLivrosEmAlta) $("#conteudoLivrosEmAlta").owlCarousel({ loop:true, margin:10, nav:true, dots:true, autoplay:true, autoplayTimeout:3000, autoplayHoverPause:true, responsive:{0:{items:1},600:{items:2},1000:{items:3}} });
-          if (conteudoLivrosSugeridos) $("#conteudoLivrosSugeridos").owlCarousel({ loop:true, margin:10, nav:true, dots:true, autoplay:true, autoplayTimeout:3000, autoplayHoverPause:true, responsive:{0:{items:1},600:{items:2},1000:{items:3}} });
-        }).catch(error => console.error('Erro:', error));
-      }
-    });
-  </script>
+    <div style="display: none;" id="idUsuarioLogado">{% if current_user.is_authenticated %}{{current_user.id}}{% else %}0{% endif %}</div>
+    <div style="display: none;" id="caminhoImgUsuario">{% if current_user.is_authenticated and current_user.img|default(none) %}{{current_user.img}}{% else %}{% if current_user.is_authenticated %}static/imagens/usuarios/anonimo.png{% else %}static/icones/person-outline.svg{% endif %}{% endif %}</div>
+
+    <div id="menu" class="bg-one">
+        <div class="areaBtnMenu">
+            <button id="btnMenu" class="btnMenu" title="Mostrar mais ações"><img src="static/icones/menu-outline.svg" class="svg-mm"></button>
+            <div id="barraPesquisa" class="btnMenu">
+                <button id="btnLupaAbrirPesquisa">
+                    <img onclick="abrirCampoPesquisa()" src="static/icones/search-outline.svg" class="svg-sm">
+                </button>
+                <button id="btnFiltrosAbrirFiltros" title="Abrir filtros avançados">
+                    <img src="static/icones/filter-outline.svg" class="svg-smm">
+                </button>
+                <input id="campoPesquisa" type="text" placeholder="Pesquisar..." title="Pesquisar">
+            </div>
+        </div>
+        <div class="areaBtnMenu">
+            <a id="btnInicio" class="btnMenu" href="/" title="Ir para a tela inicial">Início</a>
+            <a id="btnLivros" class="btnMenu" onclick="executarPesquisa('livros');" title="Ver os livros">Livros</a>
+            {% if current_user.is_authenticated %}
+            <a id="btnLeitores" class="btnMenu" onclick="executarPesquisa('leitores');" title="Ver os livros">Leitores</a>
+            <a id="btnAutores" class="btnMenu" onclick="executarPesquisa('autores');" title="Ver os livros">Autores</a>
+            <a id="btnEditoras" class="btnMenu" onclick="executarPesquisa('editoras');" title="Ver os livros">Editoras</a>
+            {% endif %}
+            <a id="btnFeed" class="btnMenu" onclick="executarPesquisa('publicacoes');" title="Ir para a tela de feed">Publicações</a>
+        </div>
+        <div class="areaBtnMenu">
+            {% if current_user.is_authenticated %}
+            <button id="btnNotificacoes" class="btnMenu" name="acessarNotificacoes" title="Ver notificações"><img src="static/icones/notifications-outline.svg" class="svg-sm"></button>
+            {% endif %}
+            <a id="btnAjuda" class="btnMenu" href="ajuda" title="Ajuda"><img src="static/icones/help-circle-outline.svg" class="svg-sm"></a>
+            <a id="btnUsuario" class="btnMenu" href="usuario?id=0&ignore" title="Ir para o meu perfil"><img src="{% if current_user.is_authenticated and current_user.img|default(none) %}{{current_user.img}}{% else %}{% if current_user.is_authenticated %}static/imagens/usuarios/anonimo.png{% else %}static/icones/person-outline.svg{% endif %}{% endif %}" class="svg-sm"></a>
+        </div>
+
+        <div id="caixaPesquisa" class="sobreTela">
+            <div id="resultadoPesquisa"></div>
+
+            <div class="sutituloPesquisa">Livros</div>
+            <div id="resultadoLivros"></div>
+
+            <div class="sutituloPesquisa">Pessoas</div>
+            <div id="resultadoUsuario"></div>
+            <button id="btnPesquisaAprofundada" style="display: none;">Pesquisa apronfundada de livros</button>
+        </div>
+
+        <div id="caixaFiltro" class="sobreTela">
+            <div class="comboCheck" style="margin-right: 20px;">
+                <div class="sutituloPesquisa">Livros</div>
+                <div><input type="checkbox" id="checkEmalta" class="checkFiltro"><label for="checkEmalta">Em alta</label></div>
+                <div><input type="checkbox" id="checkSugeridos" class="checkFiltro"><label for="checkSugeridos">Sugeridos</label></div>
+
+                <div class="sutituloPesquisa">Filtro</div>
+                <div><input type="radio" id="checkLivros" class="checkFiltro" name="tipofiltro" checked><label for="checkLivros">Livros</label></div>
+                <div><input type="radio" id="checkLeitores" class="checkFiltro" name="tipofiltro"><label for="checkLeitores">Leitores</label></div>
+                <div><input type="radio" id="checkAutores" class="checkFiltro" name="tipofiltro"><label for="checkAutores">Autores</label></div>
+                <div><input type="radio" id="checkEditoras" class="checkFiltro" name="tipofiltro"><label for="checkEditoras">Editoras</label></div>
+                <div><input type="radio" id="checkPublicacoes" class="checkFiltro" name="tipofiltro"><label for="checkPublicacoes">Publicações</label></div>
+
+                <div class="sutituloPesquisa">Ordenação</div>
+                <div><input type="radio" id="checkCrescente" class="checkFiltro" name="ordenacao" checked><label for="checkCrescente">Crescente</label></div>
+                <div><input type="radio" id="checkDecrescente" class="checkFiltro" name="ordenacao"><label for="checkDecrescente">Decrescente</label></div>
+
+                <div class="sutituloPesquisa">Tipo Ordenação</div>
+                <div><input type="radio" id="checkOrdenarDatapublicacao" class="checkFiltro" name="tipoordenacao" checked><label for="checkOrdenarDatapublicacao">Data Publicação</label></div>
+                <div><input type="radio" id="checkOrdenarTitulo" class="checkFiltro" name="tipoordenacao"><label for="checkOrdenarTitulo">Título / Nome</label></div>
+                <div><input type="radio" id="checkOrdenarAutor" class="checkFiltro" name="tipoordenacao"><label for="checkOrdenarAutor">Autor</label></div>
+                <div><input type="radio" id="checkOrdenarEditora" class="checkFiltro" name="tipoordenacao"><label for="checkOrdenarEditora">Editora</label></div>
+            </div>
+
+            <div id="comboCeckFiltrosEstilosLiterarios" class="comboCheck">
+                <div class="sutituloPesquisa">Estilos Literários</div>
+                <div><input type="checkbox" id="checkTodosEstilos" class="checkFiltro" onclick="marcarDesmarcarTodosEstilosLiterarios()"><label id="labelforCheckTodosEstilos" for="checkTodosEstilos">Marcar Todos</label></div>
+                {% for g in generos %}
+                <div><input type="checkbox" id="{{g.nomeCampo}}" class="checkFiltro"><label for="{{g.nomeCampo}}">{{g.nome}}</label></div>
+                {% endfor %}
+                <button id="btnPesquisar" onclick="executarPesquisa()">Pesquisar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="menuSuspenso" class="sobreTela">
+        <div style="width: 100%;">
+            <img id="profileBackground" src="{% if current_user.is_authenticated %}{{current_user.retornar_img_capa()}}{% else %}static/imagens/sistema/perfil_capa.png{% endif %}">
+        </div>
+        <div class="row" style="padding-left: 20px; padding-right: 20px; height: 60px; width: 100%;">
+            <div class="col-6 col-sm-6" style="height: 5rem; width: 5rem; margin-top: -20px; margin-right: 20px;">
+                <img class="imgPerfil" src="{% if current_user.is_authenticated %}{{current_user.retornar_img()}}{% else %}static/imagens/usuarios/anonimo.png{% endif %}">
+            </div>
+            <div class="col-6 col-sm-6" style="flex: 1; margin-top: 5px; padding-right: 0px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <a href="usuario?id{current_user.id}"><h4 style="font-size: 16px; margin-bottom: 0px;">{% if current_user.is_authenticated %}{{current_user.nome}}{% else %}Clique para fazer login{% endif %}</h4></a>
+                    <button style="width: 24px; height: 24px;" onclick="fecharSobreTela('menuSuspenso', true)">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" data-slot="icon" class="size-4.5"><path fill-rule="evenodd" d="M5.47 5.47a.75.75 0 0 1 1.06 0L12 10.94l5.47-5.47a.75.75 0 1 1 1.06 1.06L13.06 12l5.47 5.47a.75.75 0 1 1-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 0 1-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"></path></svg>
+                    </button>
+                </div>
+                <a href="##" style="font-size: 14px; display: none;">@johndoe</a>
+            </div>
+        </div>
+
+        <div id="menuSuspensoBtnsAcao" style="flex-grow: 1;">
+            <hr style="margin-top: 15px;">
+            <a id="btnInicioSuspenso" class="btnMenuSuspenso" href="/" onclick="fecharSobreTela('menuSuspenso', true);"><img src="static/icones/home-outline.svg" class="svg-sm"> Início</a>
+            <button id="btnLivrosSuspenso" class="btnMenuSuspenso" onclick="executarPesquisa('livros')"><img src="static/icones/library-outline.svg" class="svg-sm"> Livros</button>
+            {% if current_user.is_authenticated %}
+            <button id="btnLeitoresSuspenso" class="btnMenuSuspenso" onclick="executarPesquisa('leitores');"><img src="static/icones/glasses-outline.svg" class="svg-sm"> Leitores</button>
+            <button id="btnAutoresSuspenso" class="btnMenuSuspenso" onclick="executarPesquisa('autores');"><img src="static/icones/people-outline.svg" class="svg-sm"> Autores</button>
+            <button id="btnFeedSuspenso" class="btnMenuSuspenso" onclick="executarPesquisa('publicacoes');"><img src="static/icones/newspaper-outline.svg" class="svg-sm"> Publicações</button>
+            <hr>
+            <a id="btnMinhasListasSuspenso" class="btnMenuSuspenso" href="usuario?id=0" onclick="fecharSobreTela('menuSuspenso', true);"><img src="static/icones/list-outline.svg" class="svg-sm"> Minhas Listas</a>
+            <a id="btnSeguindoSuspenso" class="btnMenuSuspenso" href="usuario?id=0&interacao=PerfilSeguindo" onclick="fecharSobreTela('menuSuspenso', true);"><img src="static/icones/person-add-outline.svg" class="svg-sm"> Seguindo ({{ current_user.qtd_seguindo }})</a>
+            <a id="btnSeguidoresSuspenso" class="btnMenuSuspenso" href="usuario?id=0&interacao=PerfilSeguidores" onclick="fecharSobreTela('menuSuspenso', true);"><img src="static/icones/people-outline.svg" class="svg-sm"> Seguidores ({{ current_user.qtd_seguidores }})</a>
+            <a id="btnMinhasPublicacoesSuspenso" class="btnMenuSuspenso" href="usuario?id=0&interacao=PerfilPublicacoes" onclick="fecharSobreTela('menuSuspenso', true);"><img src="static/icones/newspaper-outline.svg" class="svg-sm"> Meu Feed</a>
+            <hr>
+            <a id="btnConfiguracoesSuspenso" class="btnMenuSuspenso" href="configuracoes"><img src="static/icones/settings-outline.svg" class="svg-sm"> Configurações</a>
+            {% endif %}
+        </div>
+
+        {% if current_user.is_authenticated %}
+        <div id="menuSuspensoBtnSair">
+            <a id="btnMenuSuspensoSair" href="logout" style="border: 1px solid var(--corDestaque);">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="svg-sm" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15"></path></svg>
+                <span class="text-primary-600 dark:text-primary-400">Sair</span>
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <div id="caixaNotificacoes" class="sobreTela">
+        <div class="tituloBarra">Notificações <span id="qtdNotificacoes">(0)</span></div>
+        <div id="conteudoNotificacoes">Nenhuma nova notificação</div>
+        <a id="btnMostrarTodasNotificacoes" href="notificacoes" style="color: black !important;">Mostrar Todas Notificações</a>
+    </div>
+
+    {% if current_user.is_authenticated %}
+    <div id="sobretelaInfoLista" class="sobreTela modal">
+        <div>
+            <div class="tituloBarra">Criar Lista</div>
+            <div id="conteudoInfoLista" class="formUsuario">
+                <div>
+                    <input type="hidden" id="idListaLivro" value="0">
+
+                    <div>
+                        <label for="nomeListaLivro">Nome</label>
+                        <input type="text" id="nomeListaLivro" required>
+                    </div>
+                    <div>
+                        <label for="descricaoListaLivro">Descrição</label>
+                        <input type="text" id="descricaoListaLivro">
+                    </div>
+                    <div>
+                        <label for="visibilidade">Status</label>
+                        <select name="" id="visibilidade">
+                            <option value="0">Privada</option>
+                            <option value="1">Seguindo</option>
+                            <option value="2">Pública</option>
+                        </select>
+                    </div>
+
+                    <div id="erroSalvarLista" style="color: red;"></div>
+
+                    <div class="areaBtnsEscolha">
+                        <button onclick="fecharSobreTela('sobretelaInfoLista', true)" class="btnPrata">Cancelar</button>
+                        <button id="btnSlavarLista" class="btnPrimario" onclick="salvarLista()">Salvar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="sobretelaSelecionarListaLivro" class="sobreTela acao">
+        <div class="tituloBarra">Selecionar Lista</div>
+        <button class="btnCriarLista" onclick="abrirSobreTelaLista(true);"><img src="static/icones/add-outline.svg" class="svg-sm" style="width: 20px; height: 20px; filter: brightness(0) saturate(100%) invert(67%) sepia(39%) saturate(423%) hue-rotate(54deg) brightness(90%) contrast(87%);"> Nova Lista</button>
+        <div class="acaoConteudo"></div>
+    </div>
+
+    <div id="sobretelaSalvarPublicacao" class="sobreTela modal">
+        <input type="hidden" idpublicacao="">
+        <div>
+            <div id="tituloSalvarListaPublicacao" class="tituloBarra">Salvar Publicação</div>
+            <div class="acaoConteudo">
+                <div id="salvarPublicacaoListasNova" class="formUsuario">
+                    <div>
+                        <div>
+                            <label for="nomeListaPublicacao">Nome</label>
+                            <input type="text" id="nomeListaPublicacao" required>
+                        </div>
+                        <div>
+                            <label for="descricaoListaPublicacao">Descrição</label>
+                            <input type="text" id="descricaoListaPublicacao">
+                        </div>
+                    </div>
+                </div>
+                <div id="salvarPublicacaoAreaEsoclherLista">
+                    <hr>
+                    <div id="salvarPublicacaoListasSalvar"></div>
+                </div>
+                
+                <div id="erroSalvarLista" style="color: red;"></div>
+
+                <div class="areaBtnsEscolha">
+                    <button onclick="fecharSobreTela('sobretelaSalvarPublicacao', true)" class="btnPrata">Cancelar</button>
+                    <button id="btnSlavarPublicacao" class="btnPrimario" onclick="salvarListaPublicacao()">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="sobretelaInfoPublicacao" class="sobreTela acao">
+        <div class="tituloBarra">Editar Publicação</div>
+        <div class="acaoConteudo">
+            <button onclick="excluirPublicacao()"><img src="static/icones/trash-outline.svg" class="svg-m"> Excluir</button>
+            <button id="btnExcluirPublicacaoDaLista" onclick="excluirPublicacaoDaLista()"><img src="static/icones/trash-outline.svg" class="svg-m"> Excluir da Lista</button>
+        </div>
+    </div>
+
+    <div id="sobretelaInfoComentario" class="sobreTela acao">
+        <div class="tituloBarra">Editar Comentário</div>
+        <div class="acaoConteudo">
+            <button id="btnExcluirComentario" onclick="excluirComentario('publicacao')"><img src="static/icones/trash-outline.svg" class="svg-m"> Excluir</button>
+        </div>
+    </div>
+    {% else %}
+    <div id="sobretelaSelecionarListaLivro" class="sobreTela acao">
+        <div class="tituloBarra">Selecionar Lista</div>
+        <div class="acaoConteudo">
+            Você precisa estar logado para salvar livros em uma lista.
+            <a href="login">Ir para tela de login</a>
+        </div>
+    </div>
+    {% endif %}
+
+    <div id="conteudo">
+
+        {% block conteudo %}
+        <section id="hero" class="hero hero__padding overflow-hidden position-relative bg-one sessao">
+            <div class="circle x1"></div>
+            <div class="circle x2"></div>
+            <div class="circle x3"></div>
+            <div class="circle x4"></div>
+            <div class="circle x5"></div>
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-lg-6 m-0px-b md-m-30px-b">
+                        <div class="hero__content position-relative">
+                            <div class="badge-text mb-2 text-uppercase animate__animated animate__fadeInUp" data-wow-delay="0.1s">APROVEITE CADA MOMENTO</div>
+                            <h1 class="display-4 mb-4 text-capitalize animate__animated animate__fadeInUp" data-wow-delay="0.2s">Não há amigo mais leal do que um Livro</h1>
+                            <p class="text-muted mb-5 fs-5 animate__animated animate__fadeInUp" data-wow-delay="0.3s">Descubra um mundo repleto de novas aventuras, conhecimentos e mundos que fogem do imaginário.</p>
+                            <div class="bj_features_item animate__animated animate__fadeInUp" data-wow-delay="0.4s">
+                                <a class="mb-5 bj_theme_btn text_btn" onclick="executarPesquisa('livros')">Ver todos os livros &nbsp;<i><img class="svg-sm" src="static/icones/arrow_right-outline.svg"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 animate__animated animate__fadeInUp" data-wow-duration="0.5s">
+                        <div class="hero__images text-center imagemSessao"><img class="img-fluid imagemSessao" src="static/imagens/sistema/livros.jpg">
+                            <a href="livro?id={{idLivroMaisVisto}}"><div class="hero__images--badge"><span><span class="hero__images--badge--text1">BR</span><span class="hero__images--badge--text2">best seller</span></span></div></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="sombraSessao"></div>
+            </div>
+        </section>
+
+        <div id="areaLivrosEmAlta" class="sessaoImagem wow animate__animated animate__fadeInUp" style="background: linear-gradient(rgba(125, 125, 125, 0.5), rgba(0, 0, 0, 0.5)), url('static/imagens/sistema/biblioteca.jpg'); color: white;">
+            <h3>Livros em Alta</h3>
+            <hr style="margin-bottom: 10px;">
+            <div id="conteudoLivrosEmAlta" class="owl-carousel"></div>
+        </div>
+
+        <section class="features__padding">
+            <div class="row features_box">
+                <div class="col-lg-4 col-md-6 wow animate__animated animate__fadeInUp">
+                    <div class="bj_features_item text-center">
+                        <img class="icon-gift icon svg-m2" src="static/icones/gift-outline.svg">
+                        <h3>Faça o seu o Melhor Momento</h3>
+                        <p>Um livro ainda é um das melhores companhias para qualquer pessoa em qualquer ocasião.</p>
+                        <a onclick="executarPesquisa('livros')" class="bj_theme_btn text_btn">Leia Mais &nbsp;<i><img class="svg-sm" src="static/icones/arrow_right-outline.svg"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 wow animate__animated animate__fadeInUp" data-wow-delay="0.2s">
+                    <div class="bj_features_item text-center">
+                        <img class="icon-gift icon svg-m2" src="static/icones/feather-pen-outline.svg">
+                        <h3>Encontre Seus Autores Favoritos</h3>
+                        <p>Grandes escritores são bastante inspiradores, por isso oferecemos a mais ampla seleção.</p>
+                        <a onclick="executarPesquisa('autores')" class="bj_theme_btn text_btn">Leia Mais &nbsp;<i><img class="svg-sm" src="static/icones/arrow_right-outline.svg"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 wow animate__animated animate__fadeInUp" data-wow-delay="0.3s">
+                    <div class="bj_features_item text-center">
+                        <img class="icon-gift icon svg-m2" src="static/icones/open-book1-outline.svg" alt="">
+                        <h3>Leia as Avaliações dos Leitores</h3>
+                        <p>Aqui você encontrará resenhas de revistas, fontes online e livros favoritos.</p>
+                        <a onclick="executarPesquisa('publicacoes')" class="bj_theme_btn text_btn">Leia Mais &nbsp;<i><img class="svg-sm" src="static/icones/arrow_right-outline.svg"></i></a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="overflow-hidden position-relative bg-one sessao" style="margin-bottom: 150px; margin-top: 150px;">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-lg-6 m-0px-b md-m-30px-b wow animate__animated animate__fadeInUp" data-wow-duration="0.5s">
+                        <div class="text-center imagemSessao"><img class="img-fluid imagemSessao" src="static/imagens/sistema/comunidade.jpg"></div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="hero__content position-relative">
+                            <div class="badge-text mb-2 text-uppercase wow animate__animated animate__fadeInUp" data-wow-delay="0.1s">COMPARTILHE CADA MOMENTO</div>
+                            <h1 class="display-4 mb-4 text-capitalize wow animate__animated animate__fadeInUp" data-wow-delay="0.2s">Compartilhe cada momento</h1>
+                            <p class="text-muted mb-5 fs-5 wow animate__animated animate__fadeInUp" data-wow-delay="0.3s">Se conecte com outros leitores, publique e comente em seus livros favoritos</p>
+                            <div class="bj_features_item wow animate__animated animate__fadeInUp" data-wow-delay="0.4s">
+                                <a class="mb-5 bj_theme_btn text_btn" onclick="executarPesquisa('publicacoes')">Veja o que os leitores estão dizendo &nbsp;<i><img class="svg-sm" src="static/icones/arrow_right-outline.svg"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="sombraSessao"></div>
+            </div>
+        </section>
+
+        {% if current_user.is_authenticated %}
+        <div id="areaLivrosSugeridos" class="mb-5 wow animate__animated animate__fadeInUp">
+            <h3>Livros Recomendados para Você</h3>
+            <hr style="margin-bottom: 10px;">
+            <div id="conteudoLivrosSugeridos" class="owl-carousel"></div>
+        </div>
+        {% else %}
+        <section class="mb-5 section-padding sessaoImagem wow animate__animated animate__fadeInUp" style="background: linear-gradient(rgba(125, 125, 125, 0.5), rgba(0, 0, 0, 0.5)), url('static/imagens/sistema/biblioteca.jpg');">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-8 col-lg-7 col-xl-6">
+                        <div class="cta2__wrapper">
+                            <div class="section-title text-left">
+                                <span class="badge-text">ENTRE AGORA</span>
+                                <h2 class="display-6 m-20px-b">E faça parte desse universo.</h2>
+                            </div>
+                            <div class="bj_features_item">
+                                <a class="mb-2 bj_theme_btn text_btn" href="login">Ir para o Meu Perfil &nbsp;<i><img class="svg-sm" src="static/icones/arrow_right-outline.svg"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        {% endif %}
+
+        <div class="anuncio">
+
+        </div>
+        {% endblock %}
+    </div>
+
+    
+
+
+    <div vw class="enabled">
+        <div vw-access-button class="active"></div>
+        <div vw-plugin-wrapper>
+            <div class="vw-plugin-top-wrapper"></div>
+        </div>
+    </div>
+
+    <script src="https://vlibras.gov.br/app/vlibras-plugin.js"></script>
+    <script src="static/js/central.js"></script>
+    <script src="static/js/pesquisa.js"></script>
+    <script src="static/js/validadorCampos.js"></script>
+    <script src="static/js/notificacao.js"></script>
+    <script src="static/js/template/wow.js"></script>
+
+    <script>
+        $(document).ready(function(){
+            new window.VLibras.Widget("https://vlibras.gov.br/app");
+
+            var conteudoLivrosEmAlta = document.getElementById('conteudoLivrosEmAlta');
+            var conteudoLivrosSugeridos = document.getElementById('conteudoLivrosSugeridos');
+            if (conteudoLivrosEmAlta != null){
+                conteudoLivrosEmAlta.innerHTML = "";
+                fetch('/sugestaoPesquisaLivros', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify()
+                })
+                .then(response => response.json())
+                .then(retorno => {
+                    for (var livro of retorno.livros){
+                        var livroHtml = conteudoHtmlLivro(livro);
+                        conteudoLivrosEmAlta.innerHTML += livroHtml;
+                    }
+                    
+                    $("#conteudoLivrosEmAlta").owlCarousel({
+                        loop: true,
+                        margin: 10,
+                        nav: true,
+                        dots: true,
+                        navText: ["‹", "›"],
+                        autoplay: true,
+                        autoplayTimeout: 3000,
+                        autoplayHoverPause: true,
+                        items: 3,
+                        responsive: {
+                            0: { items: 1 },
+                            600: { items: 2 },
+                            1000: { items: 3 }
+                        }
+                    });
+                }).catch(error => { console.error('Erro:', error); });
+            }
+
+            if (conteudoLivrosSugeridos != null){
+                fetch('/sugestaoPesquisaLivrosSugeridos', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify()
+                })
+                .then(response => response.json())
+                .then(retorno => {
+                    conteudoLivrosSugeridos.innerHTML = "";
+                    var qtd_livros = 3;
+                    var mostrar_livros = {
+                        0: { items: 1 },
+                        600: { items: 2 },
+                        1000: { items: 3 }
+                    }
+                    if (retorno.livros.length == 2){
+                        qtd_livros = 2;
+                        mostrar_livros = {
+                            0: { items: 1 },
+                            600: { items: 2 },
+                        }
+                    }else if (retorno.livros.length == 1){
+                        qtd_livros = 1;
+                        mostrar_livros = {
+                            0: { items: 1 },
+                        }
+                    }
+                    
+                    for (var livro of retorno.livros){
+                        var livroHtml = conteudoHtmlLivro(livro);
+
+                        if (conteudoLivrosSugeridos != null){
+                            conteudoLivrosSugeridos.innerHTML += livroHtml;
+                        }
+                    }
+
+                    if (conteudoLivrosSugeridos != null){
+                        $("#conteudoLivrosSugeridos").owlCarousel({
+                            loop: true,
+                            margin: 10,
+                            nav: true,
+                            dots: true,
+                            navText: ["‹", "›"],
+                            autoplay: true,
+                            autoplayTimeout: 3000,
+                            autoplayHoverPause: true,
+                            items: qtd_livros,
+                            responsive: mostrar_livros
+                        });
+                    }
+                }).catch(error => { console.error('Erro:', error); });
+            }
+            
+            new WOW().init();
+        });
+    </script>
 </body>
-</html>
+</html>     

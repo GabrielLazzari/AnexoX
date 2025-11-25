@@ -9,6 +9,10 @@
     padding-bottom: 60px;
 }
 
+.paginacaoItens{
+    padding-top: 10px;
+}
+
 .paginacao .paginacaoItensFlex{
     display: flex;
     flex-wrap: wrap;

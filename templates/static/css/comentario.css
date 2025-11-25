@@ -9,6 +9,10 @@
     width: 100%;
 }
 
+.comentario .comentario{
+    border: unset;
+}
+
 .comentarioTab{
     width: calc(100% - 50px);
     float: right;
@@ -26,8 +30,8 @@
 }
 
 .comentario img, .novo-comentario img{
-    width: 30px;
-    height: 30px;
+    width: 50px !important;
+    height: 50px !important;
     border-radius: 100%;
     border: 1px solid var(--corDestaque);
     margin-right: 10px;
@@ -39,6 +43,11 @@
     margin-right: 10px;
     font-weight: bold;
     font-size: 18px;
+}
+
+.datahora{
+    font-size: 12px !important;
+    font-weight: normal !important;
 }
 
 .comentario .btnComentarioSpoiler{

@@ -115,6 +115,8 @@ def procurar_livros_internet_amazon(pesquisa, qtd_resultados=5):
     try:
         driver = retornar_driver_livre("https://www.amazon.com.br/Livros")
 
+        print('janelas', len(driver.window_handles), driver.window_handles)
+
         if driver is None or driver.erro:
             return []
 
@@ -146,6 +148,12 @@ def procurar_livros_internet_amazon(pesquisa, qtd_resultados=5):
                 livro = Livro()
                 livro.site_link = "Amazon"
                 livro.link = link
+
+                livro.links = []
+                livro.links.append(LivroLink(
+                    link = livro.link,
+                    hospedeiro = livro.site_link
+                ))
 
                 driver.implicitly_wait(0)
 
@@ -253,3 +261,138 @@ def procurar_livros_internet_amazon(pesquisa, qtd_resultados=5):
 
 def procurar_livros_internet_estantevirtual():
     driver = retornar_driver_livre("https://www.estantevirtual.com.br/")
+
+
+def atualizar_precos(livros):
+
+    print("Iniciando atualização de preços...")
+
+    ultimo_preco = db.session.query(LivroPreco).filter_by().order_by(LivroPreco.data_consulta.desc()).first()
+    if ultimo_preco is not None and ultimo_preco.data_consulta.date() == datetime.now().date():
+        print("Preços já atualizados hoje.")
+        return
+
+    from flask import current_app
+    app = current_app._get_current_object()
+
+    thread1 = threading.Thread(target=atualizar_precos_amazon, kwargs={"livros": livros, 'app': app})
+    thread2 = threading.Thread(target=atualizar_precos_estantevirtual, kwargs={"livros": livros, 'app': app})
+
+    thread1.start()
+    thread2.start()
+
+    thread1.join()
+    thread2.join()
+
+
+def atualizar_precos_amazon(livros, app):
+    with app.app_context():
+        driver = Driver("https://www.amazon.com.br/Livros", mostrar_browser=False)
+
+        for livro in livros:
+            
+            pesquisa = livro.titulo
+            if livro.autor is not None:
+                pesquisa += " " + livro.autor.nome
+
+            print("Amazon - Inicio atualizar preco livro:", pesquisa)
+
+            el = driver.find_element(By.NAME, "field-keywords")
+
+            el.clear()
+
+            el.send_keys(pesquisa + Keys.ENTER)
+
+            for pos, item_link in enumerate(driver.find_elements(By.XPATH, "//*[@data-component-type='s-search-result']")):
+                driver.implicitly_wait(driver.tempo_espera)
+
+                link = item_link.find_element(By.XPATH, ".//*[@data-cy='title-recipe']/a[contains(@class, 'a-link-normal')]").get_attribute("href").strip()
+                if link.startswith("https://www.amazon.com.br/gp/video") or '/gp/video' in link:
+                    continue
+
+                driver.execute_script("window.open('', '_blank');")
+                driver.switch_to.window(driver.window_handles[1])
+                driver.get(link)
+
+                if len(preco := driver.find_elements(By.XPATH, '//*[@id="tmm-grid-swatch-PAPERBACK"]//*[@class="slot-price"]')) > 0:
+                    preco = preco[0].get_attribute("innerText").lower().replace("r$", "").replace("a partir de", "").strip()
+                elif len(preco := driver.find_elements(By.XPATH, '//*[@id="tmm-grid-swatch-OTHER"]//*[@class="slot-price"]')) > 0:
+                    preco = preco[0].get_attribute("innerText").lower().replace("r$", "").replace("a partir de", "").strip()
+                else:
+                    preco = ""
+
+                print(f"Amazon - {pesquisa} - Preco encontrado", preco)
+
+                if preco != "":
+                    livro_link = controle_livro_link(livro.id, "Amazon", link)
+                    atualizado = controle_livro_preco(livro.id, livro_link.id, preco)
+                    db.session.commit()
+
+                    if atualizado:
+                        print(f"Amazon - {pesquisa} - Preco atualizado: {preco}")
+
+                driver.close()
+                driver.switch_to.window(driver.window_handles[0])
+                break
+        
+        driver.fechar()
+
+
+def atualizar_precos_estantevirtual(livros, app):
+
+    with app.app_context():
+
+        driver = Driver("https://www.estantevirtual.com.br/", mostrar_browser=False)
+
+        for livro in livros:
+            
+            pesquisa = livro.titulo
+            if livro.autor is not None:
+                pesquisa += " " + livro.autor.nome
+
+            try:
+
+                print("EstanteVirtual - Inicio atualizar preco livro:", pesquisa)
+
+                el = driver.find_element(By.ID, "search")
+
+                el.clear()
+
+                el.send_keys(pesquisa + Keys.ENTER)
+
+                for pos, item_link in enumerate(driver.find_elements(By.CLASS_NAME, "product-list__item")):
+                    driver.implicitly_wait(driver.tempo_espera)
+
+                    link = item_link.find_element(By.TAG_NAME, "a").get_attribute("href").strip()
+
+                    driver.execute_script("window.open('', '_blank');")
+                    driver.switch_to.window(driver.window_handles[1])
+                    driver.get(link)
+
+                    preco_usado = -1
+                    preco_novo = -1
+
+                    if len(caixa := driver.find_elements(By.CLASS_NAME, "conditions__tabs__list")) > 0:
+                        starting_at = caixa[0].find_elements(By.CLASS_NAME, "starting-at")
+                        if len(starting_at) > 0:
+                            preco_usado = starting_at[0].get_attribute("innerText").lower().replace("r$", "").replace("a partir de", "").replace("+ frete", "").strip()
+                        if len(starting_at) > 1:
+                            preco_novo = starting_at[1].get_attribute("innerText").lower().replace("r$", "").replace("a partir de", "").replace("+ frete", "").strip()
+
+                    print(f"EstanteVirtual - {pesquisa} - Preco encontrado - Novo: {preco_novo} Usado: {preco_usado}")
+
+                    if preco_novo != -1 and preco_usado != -1:
+                        livro_link = controle_livro_link(livro.id, "EstanteVirtual", link)
+                        atualizado = controle_livro_preco(livro.id, livro_link.id, preco_novo, preco_usado)
+                        db.session.commit()
+
+                        if atualizado:
+                            print(f"EstanteVirtual - {pesquisa} - Preco atualizado - Novo: {preco_novo} Usado: {preco_usado}")
+
+                    driver.close()
+                    driver.switch_to.window(driver.window_handles[0])
+                    break
+            except Exception as e:
+                print("EstanteVirtual - ERRO - Inicio atualizar preco livro:", pesquisa)
+
+        driver.fechar()

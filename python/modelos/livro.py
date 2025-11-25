@@ -35,7 +35,8 @@ class Livro(db.Model):
     img_obj = None  # Pra quando procurar livros na internet e ainda nao gravar o livro no banco
     isbn = db.Column(db.String(13), nullable=True, default="")
     qtd_paginas = db.Column(db.Integer, nullable=True, default=0)
-    estilos_literarios = db.relationship('GeneroLiterario', secondary=EstilosLiterariosLivro.__table__)
+    estilos_literarios = db.relationship("GeneroLiterario", secondary="estilo_literario_livro", backref="as_")
+    links = db.relationship('LivroLink', foreign_keys="[LivroLink.livro_id]", lazy='dynamic')
     data_gravacao = db.Column(db.DateTime, default=datetime.now)
     livro_salvo = False
 
@@ -46,10 +47,11 @@ class Livro(db.Model):
                 setattr(self, column.name, column.default.arg if column.default is not None else "")
 
     def dicionario(self):
+        print('eeesssss', [estilo.dicionario() for estilo in self.estilos_literarios])
         return {
             'id': self.id,
             'titulo': self.titulo,
-            'img': self.img,
+            'img': self.img if self.img is not None and str(self.img).strip() != "" else 'static\\imagens\\sistema\\livro_vazio.jpg',
             'descricao': self.descricao,
             'data_publicacao': self.data_publicacao.strftime("%d/%m/%Y") if self.data_publicacao is not None and self.data_publicacao > datetime.min else '',
             'livro_salvo': self.livro_salvo,
@@ -57,12 +59,14 @@ class Livro(db.Model):
                 'id': self.autor.id if self.autor is not None else '',
                 'nome': self.autor.nome if self.autor is not None else '',
                 'descricao': (self.autor.descricao if self.autor.descricao is not None else '') if self.autor is not None else '',
-                'img': self.autor.img if self.autor is not None else ''
+                'img': self.autor.img if self.autor is not None and str(self.autor.img).strip() != "" else 'static\\imagens\\usuarios\\anonimo.png'
             },
             'editora': {
                 'id': self.editora.id if self.editora is not None else '',
                 'nome': self.editora.nome if self.editora is not None else ''
-            }
+            },
+            'links': [link.dicionario() for link in self.links],
+            'estilos': "; ".join([estilo.dicionario()['nome'] for estilo in self.estilos_literarios]).strip()
         }
     
     @hybrid_property
@@ -125,28 +129,50 @@ def str_to_float(valor):
         return -1
 
 
-def controle_livro_preco(livro_id, link_id, preco):
+def controle_livro_preco(livro_id, link_id, preco, preco_usado=-1):
     livro_banco = db.session.query(Livro).filter_by(id=livro_id).first()
     if livro_banco is None:
         return False
     
-    if preco.strip() == "":
-        return False
-    
     preco = str_to_float(preco)
+    preco_usado = str_to_float(preco_usado)
 
-    livro_preco = db.session.query(LivroPreco).filter_by(livro_id=livro_id, link_id=link_id).first()
-    if (livro_preco is None or livro_preco.preco != preco) and preco != -1:
+    if preco == -1 and preco_usado == -1:
+        return False
+
+    livro_preco = db.session.query(LivroPreco).filter_by(livro_id=livro_id, link_id=link_id).order_by(LivroPreco.data_consulta.desc()).first()
+
+    print(livro_preco is None, livro_preco.preco, preco, livro_preco.preco_usado, preco_usado)
+    print(livro_preco.preco != preco, preco != -1, livro_preco.preco_usado != preco_usado, preco_usado != -1)
+
+    if livro_preco is None or (livro_preco.preco != preco and preco != -1) or (livro_preco.preco_usado != preco_usado and preco_usado != -1):
         novo_livro_preco = LivroPreco(
             livro_id = livro_id,
             link_id = link_id,
-            preco = preco
+            preco = preco,
+            preco_usado = preco_usado
         )
 
         db.session.add(novo_livro_preco)
 
         return True
     
+    # Query para apagar registros duplicados
+    # delete FROM livro_preco
+    # WHERE id NOT IN (
+    #     SELECT id FROM (
+    #         SELECT id
+    #         FROM livro_preco AS lp
+    #         WHERE lp.data_consulta = (
+    #             SELECT MIN(data_consulta)
+    #             FROM livro_preco AS sub
+    #             WHERE sub.livro_id = lp.livro_id
+    #             AND sub.link_id = lp.link_id
+    #             AND sub.preco = lp.preco
+    #         )
+    #     )
+    # );
+
     return False
 
 
@@ -157,6 +183,13 @@ class LivroLink(db.Model):
     link = db.Column(db.String(1000), nullable=False, default="")
     hospedeiro = db.Column(db.String(500), nullable=False, default="")
     data_consulta = db.Column(db.DateTime, default=datetime.now)
+
+    def dicionario(self):
+        return {
+            'livro_id': self.livro_id,
+            'link': self.link,
+            'hospedeiro': self.hospedeiro
+        }
 
 
 def controle_livro_link(livro_id, hospedeiro, link):
@@ -197,7 +230,7 @@ class ListaLivro(db.Model):
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'))
     visibilidade = db.Column(SAEnum(VisibilidadeLivro), nullable=False, default=VisibilidadeLivro.Privada)
     data_criacao = db.Column(db.DateTime, default=datetime.now)
-    livros = db.relationship('Livro', secondary=ListaLivroLivro.__table__)
+    livros = db.relationship('Livro', secondary=ListaLivroLivro.__table__, lazy='dynamic')
     seguindo = False  # Usado apenas para indicar se o usuario logado esta seguindo esta lista
     seguidores = db.relationship('ListaSeguir', foreign_keys="[ListaSeguir.lista_id]", lazy='dynamic', cascade='all, delete-orphan')
 
@@ -724,12 +757,16 @@ def gravar_imagem_autor(url, nome_autor):
         or_(
             Usuario.nome == nome_autor,
             Usuario.nome_alternativo.like(f"%{nome_autor}%")
-        ), Usuario.tipo == TipoUsuario.Autor
+        ), Usuario.tipo == TipoUsuario.Editora
     ).first()
+
+    print('autor_banco', autor_banco)
 
     if autor_banco is None:
         return
     
     autor_banco.atualizar_caminho_imagem(img, 'templates\\static\\imagens\\usuarios')
+
+    db.session.commit()
         
         

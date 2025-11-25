@@ -1,7 +1,7 @@
 from datetime import datetime
 import json
 
-from flask import Blueprint
+from flask import Blueprint, current_app
 from flask import Flask, g, render_template, request, redirect, session, flash, url_for, jsonify
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from functools import wraps
@@ -20,10 +20,12 @@ publicacao_bp = Blueprint('publicacao', __name__)
 
 @publicacao_bp.route('/criarPublicacao', methods=['GET', 'POST'])
 def criar_publicacao():
-    if not current_user.is_authenticated:
-        return jsonify({'erro': 'Deve estar logado para acessar esta funcionalidade.'})
+    print('mmmmm', request.method)
 
     if request.method == "GET":
+        if not current_user.is_authenticated:
+            return redirect(url_for("login", pagina='criarPublicacao'))
+
         valores = request.args
         conteudo_livro = ""
         if "idLivro" in valores:
@@ -48,14 +50,20 @@ def criar_publicacao():
                 """
         return render_template("criarPublicacao.html", publicacao=Publicacao(conteudo=conteudo_livro))
     
-    elif request.method == "POST" and current_user.is_authenticated:
-
+    elif request.method == "POST":
+        if not current_user.is_authenticated:
+            return jsonify({'erro': 'Deve estar logado para acessar esta funcionalidade.'})
+        
         valores = request.get_json()
+
+        print("novappp", valores)
 
         nova_publicacao = Publicacao(
             conteudo=json.dumps(valores['conteudo']),
             usuario=current_user
         )
+
+        print("novappp", nova_publicacao.__dict__)
 
         if (msg_erro := nova_publicacao.validar_campos()) != "":
             return render_template("criarPublicacao.html", erro=msg_erro, publicacao=nova_publicacao)
@@ -78,8 +86,6 @@ def retornar_publicacao():
         publicacao = db.session.query(Publicacao).filter_by(id=id_publicacao).first()
         if not publicacao:
             return render_template("publicacao.html", publicacao=Publicacao().dicionario(), erro="A publicação não existe mais ou foi alterada.")
-        
-        print('idddppp', id_publicacao, publicacao.dicionario())
 
         return render_template("publicacao.html", publicacao=publicacao.dicionario(), erro="")
     
@@ -255,7 +261,7 @@ def retornar_publicacoes_lista():
 
     publicacoes = []
     if filtros.get("idListaPublicacao") == "minhaspublicacoes" or id_usuario != current_user.id:
-        publicacoes = db.session.query(Publicacao).filter_by(usuario_id=id_usuario).order_by().limit(filtros['limit']).offset(filtros['skip']).all()
+        publicacoes = db.session.query(Publicacao).filter_by(usuario_id=id_usuario).order_by(Publicacao.data_gravacao.desc()).limit(filtros['limit']).offset(filtros['skip']).all()
     else:
         lista = db.session.query(ListaPublicacao).filter_by(id=filtros['idListaPublicacao'], usuario_id=current_user.id).order_by().first()
         if lista:

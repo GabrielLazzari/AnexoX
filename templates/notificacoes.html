@@ -1,0 +1,31 @@
+{% extends 'index.html' %}
+{% block conteudo %}
+
+<style>
+    #areaNotificacoes{
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+</style>
+
+<div id="dataFiltros" style="display: none;">{{ filtros | tojson | safe if filtros else "{}" }}</div>
+
+<div id="areaNotificacoes"></div>
+
+<script src="static/js/notificacao.js"></script>
+
+<script>
+    var valoresFiltro = JSON.parse(document.getElementById('dataDados')?.innerText || '{}');
+    console.log(valoresFiltro)
+
+    const pag = new Paginacao("#areaNotificacoes", {
+        url: '/notificacoes',
+        filtros: valoresFiltro,
+        flex: false,
+        paginaAtual: valoresFiltro['paginaAtual'] ?? 1,
+        conteudoHtml: conteudoHtmlNotificacao,
+        qtdTotalElementos: valoresFiltro.qtdItens
+    });
+</script>
+
+{% endblock %}

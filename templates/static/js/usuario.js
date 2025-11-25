@@ -1,6 +1,11 @@
-var interacoesPerfil = document.getElementById('interacoesPerfil');
+var interacoesPerfil = document.getElementById('interacoesPerfil2');
 var interacoesPerfilVisualizacao = document.getElementById('interacoesPerfilVisualizacao');
 var areaListasUsuario = document.getElementById('areaListasUsuario');
+
+var areaVerLivrosLista = document.getElementById('areaVerLivrosLista');
+var areaVerPublicacoesLista = document.getElementById('areaVerPublicacoesLista');
+var interacaoPerfilSeguindoConteudo = document.getElementById('interacaoPerfilSeguindoConteudo');
+var interacaoPerfilSeguidoresConteudo = document.getElementById('interacaoPerfilSeguidoresConteudo');
 
 Array.prototype.forEach.call(interacoesPerfil.getElementsByTagName('button'), function(btn){
     btn.addEventListener('click', function(event){
@@ -20,6 +25,12 @@ function alterarInteracaoPerfil(btn){
     
     interacoesPerfilVisualizacao.querySelector(':scope > .selecionado').classList.remove('selecionado');
     interacoesPerfilVisualizacao.querySelector('#' + btn.id + 'Conteudo').classList.add('selecionado');
+
+    areaVerLivrosLista.innerHTML = "";
+    areaVerPublicacoesLista.innerHTML = "";
+    interacaoPerfilSeguindoConteudo.innerHTML = "";
+    interacaoPerfilSeguidoresConteudo.innerHTML = "";
+
     if (btn.id == "interacaoPerfilLivros"){
         retornarListas();
 
@@ -30,7 +41,12 @@ function alterarInteracaoPerfil(btn){
         retornarUsuariosSeguir("seguidores");
 
     }else if (btn.id == "interacaoPerfilPublicacoes"){
-        console.log("publicacaoes");
+        var btnMinhasPublicacoes = document.getElementById("btnMinhasPublicacoes");
+        if (btnMinhasPublicacoes){
+            selecionarListaPubliacao(document.getElementById("btnMinhasPublicacoes"));
+        }else{
+            carregarPublicacaoesUsuario('minhaspublicacoes')
+        }
     }
 }
 
@@ -75,7 +91,7 @@ function retornarUsuariosSeguir(tipo="seguindo"){
     fetch(tipo, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({idUsuario: idUsuario})
+        body: JSON.stringify({idUsuario: idUsuario, tipoSeguindo: 'seguindo'})
     })
     .then(response => response.json())
     .then(retorno => {
@@ -90,6 +106,21 @@ function retornarUsuariosSeguir(tipo="seguindo"){
             }
         }
     }).catch(error => { console.error('Erro:', error); });
+
+    /*var elemento = tipo == "seguindo" ? "interacaoPerfilSeguindoConteudo" : "interacaoPerfilSeguidoresConteudo";
+    var tipoSeguindo = tipo == "seguindo" ? "seguindo" : "seguidor";
+
+    var idUsuario = document.getElementById('idUsuario').innerText;
+
+    new Paginacao("#" + elemento, {
+        url: '/retornarUsuariosSeguir',
+        filtros: {
+            idUsuario: idUsuario, tipoSeguindo: tipoSeguindo
+        },
+        conteudoHtml: conteudoHtmlUsuario,
+        mostrarBarraPesquisa: true,
+        elScroolDeteccao: window
+    });*/
 }
 
 function carregarUsuarioSeguir(usuarios, el){
@@ -123,12 +154,24 @@ function abrirEscolherLivro(){
     }
 }
 
-function abrirInfoComentario(btn){
+/*function abrirInfoComentario(btn){
     var comentario = btn.closest(".comentario");
     var idComentario = comentario.querySelector("[idcomentario]").getAttribute("idcomentario");
     idComentarioAux = idComentario;
+    var sobretelaInfoComentario = document.getElementById("sobretelaInfoComentario");
+
+    if (sobretelaInfoComentario){
+        var btnExcluirComentario = sobretelaInfoComentario.querySelector("#btnExcluirComentario");
+        console.log('pppppp', window.location.pathname)
+        if (window.location.pathname == "/livro"){
+            btnExcluirComentario.setAttribute("onclick", "excluirComentario('livro')");
+        }else{
+            btnExcluirComentario.setAttribute("onclick", "excluirComentario('publicacao')");
+        }
+    }
+
     abrirSobreTela('sobretelaInfoComentario', btn);
-}
+}*/
 
 var interacaoUsuario = document.getElementById("interacaoUsuario");
 if (interacaoUsuario){
@@ -140,6 +183,7 @@ if (interacaoUsuario){
 }
 
 async function recomendarLivro(){
+
     const response = await fetch("/gerarRecomendacaoLivro", {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -148,5 +192,10 @@ async function recomendarLivro(){
 
     var resposta = await response.json();
 
-    toast.sucesso("Abra as notificações para ver o livro recomendado");
+    if (resposta.tem_notificacao){
+        toast.sucesso("Abra as notificações para ver o livro recomendado");
+        atualizarNotificacoes();
+    }else{
+        toast.info("Nenhum livro recomendado no momento. Continue interagindo para receber recomendações!");
+    }
 }

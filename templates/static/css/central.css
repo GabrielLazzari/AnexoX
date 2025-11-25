@@ -1,27 +1,62 @@
 :root{
-    --corPrimaria: #cfbd9b;
+    --corPrimaria: rgb(245, 235, 230) ;  /* 60% */
+    --corSecundaria: #d4c8b0;  /* 30% */
+    --corTercearia: #dbd6cc; /*#ad9e81*/;
+    --corDestaque: rgb(194, 123, 127);  /* 10% */
+    --corFundoContraste: #e3decc;
+    --corFundo2Contraste: #e3decc;
+    --corFundo: linear-gradient(135deg, var(--corPrimaria) 0%, var(--corFundoContraste) 100%);
+    --corFundo2: linear-gradient(135deg, var(--corSecundaria) 0%, var(--corFundo2Contraste) 100%);;
     --corIcone: #000;
-    --corDestaque: #a98d56;
     --corHover: #e6d49e;
     --corPrata: #ddd;
     --corPrataEscuro: #a4a4a4;
-    --corFundo: linear-gradient(135deg, #e0e7ff 0%, #f3f4f6 100%);
-    --corFundo2: #f8f8f8;
     --corSelecionado: #6aeb6a;
+    --corSelecionado2: rgb(234 227 214);;
+    --corSelecionadoDestaque:  rgb(199 189 189);
+
+    --corTexto: #000;
+    --fonteTexto: Segoe UI Historic,Segoe UI,Helvetica,Arial,sans-serif; /*"Open Sans", sans-serif*/;
+    --corTitulo: #202124; /*--corTitulo: #2E4A5B;*/
+
+    --sombraDiscreta: 0px 3px 2px -1px #acacac;
 }
 
 *{
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: monospace;
+    font-family: var(--fonteTexto);
     font-size: 16px
     /*user-select: none*/;
+    transition: all 0.3s ease;
 }
 
 body{
-    background-image: var(--corFundo);
     height: 100vh;
+    transition: all 0.3s ease;
+}
+
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+    border-radius: 20px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(252, 0, 18, 0.1);
+    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+    border-radius: 20px;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: var(--corDestaque);
+    border-radius: 20px;
+}
+
+.btnPrata{
+    background-color: var(--corPrata);
 }
 
 button, #campoPesquisa{
@@ -33,9 +68,81 @@ button{
     border-radius: 5px;
 }
 
+h2{
+    font-size: 38px !important;
+    color: var(--corTitulo);
+}
+
+h3, .btnTab{
+    font-size: 24px;
+    font-family: "Open Sans", sans-serif !important;
+    font-weight: 500;
+    line-height: 1.2;
+    color: #212529;
+}
+
+.ce-header{
+    font-size: 20px !important;
+}
+
+a{
+    font-family: Segoe UI Historic,Segoe UI,Helvetica,Arial,sans-serif; /*serif*/
+}
+
+a:not(:hover){
+    color: var(--corDestaque);
+}
+
+p{
+    font-family: var(--fonteTexto) !important;
+}
+
+.btnFundo{
+  background-color: var(--corPrata);
+}
+
+.linkHover{
+    display: block;
+    border-radius: 5px;
+    margin: 5px;
+    padding: 2px;
+}
+
+.btnFundo:hover, .linkHover:hover{
+  background-color: var(--corHover);
+}
+
+a.btnFundo{
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.btnAcao {
+    background-color: var(--corTercearia);
+    border-radius: 5px;
+    padding: 5px;
+    cursor: pointer;
+    box-shadow: var(--sombraDiscreta);
+}
+
+.btnAcao.btnPrimario{
+    background-color: var(--corDestaque);
+}
+
+.btnAcao.salvo{
+    background-color: #97dc97;
+}
+
+.btnAcao:hover { 
+    background-color: var(--corHover); 
+    transform: translateY(-2px);
+}
+
 input, select{
     border: 1px solid var(--corDestaque);
     padding: 4px;
+    border-radius: 5px;
+    box-shadow: var(--sombraDiscreta);
 }
 
 hr{
@@ -49,7 +156,7 @@ hr{
     opacity: 0.5;
 }
 
-button:hover, .btnMenu:hover, #menuSuspenso > *:hover{
+button:hover, .btnMenu:hover{
     background-color: var(--corHover);
 }
 
@@ -66,7 +173,7 @@ button:hover, .btnMenu:hover, #menuSuspenso > *:hover{
     z-index: 998;
     background-image: var(--corFundo);
     background-attachment: fixed;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+    /*box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);*/
 }
 
 #menu > :nth-child(2){
@@ -84,6 +191,7 @@ button:hover, .btnMenu:hover, #menuSuspenso > *:hover{
     top: 10%;
     position: absolute;
     border-radius: 5px;
+    background-image: var(--corFundo);
 }
 
 #sobretelaEscolherLivro > div{
@@ -197,7 +305,7 @@ button:hover, .btnMenu:hover, #menuSuspenso > *:hover{
     margin-bottom: 2px;
 }
 
-.btnOpcaoFiltro:hover hr, #interacoesPerfil button:hover hr, #areaAcessoRapido > button:hover hr, #areaAcessoRapido > a:hover hr{
+.btnOpcaoFiltro:hover hr, #interacoesPerfil button:hover hr{
     animation: hrPraDireita 0.5s 1;
 }
 
@@ -254,7 +362,7 @@ button:hover, .btnMenu:hover, #menuSuspenso > *:hover{
 #caixaPesquisa, #caixaFiltro{
     display: none;
     position: absolute;
-    background-color: var(--corFundo2);
+    background-image: var(--corFundo2);
     padding: 10px;
     overflow-y: auto;
     overflow-x: hidden;
@@ -282,11 +390,6 @@ button:hover, .btnMenu:hover, #menuSuspenso > *:hover{
     flex-wrap: wrap;
 }
 
-.tituloPagina{
-    font-weight: bold;
-    font-size: 24px;
-}
-
 #btnPesquisar{
     background-color: var(--corDestaque);
     float: right;
@@ -307,9 +410,19 @@ button:hover, .btnMenu:hover, #menuSuspenso > *:hover{
     height: 28px;
 }
 
+.svg-mm2{
+    width: 32px;
+    height: 32px;
+}
+
 .svg-m{
     width: 37px;
     height: 37px;
+}
+
+.svg-m2{
+    width: 60px;
+    height: 60px;
 }
 
 .svg-gg{
@@ -317,8 +430,8 @@ button:hover, .btnMenu:hover, #menuSuspenso > *:hover{
     height: 200px;
 }
 
-#menuSuspenso{
-    background-color: var(--corPrimaria);
+/*#menuSuspenso{
+    background-image: var(--corFundo2);
     position: fixed;
     top: 0;
     left: -200px;
@@ -350,7 +463,7 @@ button:hover, .btnMenu:hover, #menuSuspenso > *:hover{
 
 #menuSuspenso button{
     border: unset;
-    color: rgba(var(--bs-link-color-rgb), var(--bs-link-opacity, 1));
+    color: var(--corDestaque);
 }
 
 #menuSuspenso hr{
@@ -358,7 +471,7 @@ button:hover, .btnMenu:hover, #menuSuspenso > *:hover{
     padding: 0px;
     margin-bottom: 5px;
     margin-top: 5px;
-}
+}*/
 
 input[type="radio"], input[type="checkbox"] {
     appearance: none;
@@ -447,15 +560,19 @@ input[type="radio"]:checked::before, input[type="checkbox"]:checked::before {
     padding: 5px;
 }
 
-#btnPesquisaAprofundada{
+#btnPesquisaAprofundada, #btnMostrarTodasNotificacoes{
     background-color: var(--corDestaque);
     padding: 3px;
     display: flex;
     justify-content: center;
-    background-color: #c2af8a;
+    width: calc(100% - 20px);
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
 }
 
-#btnPesquisaAprofundada:hover{
+#btnPesquisaAprofundada:hover, #btnMostrarTodasNotificacoes:hover{
     background-color: var(--corHover);
 }
 
@@ -471,7 +588,8 @@ input[type="radio"]:checked::before, input[type="checkbox"]:checked::before {
     margin-right: 10px;
     border-radius: 5px;
     max-height: 60%;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    background-image: var(--corFundo2);
 }
 
 #caixaNotificacoes #qtdNotificacoes, .itemNotificacao .descartarNotificacao{
@@ -481,19 +599,25 @@ input[type="radio"]:checked::before, input[type="checkbox"]:checked::before {
 .itemNotificacao{
     padding: 5px;
     border-radius: 5px;
-    border: 1px solid black;
     margin: 10px;
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
+    box-shadow: 0 0 6px 1px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
 }
 
 .itemNotificacao:hover{
     background-color: var(--corHover);
     object-fit: cover;
+    transform: scale(1.03);
 }
 
-.itemNotificacao img{
+.itemAreaConteudoNotificacao{
+    flex-grow: 1;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+.itemNotificacao .imgNotificacao{
     width: 60px;
     height: 70px;
     margin: 5px;
@@ -502,7 +626,11 @@ input[type="radio"]:checked::before, input[type="checkbox"]:checked::before {
 
 .tituloItemNotificacao{
     font-weight: bold;
-    margin: 5px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .itemNotificacao .descartarNotificacao{
@@ -514,7 +642,7 @@ input[type="radio"]:checked::before, input[type="checkbox"]:checked::before {
 }
 
 .conteudoItemNotificacao{
-    margin: 5px;
+    margin: 10px;
 }
 
 #conteudoConfiguracoes{
@@ -593,61 +721,6 @@ input[type="radio"]:checked::before, input[type="checkbox"]:checked::before {
 
 /* PARTE DO BODY DO INDEX */
 
-#areaAcessoRapido{
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-evenly;
-    margin-top: 15px;
-}
-
-#areaAcessoRapido > *{
-    border: 1px solid black;
-    border-radius: 5px;
-    padding: 5px;
-}
-
-#areaAcessoRapido > button, #areaAcessoRapido > a{
-    background-color: unset;
-    margin-bottom: 20px;
-    border: unset;
-}
-
-#areaAcessoRapido > button div, #areaAcessoRapido > a div{
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-    font-size: 30px;
-}
-
-#areaAcessoRapido > button:hover, #areaAcessoRapido > a:hover{
-    background-color: var(--corHover);
-}
-
-#areaAcessoRapido hr{
-    width: 100%;
-}
-
-#areaAcessoRapido > a{
-    color: black;
-    text-decoration: none;
-}
-
-#areaAcessoRapido img{
-    margin-right: 20px;
-    width: 100px;
-    height: 100px;
-}
-
-#areaLivrosEmAlta, #areaLivrosSugeridos{
-    margin: 20px;
-    margin-bottom: 40px;
-    background-color: var(--corFundo2);
-    border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    padding: 5px;
-}
-
 #areaLivrosEmAlta .tituloBarra, #areaLivrosSugeridos .tituloBarra{
     font-size: 24px;
 }
@@ -656,4 +729,138 @@ input[type="radio"]:checked::before, input[type="checkbox"]:checked::before {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-around;
+}
+
+.imagemSessao{
+    width: 450px;
+    height: 450px;
+    border-radius: 100%;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    object-fit: cover;
+}
+
+.sombraSessao {
+    position: relative;
+    width: 100%;
+    height: 20px;
+}
+
+.sombraSessao::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 0;
+    transform: translateX(-50%);
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(
+        ellipse at center,
+        rgba(0, 0, 0, 0.2) 0%,
+        rgba(0, 0, 0, 0.1) 40%,
+        rgba(0, 0, 0, 0) 80%
+    );
+    filter: blur(6px);
+    pointer-events: none;
+}
+
+.areaBtnsEscolha{
+    margin-bottom: 10px;
+    display: flex;
+}
+
+.areaBtnsEscolha button{
+    margin-left: 5px;
+    margin-right: 5px;
+    width: 100%;
+}
+
+
+
+#menuSuspenso{
+    background-image: var(--corFundo2);
+    position: fixed;
+    top: 0;
+    left: -290px;
+    width: 290px;
+    height: 100vh;
+    transition: 0.5s;
+    overflow-y: auto;
+}
+
+#menuSuspenso.aberto{
+    left: 0px;
+    box-shadow: 5px 0 10px rgba(0, 0, 0, 0.5);
+}
+
+#menuSuspenso button{
+    border: unset;
+    color: var(--corDestaque);
+}
+
+#menuSuspenso hr{
+    border-radius: 0px;
+    padding: 0px;
+    margin-bottom: 5px;
+    margin-top: 5px;
+}
+
+
+#menuSuspenso{
+    display: flex;
+    flex-direction: column;
+}
+
+#menuSuspensoBtnSair{
+    margin-bottom: 10px;
+}
+
+#menuSuspensoBtnsAcao, #menuSuspensoBtnSair{
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+#menuSuspensoBtnsAcao > *, #btnMenuSuspensoSair{
+    text-decoration: none;
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 8px;
+    padding-left: 30px;
+    padding-right: 30px;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+#menuSuspensoBtnsAcao >*:hover, #btnMenuSuspensoSair:hover{
+    transform: scale(1.03);
+    background-color: var(--corHover);
+    padding-left: 44px;
+    padding-right: 44px;
+}
+
+#menuSuspenso #profileBackground{
+    object-position: left center;
+    object-fit: cover;
+    height: 100px;
+    width: 100%;
+}
+
+#menuSuspenso .imgPerfil{
+    width: 80px;
+    height: 80px;
+    position: relative;
+    border-radius: 100%;
+    border: 1px solid var(--corDestaque);
+    padding: 2px;
+    background-color: var(--corPrimaria);
+}
+
+.btnTab{
+    font-size: 18px;
+}
+
+.btnTab.selecionado{
+    font-size: 24px;
 }

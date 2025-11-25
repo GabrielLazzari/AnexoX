@@ -1,0 +1,67 @@
+{% extends 'index.html' %}
+
+{% block conteudo %}
+
+<div class="imgFundoLogin" style="background-image: url('static/imagens/sistema/login2.png'); height: 100%;">
+
+</div>
+
+<form class="formUsuario">
+
+    <div class="areaLogin">
+        <div>
+            Informe o seu e-mail de cadastro no AcervoX para receber as instruções de como alterar a senha.
+        </div>
+
+        <div>
+            <label for="campoNome">E-mail</label>
+            <input type="text" name="campoEmail" id="campoEmail" autofocus required>
+        </div>
+
+        <div id="acoesLogin">
+            <a href="login">Cancelar</a>
+            <button type="button" id="btnRecuperarSenha" onclick="recuperarSenha(this)" class="btnPrimario">Recuperar</button>
+        </div>
+
+        <span class="msgRetornoErro" style="color: red;"></span>
+    </div>
+</form>
+
+<script src="static/js/validadorCampos.js"></script>
+<script>
+    function recuperarSenha(btn){
+        
+        setTimeout(() => {
+            var msgRetornoErro = document.querySelector(".msgRetornoErro");
+            var campoEmail = document.getElementById("campoEmail");
+            console.log(campoEmail.classList.contains("inputMsgErro"))
+            if (campoEmail.classList.contains("inputMsgErro")){
+                return;
+            }
+
+            fetch('/recuperarSenhaConfirmar', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({'email': campoEmail.value})
+
+            }).then(response => 
+                response.json()
+
+            ).then(data => {
+                console.log(data)
+                if (data.erro != ""){
+                    msgRetornoErro.innerHTML = data.erro;
+                }else{
+                    window.location.href = "login";
+                }
+
+            }).catch(error => {
+                console.error('Erro:', error);
+            });
+        }, 500);
+    }
+
+    criarEventoCampoObrigatorio(document.getElementById('btnRecuperarSenha'), enviarForm=false);
+</script>
+
+{% endblock %}

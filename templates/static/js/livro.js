@@ -1,4 +1,99 @@
-// Funcionalidades para a página de detalhes do livro
+
+function montarGraficoPreco(){
+    var graficoPrecoLivro = document.getElementById("graficoPrecoLivro");
+    if (!graficoPrecoLivro){
+        return;
+    }
+
+    var idLivro = document.getElementById('idLivro').innerText;
+          
+    fetch('/retornarPrecosLivro', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ idLivro: idLivro })
+    })
+    .then(response => response.json())
+    .then(retorno => {
+        if (retorno.erro != ""){
+            toast.erro(retorno.erro);
+        }else{
+            console.log(retorno)
+            const todasDatas = [...new Set(
+                Object.values(retorno.dados).flat().map(item => item.data)
+            )]
+            .sort((a, b) => {
+                const [da, ma, ya] = a.split('-');
+                const [db, mb, yb] = b.split('-');
+                return new Date(`${ya}-${ma}-${da}`) - new Date(`${yb}-${mb}-${db}`);
+            });
+
+            // Geração automática de cores
+            const cores = [
+                'rgb(255, 99, 132)',
+                'rgb(54, 162, 235)',
+                'rgb(255, 206, 86)',
+                'rgb(75, 192, 192)',
+                'rgb(153, 102, 255)',
+                'rgb(255, 159, 64)'
+            ];
+
+            const datasets = [];
+            let i = 0;
+
+            for (const [loja, registros] of Object.entries(retorno.dados)) {
+                // Criar mapa data -> preço
+                const mapa = {};
+                registros.forEach(r => mapa[r.data] = r.preco);
+
+                // Montar lista de preços na mesma ordem das datas
+                const valores = todasDatas.map(data => mapa[data] ?? null);
+
+                datasets.push({
+                    label: loja,
+                    data: valores,
+                    borderColor: cores[i % cores.length],
+                    backgroundColor: cores[i % cores.length].replace('rgb', 'rgba').replace(')', ',0.2)'),
+                    tension: 0.3,
+                    spanGaps: true
+                });
+                i++;
+            }
+
+            const ctx = document.createElement("canvas");
+            graficoPrecoLivro.appendChild(ctx);
+            new Chart(ctx, {
+                type: 'line',
+                    data: {
+                    labels: todasDatas,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Histórico de preços por loja'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => `${ctx.dataset.label}: R$ ${ctx.formattedValue}`
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                        title: { display: true, text: 'Preço (R$)' },
+                        beginAtZero: false
+                        },
+                        x: {
+                        title: { display: true, text: 'Data da consulta' }
+                        }
+                    }
+                }
+            });
+        }
+    }).catch(error => { console.error('Erro:', error); });
+}
 
 document.addEventListener('DOMContentLoaded', function() {
     
@@ -100,25 +195,28 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    var idLivro = document.getElementById('idLivro').innerText;
+    valoresFiltro = {'telaOrigem': 'livro', 'itemOrigemId': idLivro}
+    var areaComentarios = document.getElementById("areaComentarios");
+    if (areaComentarios){
+        const pag = new Paginacao(areaComentarios, {
+            url: '/procurarComentarios',
+            filtros: valoresFiltro,
+            paginaAtual: valoresFiltro['paginaAtual'] ?? 1,
+            qtdTotalElementos: valoresFiltro.qtdItens,
+            conteudoHtml: conteudoHtmlComentario,
+            flex: false,
+            elScroolDeteccao: window,
+            qtdElPorPagina: 5,
+            logica: function(){
+                if (this.paginaAtual == 1 && this.dados.length == 0){
+                    this.toggleMsg("Nenhum comentário encontrado para o livro. Seje o primeiro(a) a comentar.");
+                }
+            }
+        });
+    }
+
+    montarGraficoPreco();
 });
 
-var idLivro = document.getElementById('idLivro').innerText;
-valoresFiltro = {'telaOrigem': 'livro', 'itemOrigemId': idLivro}
-var areaComentarios = document.getElementById("areaComentarios");
-if (areaComentarios){
-    const pag = new Paginacao(areaComentarios, {
-        url: '/procurarComentarios',
-        filtros: valoresFiltro,
-        paginaAtual: valoresFiltro['paginaAtual'] ?? 1,
-        qtdTotalElementos: valoresFiltro.qtdItens,
-        conteudoHtml: conteudoHtmlComentario,
-        flex: false,
-        elScroolDeteccao: window,
-        qtdElPorPagina: 5,
-        logica: function(){
-            if (this.paginaAtual == 1 && this.dados.length == 0){
-                this.toggleMsg("Nenhum comentário encontrado para o livro. Seje o primeiro(a) a comentar.");
-            }
-        }
-    });
-}

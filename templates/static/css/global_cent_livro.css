@@ -1,41 +1,22 @@
 /* centralizado.css - Estilos globais e de páginas */
 
-/* Variáveis de cor */
-
-
-/* Reset e fonte */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: monospace;
-    font-size: 16px;
+.sessaoMargem{
+    margin-left: -10px;
+    margin-right: -10px;
 }
 
-/* Body e fundo */
-body {
-    font-family: 'Segoe UI', Arial, sans-serif;
-}
-
-#areaAcessoRapido > * {
-    border: none;
-    border-radius: 1rem;
-    box-shadow: 0 4px 16px rgba(99,102,241,0.08);
-    background: #fff;
-    transition: box-shadow 0.2s, background 0.2s;
-    padding: 2rem;
-}
-
-#areaAcessoRapido > *:hover {
-    background: #e0e7ff;
-    box-shadow: 0 8px 24px rgba(99,102,241,0.16);
+.sessaoImagem{
+    margin-left: -10px;
+    margin-right: -10px;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+    background-size: cover !important;
+    backdrop-filter: blur(4px)
 }
 
 #areaLivrosEmAlta, #areaLivrosSugeridos {
-    background: unset;
-    border-radius: 1rem;
     box-shadow: 0 4px 16px rgba(99,102,241,0.08);
-    padding: 2rem;
+    padding: 20px;
 }
 
 /* Botões e inputs */
@@ -45,24 +26,12 @@ button, #campoPesquisa {
 button {
     border-radius: 5px;
 }
-button:hover, .btnMenu:hover, #menuSuspenso > *:hover {
+button:hover, .btnMenu:hover {
     background-color: var(--corHover);
-}
-input, select {
-    border: 1px solid var(--corDestaque);
-    padding: 4px;
-}
-
-
-/* Conteúdo principal */
-#conteudo {
-    position: relative;
-    padding: 10px;
-    overflow: overlay;
 }
 
 /* Títulos */
-.tituloPagina, .livro-titulo, #areaLivrosEmAlta .tituloBarra, #areaLivrosSugeridos .tituloBarra {
+.livro-titulo, #areaLivrosEmAlta .tituloBarra, #areaLivrosSugeridos .tituloBarra {
     font-weight: bold;
     font-size: 24px;
     margin-bottom: 10px;
@@ -71,11 +40,10 @@ input, select {
 }
 
 /* Layout de livro */
-.livro-detalhes, .livro-container {
-    max-width: 1200px;
-    margin: 0 auto;
+.livro-container {
+    margin: 10px 40px;
     padding: 20px;
-    background-image: var(--corFundo);
+    background-image: var(--corFundo2);
     border-radius: 10px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
@@ -98,7 +66,10 @@ input, select {
 /* Ações do livro */
 .livro-acoes { display: flex; flex-direction: column; align-items: flex-end; gap: 20px; }
 .reacoes-container {
-    display: flex; flex-direction: column; gap: 10px;
+    display: flex; 
+    /*flex-direction: column; */
+    flex-direction: row;
+    gap: 10px;
     background-image: var(--corFundo); padding: 15px;
     border-radius: 50px; border: 2px solid var(--corDestaque);
 }
@@ -110,14 +81,6 @@ input, select {
 .btn-reacao:hover { background-color: var(--corHover); transform: scale(1.1); }
 .btn-reacao.selecionado { background-color: var(--corDestaque); }
 .acoes-principais { display: flex; gap: 10px; }
-.btn-acao {
-    background-color: var(--corPrimaria); border: 1px solid var(--corDestaque);
-    border-radius: 8px; padding: 10px; cursor: pointer; transition: all 0.3s ease;
-}
-.btn-acao.salvo{
-    background-color: #97dc97;
-}
-.btn-acao:hover { background-color: var(--corHover); transform: translateY(-2px); }
 
 /* Descrição e autor */
 .livro-descricao { margin-bottom: 30px; }
@@ -127,12 +90,14 @@ input, select {
 }
 .livro-descricao p, .livro-sobre-autor p { line-height: 1.6; color: #555; text-align: justify; }
 .livro-sobre-autor img {
-    width: 120px; height: 120px; border-radius: 100%; border: 2px solid var(--corDestaque);
+    width: 150px; height: 150px !important; border-radius: 100%; border: 2px solid var(--corDestaque);
     margin-bottom: 10px; margin-left: 10px; margin-right: 20px; padding: 5px;
     box-shadow: 0px 0px 5px rgba(0,0,0,0.5); object-fit: cover; float: left;
     background-clip: content-box; shape-outside: ellipse();
 }
-
+.livro-sobre-autor a{
+    color: var(--corDestaque) !important;
+}
 /* Comentários */
 .comentarios-secao { border-top: 2px solid var(--corDestaque); padding-top: 20px; }
 .comentarios-header {
@@ -146,25 +111,29 @@ input, select {
     border-radius: 8px; padding: 10px; cursor: pointer; transition: all 0.3s ease;
 }
 .btn-comentario:hover { background-color: var(--corHover); }
-.novo-comentario { margin-bottom: 20px; }
+.novo-comentario { margin-bottom: 10px; }
 .comentario-form {
     display: flex; gap: 10px; background-image: var(--corFundo);
     padding: 10px; border-radius: 8px; border: 1px solid var(--corDestaque);
 }
 .comentario-input { flex: 1; }
 .input-comentario {
-    width: 100%; padding: 10px; border: 1px solid var(--corDestaque);
-    border-radius: 5px; margin-bottom: 10px; font-size: 14px;
+    width: 100%;
+    margin-bottom: 10px;
+}
+.areaCheckContemSpoiler{
+    display: flex;
+    margin-bottom: 5px;
 }
 .comentario-acoes-form { display: flex; gap: 10px; }
 .btn-enviar-comentario, .btn-cancelar-comentario {
     padding: 8px 16px; border-radius: 5px; cursor: pointer; font-size: 14px; height: 100%;
 }
 .btn-enviar-comentario {
-    background-color: var(--corDestaque); color: white; border: 1px solid var(--corDestaque);
+    background-color: var(--corDestaque); color: white;
 }
 .btn-cancelar-comentario {
-    background-color: var(--corPrata); color: #333; border: 1px solid var(--corPrata);
+    background-color: var(--corPrata); color: #333;
 }
 .btn-opcoes {
     background: none; border: none; cursor: pointer; padding: 5px; border-radius: 5px;
@@ -190,29 +159,103 @@ input, select {
 }
 
 /* Estilos antigos para compatibilidade */
-.livroItem {
+.livroItem2 {
     width: 250px; min-height: 300px; padding: 5px; margin: 15px; margin-top: 5px;
     border-top: 3px solid var(--corDestaque); border-bottom: 3px solid var(--corPrata);
     border-left: 1px solid var(--corPrata); border-right: 1px solid var(--corPrata);
-    display: block; margin-bottom: .625em; background-color: var(--corFundo2);
+    display: block; margin-bottom: .625em; background-image: var(--corFundo2);
     box-shadow: 0 4px 12px rgba(0,0,0,0.2); border-radius: 5px; transition: all 0.3s ease;
 }
-.livroItem:hover { transform: scale(1.03); }
-.livroItem .areaCabecalho { text-align: center; }
-.livroItem .imgLivro { width: 120px; margin-bottom: 10px; }
-.livroItem hr { border-bottom: #ddd 1px solid; border-top: #ddd 0px solid; width: 100%; margin: 0; opacity: 1; }
-.livroItem .titulo a{
+.livroItem2:hover { transform: scale(1.03); }
+.livroItem2 .areaCabecalho { text-align: center; }
+.livroItem2 .imgLivro { width: 120px; margin-bottom: 10px; }
+.livroItem2 hr { border-bottom: #ddd 1px solid; border-top: #ddd 0px solid; width: 100%; margin: 0; opacity: 1; }
+.livroItem2 .titulo a{
     text-decoration: none;
     font-weight: bold;
 }
-.livroItem .autor *, .livroItem .editora *{
+.livroItem2 .autor *, .livroItem2 .editora *{
     text-decoration: none;
     font-size: 14px;
 }
-.dataLabel { font-weight: bold; font-size: 14px; text-transform: uppercase; text-align: left; float: left; margin-right: 4px; }
-.dataContent { text-align: right; white-space: normal; }
+.livroItem2 .dataLabel { font-weight: bold; font-size: 14px; text-transform: uppercase; text-align: left; float: left; margin-right: 4px; }
+.livroItem2 .dataContent { text-align: right; white-space: normal; }
 .livroSelecionadoPublicacao .dataContent, .livroItemSimples .dataContent{ text-align: left; }
-.livroItem .controles { float: right; padding: 10px; padding-top: 0; display: flex; flex-direction: column; }
-.livroItem .controles button { margin-bottom: 10px; }
-.livroItem .controles button:last-child { margin-bottom: 0; }
-.livroItem > div, .livroItem > hr { margin-bottom: 5px; }
+.livroItem2 .controles { float: right; padding: 10px; padding-top: 0; display: flex; flex-direction: column; }
+.livroItem2 .controles button { margin-bottom: 10px; }
+.livroItem2 .controles button:last-child { margin-bottom: 0; }
+.livroItem2 > div, .livroItem2 > hr { margin-bottom: 5px; }
+.livro-links{
+    margin-bottom: 20px;
+    display: flex;
+}
+.livro-link{
+    width: 120px;
+    background-image: var(--corFundo);
+    padding: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2); border-radius: 5px; transition: all 0.3s ease;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 10px;
+}
+
+.livro-link:hover{
+    transform: translateY(-10px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.livro-link img{
+    width: 80px;
+    object-fit: cover;
+}
+
+.livroItem{
+    width: 250px; min-height: 240px; padding: 10px; margin: 15px; margin-top: 5px;
+    border-top: 3px solid var(--corDestaque);
+    display: block; margin-bottom: .625em; background-image: var(--corFundo);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2); border-radius: 5px; transition: all 0.3s ease;
+}
+.livroItem:hover { transform: scale(1.03); }
+.livroItem .areaCabecalho {
+    text-align: center;
+}
+.livroItem hr{
+    display: none;
+}
+.livroItem .imgLivro{
+    width: 100%;
+    height: 300px;
+    border: 1px solid var(--corPrata);
+}
+
+.livroItem .controles{
+    display: flex;
+    margin-top: 10px;
+    justify-content: space-around;
+}
+
+.livroItem .controles button{
+    margin: 5px;
+}
+
+.livroItem .dataLabel, .livroItem .editora{
+    display: none;
+}
+
+.livroItem .titulo a{
+    font-size: 18px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.livroItem .autor .dataContent a{
+    font-size: 14px;
+    text-decoration: none;
+}
+
+.livroItem .titulo, .livroItem .autor .dataContent{
+    margin-top: 10px;
+    text-align: left;
+    
+}

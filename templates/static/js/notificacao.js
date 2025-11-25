@@ -20,9 +20,12 @@ function conteudoHtmlNotificacao(notificacao){
     }
     return `
         <div class="itemNotificacao" idNotificacao="${notificacao.id}">
-            <img src="${notificacao.img}" alt="">
-            <div>
-                <div class="tituloItemNotificacao">${notificacao.titulo}<button class="descartarNotificacao" onclick="removerNotificacao(this)">x</button></div>
+            <img class="imgNotificacao" src="${notificacao.img}" alt="">
+            <div class="itemAreaConteudoNotificacao">
+                <div>
+                    <div class="tituloItemNotificacao">${notificacao.titulo}<button class="descartarNotificacao" onclick="removerNotificacao(this)"><img src="static/icones/close-circle-outline.svg" class="svg-sm"></button></div>
+                    <div class="datahora">${notificacao.data} as ${notificacao.hora}</div>
+                </div>
                 <${tag} ${href} class="conteudoItemNotificacao">${notificacao.conteudo}</${tag}>
             </div>
         </div>
@@ -48,7 +51,9 @@ function atualizarNotificacoes(){
                 mudarCorIconeNotificacao(false);
             }
             
-            elqtdNotificacoes.innerHTML = `(${retorno.notificacoes.length})`
+            console.log(retorno.notificacoes.length)
+
+            elqtdNotificacoes.innerHTML = `(${retorno.notificacoes.length})`;
 
             for (var notificacao of retorno.notificacoes){
                 conteudoNotificacoes.innerHTML += conteudoHtmlNotificacao(notificacao);
@@ -77,7 +82,7 @@ function removerNotificacao(btn){
                 mudarCorIconeNotificacao(false);
             }
 
-            elqtdNotificacoes.innerHTML = `(${retorno.qtdNotificacoes})`
+            //elqtdNotificacoes.innerHTML = `(${retorno.qtdNotificacoes})`
 
             nt.remove();
         }

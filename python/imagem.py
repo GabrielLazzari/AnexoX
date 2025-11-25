@@ -11,7 +11,7 @@ from unidecode import unidecode
 
 def gravar_imagem(nome, conteudo, caminho="", transformar='livro'):
     nome = unidecode(secure_filename(nome.title().replace(" ", "")))
-
+    
     imagem, formato, formato_gravar = processar_imagem(conteudo, transformar)
 
     if imagem is None:
@@ -57,8 +57,10 @@ def processar_imagem(conteudo, transformar='livro'):
         imagem = transformar_formato(imagem)
         imagem = redimensionar(imagem, novo_tamanho=(500, 500))
         #formato_gravar = formato
+    elif transformar == "perfil_capa":
+        imagem = transformar_formato(imagem)
 
-    if formato == "png" and formato_gravar != "jpg":
+    if formato == "png" and formato_gravar != "jpg" and formato_gravar != "jpeg":
         imagem = imagem.quantize(colors=128)
 
     return imagem, formato, formato_gravar

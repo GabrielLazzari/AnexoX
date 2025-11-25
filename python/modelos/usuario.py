@@ -3,12 +3,13 @@ from datetime import datetime
 from enum import Enum as PyEnum
 import hashlib
 import os
+import shutil
 
 from flask_login import UserMixin
 from flask import request as flask_request
 from PIL import Image
 import qrcode
-from sqlalchemy import Enum as SAEnum, event
+from sqlalchemy import Enum as SAEnum, event, inspect
 from unidecode import unidecode
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
@@ -35,6 +36,12 @@ class AcaoLogPreferencia(PyEnum):
     Excluido = 1
 
 
+class PlanoPerfil(PyEnum):
+    Gratuito = 0
+    Padrao = 1
+    Premium = 2
+
+
 class Usuario(db.Model, UserMixin):
     __tablename__ = 'usuario'
     id = db.Column(db.Integer, primary_key=True)
@@ -47,16 +54,26 @@ class Usuario(db.Model, UserMixin):
     descricao = db.Column(db.String(2000), nullable=True, default="")
     tipo = db.Column(SAEnum(TipoUsuario), nullable=False, default=TipoUsuario.Leitor)
     img = db.Column(db.String(256), nullable=True, default="")
+    img_capa = db.Column(db.String(256), nullable=True, default="")
     img_obj = None  # Pra quando procurar livros na internet e ainda nao gravar o livro no banco, tambem nao grava o usuario
     email = db.Column(db.String(100), nullable=True, default="")
     cnpj = db.Column(db.String(14), nullable=True, default="")
+    ativo = db.Column(db.Boolean, default=True)
     notificacoes = db.Column(db.Boolean, default=True)
     notificar_livro = db.Column(db.Boolean, default=True)
     notificar_usuario_seguindo = db.Column(db.Boolean, default=True)
     notificar_lista_seguindo = db.Column(db.Boolean, default=True)
     verificado = db.Column(db.Boolean, default=False)
+    plano = db.Column(SAEnum(PlanoPerfil), nullable=False, default=PlanoPerfil.Gratuito)
+    plano_preco = db.Column(db.Float, default=0)
     data_cadastro = db.Column(db.DateTime, default=datetime.now)
     preferencias_literarias = db.relationship('GeneroLiterario', secondary=PreferenciasLiterariasUsuario.__table__)
+    cor_primaria = db.Column(db.String(20), nullable=True, default="")
+    cor_secundaria = db.Column(db.String(20), nullable=True, default="")
+    cor_tercearia = db.Column(db.String(20), nullable=True, default="")
+    cor_destaque = db.Column(db.String(20), nullable=True, default="")
+    cor_fundo_contraste = db.Column(db.String(20), nullable=True, default="")
+    cor_fundo2_contraste = db.Column(db.String(20), nullable=True, default="")
     seguindo = False  # Usado apenas para indicar se o usuario logado esta seguindo este usuario
     seguidor = False
     qtd_seguindo = 0
@@ -85,6 +102,18 @@ class Usuario(db.Model, UserMixin):
             'qtd_seguindo': self.qtd_seguindo,
             'qtd_seguidores': self.qtd_seguidores
         }
+    
+    def retornar_img(self):
+        if self.img and str(self.img).strip() != "":
+            return self.img
+        
+        return "static\\imagens\\usuarios\\anonimo.png"
+
+    def retornar_img_capa(self):
+        if self.img_capa and str(self.img_capa).strip() != "":
+            return self.img_capa
+        
+        return "static\\imagens\\sistema\\perfil_capa.png"
 
     def validar_campos(self):
         msg_erro = ""
@@ -141,6 +170,12 @@ class Usuario(db.Model, UserMixin):
         self.img = ""
         self.preferencias_literarias = []
 
+        if db.session.query(Usuario).filter(Usuario.nome==self.nome, Usuario.id != self.id).first():
+            return "Já existe um usuário cadastrado com esse nome"
+
+        if self.email != "" and db.session.query(Usuario).filter(Usuario.email == self.email, Usuario.id != self.id).first():
+            return "Já existe um usuário cadastrado com esse e-mail"
+
         usuario_banco = db.session.query(Usuario).filter_by(id=self.id).first()
         self.nome_aux = "|" + unidecode(self.nome.lower().replace(" ", "")) + "|"
         if usuario_banco:
@@ -149,37 +184,102 @@ class Usuario(db.Model, UserMixin):
             usuario_banco.email = self.email
             usuario_banco.cnpj = self.cnpj
             usuario_banco.tipo = self.tipo
-            usuario_banco.atualizar_caminho_imagem(img_aux, 'templates\\static\\imagens\\usuarios')
+            usuario_banco.atualizar_caminho_imagem(img_aux)
             usuario_banco.atualizar_preferencias(preferencias_aux)
             if self.senha.strip() != "" and hash(self.senha) != usuario_banco.senha:
                 usuario_banco.senha = hash(self.senha)
             self = usuario_banco
 
-        else:
-            if db.session.query(Usuario).filter_by(nome=self.nome).first():
-                return "Já existe um usuário cadastrado com esse nome"
-            
+        else:            
             self.senha = hash(self.senha)
             db.session.add(self)
             db.session.flush()
-            self.atualizar_caminho_imagem(img_aux, 'templates\\static\\imagens\\usuarios')
+            self.atualizar_caminho_imagem(img_aux)
             self.atualizar_preferencias(preferencias_aux)
 
         db.session.commit()
 
         return msg_erro
 
+    def ativar(self):
+        if not self.ativo:
+            self.ativo = True
+            db.session.commit()
+
+    def desativar(self):
+        if self.ativo:
+            self.ativo = False
+            db.session.commit()
+
     def excluir(self):
+        from python.modelos.livro import Livro
+
+        caminho_pasta = "templates\\static\\imagens\\usuarios\\" + str(self.id)
+        if os.path.isdir(caminho_pasta):
+            try:
+                shutil.rmtree(caminho_pasta)
+                print(f"Folder '{caminho_pasta}' and its contents deleted successfully.")
+            except OSError as e:
+                print(f"Error deleting folder '{caminho_pasta}': {e}")
+
+        tabelas_alvo = [
+            "reacao",
+            "comentario",
+            "lista_seguir",
+            "lista_livro_livro",
+            "lista_livro",
+            "lista_publicacao_publicacao",
+            "lista_publicacao",
+            "notificacao",
+            "preferencia_literaria_usuario",
+            "publicacao",
+            "r_historico_pesquisa",
+            "r_livros_em_alta",
+            "r_livros_recomendados",
+            "r_pessoas_em_alta",
+            "usuario_seguir"
+        ]
+
+        inspector = inspect(db.engine)
+
+        for table_name in tabelas_alvo:
+            if table_name not in inspector.get_table_names():
+                continue
+
+            fks = inspector.get_foreign_keys(table_name)
+            for fk in fks:
+                if fk['referred_table'] == 'usuario':  # tabela pai
+                    col = fk['constrained_columns'][0]
+                    table = db.Model.metadata.tables[table_name]
+                    print(table, col)
+                    db.session.execute(table.delete().where(table.c[col] == self.id))
+
+        for registro in db.session.query(Notificacao).filter_by(usuario_interagiu_id=self.id).all():
+            db.session.delete(registro)
+            pass
+
+        for registro in db.session.query(Livro).filter_by(autor_id=self.id).all():
+            registro.autor_id = None
+
+        for registro in db.session.query(Livro).filter_by(editora_id=self.id).all():
+            registro.autor_id = None
+
         db.session.delete(self)
         db.session.commit()
 
-    def atualizar_caminho_imagem(self, imagem, caminho_base):
+    def atualizar_caminho_imagem(self, imagem, caminho_base='templates\\static\\imagens\\usuarios', transformar="perfil"):
         if imagem and imagem != '':
             caminho_imagem = os.path.join(caminho_base, str(self.id))
-            caminho_imagem = gravar_imagem("Perfil", imagem, caminho_imagem, transformar="perfil")
+            nome_imagem = "Perfil"
+            if transformar == "perfil_capa":
+                nome_imagem = "Perfilcapa"
+            caminho_imagem = gravar_imagem(nome_imagem, imagem, caminho_imagem, transformar)
             caminho_imagem = caminho_imagem.replace("templates\\", "")
 
-            self.img = caminho_imagem
+            if transformar == "perfil":
+                self.img = caminho_imagem
+            elif transformar == "perfil_capa":
+                self.img_capa = caminho_imagem
 
     def atualizar_preferencias(self, preferencias_literarias):
         preferencias_literarias = list(map(lambda x: x.strip(), preferencias_literarias))
@@ -211,6 +311,45 @@ class Usuario(db.Model, UserMixin):
         img = qr.make_image(fill_color="black", back_color="white")
         img.save(caminho)
         return caminho_estatico
+
+    def atualizar_plano(self, novo_plano):
+        msg_erro = ""
+
+        if isinstance(novo_plano, str):
+            novo_plano = PlanoPerfil[novo_plano.title()]
+        # Se for número, tenta converter para o enum pelo valor
+        elif isinstance(novo_plano, int):
+            novo_plano = PlanoPerfil(novo_plano)
+        else:
+            return "Plano inválido"
+        
+        if novo_plano != self.plano:
+            self.plano = novo_plano
+        else:
+            self.plano = PlanoPerfil.Gratuito
+        db.session.commit()
+
+        return msg_erro
+
+    def atualizar_cores(self, cores):
+        if "corPrimaria" in cores:self.cor_primaria = cores.get("corPrimaria", "").strip()
+        if "corSecundaria" in cores: self.cor_secundaria = cores.get("corSecundaria", "").strip()
+        if "corTercearia" in cores: self.cor_tercearia = cores.get("corTercearia", "").strip()
+        if "corDestaque" in cores: self.cor_destaque = cores.get("corDestaque", "").strip()
+        if "corFundoContraste" in cores: self.cor_fundo_contraste = cores.get("corFundoContraste", "").strip()
+        if "corFundo2Contraste" in cores: self.cor_fundo2_contraste = cores.get("corFundo2Contraste", "").strip()
+
+        db.session.commit()
+
+    def recuperar_senha(self):
+        from python.gerador_senha import gerar_senha
+        from python.notificador import enviar_email_recuperar_senha
+
+        nova_senha = gerar_senha()
+        self.senha = hash(nova_senha)
+        db.session.commit()
+
+        enviar_email_recuperar_senha(self.email, nova_senha)
 
     def controle_seguir_usuario(self, usuario_seguir_id):
         seguindo = False

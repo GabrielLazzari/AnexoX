@@ -6,6 +6,9 @@ var btnMenu = document.getElementById("btnMenu");
 var btnInicio = document.getElementById("btnInicio");
 var btnUsuario = document.getElementById("btnUsuario");
 var btnLivros = document.getElementById("btnLivros");
+var btnLeitores = document.getElementById("btnLeitores");
+var btnAutores = document.getElementById("btnAutores");
+var btnEditoras = document.getElementById("btnEditoras");
 var btnFeed = document.getElementById("btnFeed");
 var btnNotificacoes = document.getElementById("btnNotificacoes");
 var btnAjuda = document.getElementById("btnAjuda");
@@ -25,14 +28,27 @@ var menuSuspenso = document.getElementById("menuSuspenso");
 var pesquisa_livros_sugeridos = [];
 var pesquisa_usuarios_sugeridos = [];
 
+async function usuarioEstaLogado(){
+    const response = await fetch("/usuarioEstaLogado", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
+    });
+
+    return await response.json()
+}
+
 function atualizarMenu(){
-    if (window.innerWidth < 450 && window.getComputedStyle(btnInicio).getPropertyValue("display") == "flex"){
+    /*if (window.innerWidth < 450 && window.getComputedStyle(btnInicio).getPropertyValue("display") == "flex"){
         menuSuspenso.classList.remove("aberto");
         btnInicio.style.display = "none";
         btnUsuario.style.display = "none";
         btnLivros.style.display = "none";
+        if (btnLeitores) { btnLeitores.style.display = "none" };
+        if (btnAutores) { btnAutores.style.display = "none" };
+        if (btnEditoras) { btnEditoras.style.display = "none" };
         btnFeed.style.display = "none";
-        btnNotificacoes.style.display = "none";
+        if (btnNotificacoes) { btnNotificacoes.style.display = "none" };
         btnAjuda.style.display = "none";
 
     }else if (window.innerWidth >= 450 && window.getComputedStyle(btnInicio).getPropertyValue("display") == "none"){
@@ -40,8 +56,23 @@ function atualizarMenu(){
         btnUsuario.style.display = "flex";
         btnLivros.style.display = "flex";
         btnFeed.style.display = "flex";
-        btnNotificacoes.style.display = "flex";
+        if (btnNotificacoes) { btnNotificacoes.style.display = "flex" };
         btnAjuda.style.display = "flex";
+    }*/
+
+    const botoes = Array.from(document.querySelectorAll(".btnMenu:not(#btnMenu):not(#barraPesquisa):not(#btnNotificacoes):not(#btnAjuda):not(#btnUsuario)"));
+    const larguraContainer = window.innerWidth - 80;
+    let larguraUsada = 190;
+
+    botoes.forEach(botao => {
+        botao.style.display = 'flex';
+    });
+
+    for (const botao of botoes) {
+        larguraUsada += botao.offsetWidth;
+        if (larguraUsada > larguraContainer) {
+            botao.style.display = 'none';
+        }
     }
 }
 
@@ -115,6 +146,8 @@ function abrirSobreTela(sobreTela, btn=null){
     if (sobreTela == null){
         return;
     }
+
+    console.log('abrindoSobretela', sobreTela)
 
     sobreTela.classList.add("aberto");
     atualizarMovimentacaoTeclado(sobreTela.id);
@@ -194,9 +227,10 @@ function fecharSobreTela(sobreTela, obrigarFechamento=false){
         if (obrigarFechamento || 
                 event.target.classList.contains("modal") || 
                 (!event.target.closest("#"+sobreTela.id)
-                    && (sobreTela.id != "caixaFiltro" && sobreTela.id != "caixaPesquisa"
+                    && (sobreTela.id != "caixaFiltro" && sobreTela.id != "caixaPesquisa" && sobreTela.id != "caixaNotificacoes"
                         || (sobreTela.id == "caixaFiltro" && (!event.target.closest("#btnFiltrosAbrirFiltros") || document.activeElement != btnFiltrosAbrirFiltros))
                         || (sobreTela.id == "caixaPesquisa" && (!event.target.closest("#campoPesquisa") || document.activeElement != campoPesquisa))
+                        || (sobreTela.id == "caixaNotificacoes" && (!event.target.closest("#btnNotificacoes") || document.activeElement != btnNotificacoes))
                     ) && !event.target.closest("#barraPesquisa")
                 )
             ){
@@ -232,12 +266,61 @@ function retornarInofrmacoesEmComum(){
 function abrirNotificacoes(){
     var menu = document.getElementById("menu");
     var caixaNotificacoes = document.getElementById('caixaNotificacoes');
-    caixaNotificacoes.style.top = menu.getBoundingClientRect().bottom + "px"
+    caixaNotificacoes.style.top = menu.getBoundingClientRect().bottom + "px";
+}
+
+async function compartilharLivroPublicar(idLivro){
+    if (await usuarioEstaLogado()){
+        window.location.href = "criarPublicacao?idLivro=" + idLivro;
+    }else{
+        toast.info("Faça login para compartilhar");
+    }
 }
 
 function compartilharLivro(idLivro){
-    window.location.href = "criarPublicacao?idLivro=" + idLivro;
+    var livro = event.target.closest(".livroItem");
+    var titulo = "";
+    if (livro){
+        titulo = livro.querySelector(".titulo").innerText;
+    }else{
+        document.querySelector(".product-title").innerText;
+    }
+
+    try{
+        if (navigator.share) {
+            navigator.share({
+                title: titulo,
+                text: "",
+                url: window.location.origin + "/livro?id=" + idLivro
+            });
+        } else {
+            navigator.clipboard.writeText(window.location.origin + "/livro?id=" + idLivro).then(() => {
+                toast.sucesso('Link copiado para a área de transferência!');
+            });
+        }
+    }
+    catch{
+        toast.erro('Seu navegador nao tem suporte para compartilhar');
+    }
 }
+
+function atualizarCorTema(){
+    fetch('/retornarCoresUsuario', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ })
+    })
+    .then(response => response.json())
+    .then(retorno => {
+        const root = document.documentElement;
+        for (const [key, value] of Object.entries(retorno)){
+            if (value && value.trim() != ""){
+                root.style.setProperty('--'+key, value);
+            }
+        }
+    }).catch(error => { console.error('Erro:', error); });
+}
+atualizarCorTema();
 
 campoPesquisa.addEventListener("keyup", (event) => {
     if (event.key == "Enter"){
@@ -248,11 +331,10 @@ campoPesquisa.addEventListener("keyup", (event) => {
 });
 
 campoPesquisa.addEventListener("focusin", (event) => {
-    abrirSobreTela("caixaPesquisa")
+    abrirSobreTela("caixaPesquisa");
 });
 
 function abrirCampoPesquisa(){
-    console.log(barraPesquisa.classList)
     if (barraPesquisa.classList.contains("aberto")){
         fecharSobreTela("caixaPesquisa", true);
         fecharSobreTela("caixaFiltro", true);
@@ -274,7 +356,43 @@ function abrirCampoPesquisa(){
     }
 }
 
-var btAbrirFiltrosFoco = false;
+
+var btnsFoco = {};
+
+function controleBtnFoco(idBtn, modalAlvo){
+    btnFoco = document.getElementById(idBtn);
+    if (!btnFoco){ return; }
+    btnsFoco[idBtn] = false;
+    
+    btnFoco.addEventListener("focusin", (event) => {
+        console.log("aber")
+        btnsFoco[idBtn] = true;
+        abrirSobreTela(modalAlvo);
+    });
+
+    btnFoco.addEventListener("click", (event) => {
+        console.log("aqui", btnsFoco[idBtn])
+        if (!btnsFoco[idBtn]){
+            var caixaModal = document.getElementById(modalAlvo);
+            if (caixaModal){
+                if (caixaModal.classList.contains("aberto")){
+                    caixaModal.classList.remove("aberto");
+                    if (caixaModal.id == "caixaFiltro"){
+                        atualizarMovimentacaoTeclado('inicio');
+                    }
+                }else{
+                    abrirSobreTela(caixaModal);
+                }
+            }
+        }
+        btnsFoco[idBtn] = false;
+    });
+}
+
+controleBtnFoco("btnFiltrosAbrirFiltros", "caixaFiltro");
+controleBtnFoco("btnNotificacoes", "caixaNotificacoes");
+
+/*var btAbrirFiltrosFoco = false;
 btnFiltrosAbrirFiltros.addEventListener("focusin", (event) => {
     btAbrirFiltrosFoco = true;
     abrirSobreTela("caixaFiltro");
@@ -290,7 +408,7 @@ btnFiltrosAbrirFiltros.addEventListener("click", (event) => {
         }
     }
     btAbrirFiltrosFoco = false;
-});
+});*/
 
 btnMenu.addEventListener("click", (event) => {
     abrirSobreTela("menuSuspenso");
@@ -385,6 +503,9 @@ document.onkeydown = function(event){
         else if (event.key == "ArrowDown"){executarMovimentacaoTeclado("s");}
         else if (event.key == "ArrowLeft"){executarMovimentacaoTeclado("a");}
         else if (event.key == "ArrowRight"){executarMovimentacaoTeclado("d");}
+        else if (event.key.toLowerCase() == "c"){
+            //window.location.href = "login";
+        }
     }
     if (event.key === "Enter"){
         if (event.target.getAttribute("type") == "checkbox" || event.target.getAttribute("type") == "radio"){
@@ -394,14 +515,16 @@ document.onkeydown = function(event){
 }
 
 document.onkeyup = function(event){
-    console.log(event.key)
     if (event.key == "Tab"){fecharSobreTela();}
     else if (event.key == "Escape"){fecharSobreTela(null, obrigarFechamento=true)}
 }
 
 window.addEventListener('resize', event =>{
     atualizarMenu();
-    barraPesquisa.style.width = "calc("+ document.documentElement.clientWidth + "px - 70px)";
+    if (barraPesquisa.classList.contains("aberto")){
+        barraPesquisa.style.width = "calc("+ document.documentElement.clientWidth + "px - 70px)";
+    }
+
     atualizarTamanhoCaixaPesquisa();
     atualizarTamanhoCaixaFiltros();
 });

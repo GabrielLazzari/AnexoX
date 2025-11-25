@@ -18,6 +18,13 @@
         .codex-editor__redactor{
             padding-bottom: 0px !important;
         }
+        #conteudo{
+            max-width: 1300px;
+            margin: auto;
+        }
+        .paginacaoItens {
+            padding: 10px;
+        }
     </style>
     <script src="static/js/editorjs/editorjs.js"></script>
     <script src="static/js/editorjs/delimiter.js"></script>
@@ -31,17 +38,29 @@
     <script src="static/js/editorjs/editorjs-columns.js"></script>
     <script src="static/js/editorjs/list.js"></script>
 
+    <script src="static/js/jquery/jquery-3.7.1.min.js"></script>
+    <script src="static/js/jquery/jquery.mask.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="static/css/nice_select/nice-select.css">
+    <script src="static/js/nice_select/jquery.nice-select.min.js"></script>
+
     <div style="display: none;" id="idUsuario">{{usuario.id}}</div>
     <div style="display: none;" id="interacaoUsuario">{{interacao}}</div>
     
     <div id="informacoesPerfil" class="blocoInfoPerfil">
 
-        <div id="dadosPerfil">
-            <img src="{{ usuario.img }}" alt="">
-            <div>{{ usuario.nome }}</div>
+        <div id="imagemCapa">
+            <img id="imagemCapaPerfil" src="{{imagem_capa}}" alt="">
+            <label class="fileInput" title="Alterar imagem capa">    
+                <input type="file" name="imagem" onchange="CarregarImagemCapaPerfil(this)"/>       
+            </label>
         </div>
 
-        <div id="estilosLiterariosPerfil">
+        <div id="dadosPerfil" style="background-image: radial-gradient(circle, var(--corPrimaria) 30%, transparent 80%);">
+            <img src="{{ usuario.img }}" alt="">
+            <div id="nomeUsuario">{{ usuario.nome }}</div>
+        </div>
+
+        <!--<div id="estilosLiterariosPerfil" style="visibility: hidden;">
             <div id="preferenciasLiterariasTitulo">Preferências Literárias <hr></div>
             <div id="preferenciasLiterarias">
                 {% for pos in range(4) %}
@@ -57,70 +76,218 @@
             {% endif %}
         </div>
 
-        <div id="acoesPerfil">
+        <div id="acoesPerfil" style="visibility: hidden;">
             {% if usuario.usuario_tela_logado %}
-            <a href="cadastro">Editar Perfil</a>
-            <button onclick="abrirSobreTela('caixaCompartilharPerfil');">Compartilhar Perfil</button>
-            <a href="logout">Sair do Perfil</a>
-            <button onclick="recomendarLivro()">Recomendar Livro</button>
+            <a href="cadastro" class="btnFundo">Editar Perfil</a>
+            <button onclick="abrirSobreTela('caixaCompartilharPerfil');" class="btnFundo">Compartilhar Perfil</button>
+            <a href="logout" class="btnFundo">Sair do Perfil</a>
+            <button onclick="recomendarLivro()" class="btnFundo">Recomendar Livro</button>
             {% elif current_user.is_authenticated %}
             {% if usuario.seguindo %}
-            <button id="btnSeguirUsuario">Deixar de Seguir</button>
+            <button id="btnSeguirUsuario" class="btnFundo">Deixar de Seguir</button>
             {% else %}
-            <button id="btnSeguirUsuario">Seguir</button>
+            <button id="btnSeguirUsuario" class="btnFundo">Seguir</button>
             {% endif %}
-            <button>Conversar</button>
+            {% if current_user.plano.name == 'Premium' %}
+            //<button id="btnDivulgarUsuario" class="btnFundo" onclick="divulgarUsuario('{{usuario.id}}')" title="Divulgar Usuário"><img src="static/icones/megaphone-outline.svg" class="svg-sm"> Divulgar</button>
+            {% endif %}
+            //<button>Conversar</button>
             {% else %}
-            <button>Faça login para interagir</button>
+            <a href="login" class="btnFundo">Faça login para interagir</a>
             {% endif %}
-        </div>
+        </div>-->
     </div>
 
-    <div id="interacoesPerfil" class="blocoInfoPerfil">
-        <button id="interacaoPerfilLivros" class="selecionado">Livros <hr></button>
-        <button id="interacaoPerfilSeguindo">Seguindo ({{ usuario.qtd_seguindo }})<hr></button>
-        <button id="interacaoPerfilSeguidores">Seguidores ({{ usuario.qtd_seguidores }})<hr></button>
-        <button id="interacaoPerfilPublicacoes">Publicações <hr></button>
-    </div>
+    <div id="areaConteudoPerfil">
+        <div class="row" style="align-items: center;">
+            <div id="preferenciasLiterarias3" class="col-lg-9">
+                <div>Preferências Literárias:</div>
+                {% for pos in range(4) %}
+                {% if usuario.preferencias.split(";")|length  > pos %}
+                <div>{{ usuario.preferencias.split(";")[pos] }}</div>
+                {% endif %}
+                {% endfor %}
 
-    <div id="interacoesPerfilVisualizacao"  class="blocoInfoPerfil">
-        <div id="interacaoPerfilLivrosConteudo" class="selecionado">
-            <div id="controleListasLivros">
-                {% if usuario.usuario_tela_logado %}
-                <div class="tituloBarra">Minhas Listas</div>
-                <button class="btnCriarLista" onclick="abrirSobreTelaLista();">Adicionar</button>
+                {% if usuario.preferencias|length  > 0 %}
+                <a class="abrirMaisPreferencias" onclick="abrirSobreTela('sobretelaMostrarPreferencias')">...</a>
                 {% else %}
-                <div class="tituloBarra">Listas</div>
+                <div>Nenhuma preferência</div>
                 {% endif %}
-                <div id="areaListasUsuario"></div>
             </div>
-            <div>
+            <div id="btnsAcaoPerfil" class="col-lg-3">
                 {% if usuario.usuario_tela_logado %}
-                <button class="btnCriarLista" onclick="abrirEscolherLivro()">Adicionar Livro</button>
+                <a href="cadastro" class="btnAcao" title="Editar Perfil"><img src="static/icones/create-outline.svg" alt="" class="svg-mm"></a>
+                <button class="btnAcao" onclick="abrirSobreTela('caixaCompartilharPerfil');" title="Compartilhar"><img src="static/icones/share-social-outline.svg" alt="" class="svg-mm"></button>
+                <a href="logout" class="btnAcao" title="Sair do Perfil"><img src="static/icones/exit-outline.svg" class="svg-mm"></a>
+                <button class="btnAcao" onclick="recomendarLivro()" title="Recomendar Livro"><img src="static/icones/sparkles-outline.svg" class="svg-mm"></button>
+                {% elif current_user.is_authenticated %}
+                {% if usuario.seguindo %}
+                <button id="btnSeguirUsuario" class="btnAcao">Deixar de Seguir</button>
+                {% else %}
+                <button id="btnSeguirUsuario" class="btnAcao">Seguir</button>
                 {% endif %}
-                <div id="areaDescricaoLista"></div>
-                <div id="areaVerLivrosLista"></div>
+                {% if current_user.plano.name == 'Premium' %}
+                <!--<button id="btnDivulgarUsuario" class="btnAcao" onclick="divulgarUsuario('{{usuario.id}}')" title="Divulgar Usuário"><img src="static/icones/megaphone-outline.svg" class="svg-sm"> Divulgar</button>-->
+                {% endif %}
+                <!--<button>Conversar</button>-->
+                {% else %}
+                <a href="login" class="btnAcao">Faça login para interagir</a>
+                {% endif %}
             </div>
         </div>
 
-        <div id="interacaoPerfilSeguindoConteudo"></div>
+        <div id="interacoesPerfil2">
+            <button id="interacaoPerfilLivros" class="text-center selecionado">
+                <img class="icon-gift icon svg-mm2" src="static/icones/library-outline.svg">
+                <h3>Livros</h3>
+            </button>
+            <button id="interacaoPerfilPublicacoes" class="text-center">
+                <img class="icon-gift icon svg-mm2" src="static/icones/newspaper-outline.svg">
+                <h3>Publicações</h3>
+            </button>
+            <button id="interacaoPerfilSeguindo" class="text-center">
+                <img class="icon-gift icon svg-mm2" src="static/icones/person-add-outline.svg">
+                <h3>Seguindo ({{ usuario.qtd_seguindo }})</h3>
+            </button>
+            <button id="interacaoPerfilSeguidores" class="text-center">
+                <img class="icon-gift icon svg-mm2" src="static/icones/person-outline.svg" alt="">
+                <h3>Seguidores ({{ usuario.qtd_seguidores }})</h3>
+            </button>
+        </div>
 
-        <div id="interacaoPerfilSeguidoresConteudo"></div>
+        <div id="interacoesPerfil" class="blocoInfoPerfil" style="display: none;">
+            <button id="interacaoPerfilLivros" class="btnTab selecionado">Livros</button>
+            <button id="interacaoPerfilPublicacoes" class="btnTab">Publicações</button>
+            <button id="interacaoPerfilSeguindo" class="btnTab">Seguindo ({{ usuario.qtd_seguindo }})</button>
+            <button id="interacaoPerfilSeguidores" class="btnTab">Seguidores ({{ usuario.qtd_seguidores }})</button>
+        </div>
 
-        <div id="interacaoPerfilPublicacoesConteudo">
-            {% if usuario.usuario_tela_logado %}
-            <div id="controlePublicacoes">
-                <div class="tituloBarra">Minhas Publicações</div>
-                <a href="criarPublicacao" class="btnCriarLista">Criar Publicação</a>
-                <div id="btnMinhasPublicacoes" class="listapublicacaoitem" idlistapublicacao="minhaspublicacoes" onclick="selecionarListaPubliacao(this)">Minhas Publicações</div>
-                <div id="areaListasPublicacoes"></div>
+        <div id="interacoesPerfilVisualizacao"  class="blocoInfoPerfil">
+            <div id="interacaoPerfilLivrosConteudo" class="selecionado">
+                <div class="row" style="width: 100%;">
+                    <div id="controleListasLivros" class="col-lg-3">
+                        <div class="account_dashboard_sidebar">
+                            {% if usuario.usuario_tela_logado %}
+                            <div class="sidebar_widget_body d-flex account_dashboard_sidebar_profile">
+                                <button class="btnCriarLista" onclick="abrirSobreTelaLista();"><img src="static/icones/add-outline.svg" class="svg-sm" style="width: 20px; height: 20px; filter: brightness(0) saturate(100%) invert(67%) sepia(39%) saturate(423%) hue-rotate(54deg) brightness(90%) contrast(87%);"> Adicionar Lista</button>
+                            </div>
+                            {% endif %}
+                            <div class="sidebar_widget_body p-0">
+                                <ul id="areaListasUsuario" class="sidebar_widget_menu"></ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="controleAreaVerLivrosLista" class="bodyInteracaoPerfil col-lg-9">
+                        <div id="areaCabecalhoLista">
+                            <div>
+                                <div id="areaTituloLista">Livros</div>
+                                <p style="display: none;">Your Total Item: 3</p>
+                            </div>
+                            {% if usuario.usuario_tela_logado %}
+                            <button class="btnCriarLista" onclick="abrirEscolherLivro()"><img src="static/icones/add-outline.svg" class="svg-sm" style="filter: brightness(0) saturate(100%) invert(67%) sepia(39%) saturate(423%) hue-rotate(54deg) brightness(90%) contrast(87%);"> Adicionar Livro</button>
+                            {% endif %}
+                        </div>
+                        <div id="areaDescricaoLista" class="areaDescricaoLista"></div>
+
+                        <div class="product_filter_search" style="display: none;">
+                            <form action="#" class="search_form">
+                                <input type="text" placeholder="Search for books" class="form-control">
+                                <button type="submit" class="search_btn"><img src="static/icones/search-outline.svg" class="svg-sm"></button>
+                            </form>
+
+                            <form class="woocommerce-ordering" method="get">
+                                Sort by
+                                <select id="selectOrdem" name="orderby" class="orderby selectpickers" style="display: none;">
+                                    <option value="menu_order" selected="selected" data-display="Select">Default sorting</option>
+                                    <option value="popularity">Sort by popularity</option>
+                                    <option value="rating">Sort by average rating</option>
+                                    <option value="date">Sort by latest</option>
+                                    <option value="price">Sort by price: low to high</option>
+                                    <option value="price-desc">Sort by price: high to low</option>
+                                </select><div class="nice-select orderby selectpickers" tabindex="0"><span class="current">Default sorting</span><ul class="list"><li data-value="menu_order" class="option selected focus">Default sorting</li><li data-value="popularity" class="option">Sort by popularity</li><li data-value="rating" class="option">Sort by average rating</li><li data-value="date" class="option">Sort by latest</li><li data-value="price" class="option">Sort by price: low to high</li><li data-value="price-desc" class="option">Sort by price: high to low</li></ul></div>
+                            </form>
+                        </div>
+
+                        <div id="areaVerLivrosLista"></div>
+                    </div>
+                </div>
             </div>
-            {% endif %}
-            <div id="areaVerPublicacoesLista">
+
+            <div id="interacaoPerfilSeguindoConteudo"></div>
+
+            <div id="interacaoPerfilSeguidoresConteudo"></div>
+
+            <div id="interacaoPerfilPublicacoesConteudo">
+                <!--{% if usuario.usuario_tela_logado %}
+                <div id="controlePublicacoes">
+                    <div class="tituloBarra">Minhas Publicações</div>
+                    <a href="criarPublicacao" class="btnCriarLista">Criar Publicação</a>
+                    <div id="btnMinhasPublicacoes" class="listapublicacaoitem" idlistapublicacao="minhaspublicacoes" onclick="selecionarListaPubliacao(this)">Minhas Publicações</div>
+                    <div id="areaListasPublicacoes"></div>
+                </div>
+                {% endif %}
+                <div id="areaVerPublicacoesLista">
+
+                </div>-->
+
+                
+
+                <div class="row" style="width: 100%;">
+                    {% if usuario.usuario_tela_logado %}
+                    <div id="controlePublicacoes" class="col-lg-3">
+                        <div class="account_dashboard_sidebar">
+                            <div class="sidebar_widget_body d-flex account_dashboard_sidebar_profile">
+                                <a href="criarPublicacao" class="btnCriarLista"><img src="static/icones/add-outline.svg" class="svg-sm" style="width: 20px; height: 20px; filter: brightness(0) saturate(100%) invert(67%) sepia(39%) saturate(423%) hue-rotate(54deg) brightness(90%) contrast(87%);"> Criar Publicação</a>
+                            </div>
+                            
+                            <div class="sidebar_widget_body p-0">
+                                <div id="btnMinhasPublicacoes" class="listapublicacaoitem" idlistapublicacao="minhaspublicacoes" onclick="selecionarListaPubliacao(this)">Minhas Publicações</div>
+                                <ul id="areaListasPublicacoes" class="sidebar_widget_menu">
+                                    
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="bodyInteracaoPerfil {% if usuario.usuario_tela_logado %}col-lg-9{%else%}col-lg-12{% endif %}">
+                        <div id="areaCabecalhoLista">
+                            <div>
+                                <div id="areaTituloListaPublicacoes">Minhas Publicações</div>
+                                <p style="display: none;">Your Total Item: 3</p>
+                            </div>
+                        </div>
+
+                        <div id="areaDescricaoListaPublicacoes" class="areaDescricaoLista"></div>
+
+                        <div class="product_filter_search" style="display: none;">
+                            <form action="#" class="search_form">
+                                <input type="text" placeholder="Search for books" class="form-control">
+                                <button type="submit" class="search_btn"><img src="static/icones/search-outline.svg" class="svg-sm"></button>
+                            </form>
+
+                            <form class="woocommerce-ordering" method="get">
+                                Sort by
+                                <select id="selectOrdem" name="orderby" class="orderby selectpickers" style="display: none;">
+                                    <option value="menu_order" selected="selected" data-display="Select">Default sorting</option>
+                                    <option value="popularity">Sort by popularity</option>
+                                    <option value="rating">Sort by average rating</option>
+                                    <option value="date">Sort by latest</option>
+                                    <option value="price">Sort by price: low to high</option>
+                                    <option value="price-desc">Sort by price: high to low</option>
+                                </select><div class="nice-select orderby selectpickers" tabindex="0"><span class="current">Default sorting</span><ul class="list"><li data-value="menu_order" class="option selected focus">Default sorting</li><li data-value="popularity" class="option">Sort by popularity</li><li data-value="rating" class="option">Sort by average rating</li><li data-value="date" class="option">Sort by latest</li><li data-value="price" class="option">Sort by price: low to high</li><li data-value="price-desc" class="option">Sort by price: high to low</li></ul></div>
+                            </form>
+                        </div>
+
+                        <div id="areaVerPublicacoesLista"></div>
+                    </div>
+                </div>
 
             </div>
         </div>
     </div>
+    
 
     <div id="caixaCompartilharPerfil" class="sobreTela modal">
         <div>
@@ -185,6 +352,11 @@
     <script src="static/js/usuario.js"></script>
     <script src="static/js/comentario.js"></script>
     <script src="static/js/publicacao.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#selectOrdem').niceSelect();
+        });
+    </script>
 
     {% endblock %}
 </body>

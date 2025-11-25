@@ -1,13 +1,6 @@
-/* Estilos para página de detalhes do livro */
-.livro-detalhes {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-    background-image: var(--corFundo);
-}
 
 .livro-container {
-    background-color: var(--corFundo2);
+    background-image: var(--corFundo2);
     border-radius: 10px;
     padding: 20px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -100,24 +93,6 @@
 .acoes-principais {
     display: flex;
     gap: 10px;
-}
-
-.btn-acao {
-    background-color: var(--corPrimaria);
-    border: 1px solid var(--corDestaque);
-    border-radius: 8px;
-    padding: 10px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.btn-acao:hover {
-    background-color: var(--corHover);
-    transform: translateY(-2px);
-}
-
-.btn-acao.salvo{
-    background-color: #97dc97;
 }
 
 .livro-descricao {
@@ -359,12 +334,9 @@
     margin: 15px;
     margin-top: 5px;
     border-top: 3px solid var(--corDestaque);
-    border-bottom: 3px solid var(--corPrata);
-    border-left: 1px solid var(--corPrata);
-    border-right: 1px solid var(--corPrata);
     display: block;
     margin-bottom: .625em;
-    background-color: var(--corFundo2);
+    background-image: var(--corFundo2);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     border-radius: 5px;
     transition: all 0.3s ease;

@@ -83,7 +83,7 @@ function abrirResponderComentario(btn, telaOrigemId, telaOrigem){
             <input type="hidden" idComentarioPai="${idComentario}">
             <img src="${imgUsuarioResponder}">
             <div class="comentario-input">
-                <div style="display: flex;"><input type="checkbox" class="checkCotemSpoiler"> Contém Spoiler</div>
+                <div class="areaCheckContemSpoiler"><input type="checkbox" class="checkContemSpoiler"> Contém Spoiler</div>
                 <input type="text" class="input-comentario">
                 <div class="comentario-acoes-form">
                     <button class="btn-enviar-comentario">Enviar</button>
@@ -115,7 +115,7 @@ function abrirResponderComentario(btn, telaOrigemId, telaOrigem){
             if (idComentarioPai == 0){
                 toast.erro("O comentário para ser respondido foi alterado ou não existe mais.")
             }else{
-                var spoiler = comentarioResposta.querySelector(".checkCotemSpoiler").checked;
+                var spoiler = comentarioResposta.querySelector(".checkContemSpoiler").checked;
                 comentar(null, textoComentario, telaOrigem, telaOrigemId, spoiler, idComentarioPai)
                 
                 comentarioAux.remove();
@@ -137,6 +137,18 @@ function abrirInfoComentario(btn){
     var comentario = btn.closest(".comentario");
     var idComentario = comentario.querySelector("[idcomentario]").getAttribute("idcomentario");
     idComentarioAux = idComentario;
+
+    var sobretelaInfoComentario = document.getElementById("sobretelaInfoComentario");
+    if (sobretelaInfoComentario){
+        var btnExcluirComentario = sobretelaInfoComentario.querySelector("#btnExcluirComentario");
+        console.log('pppppp', window.location.pathname)
+        if (window.location.pathname == "/livro"){
+            btnExcluirComentario.setAttribute("onclick", "excluirComentario('livro')");
+        }else{
+            btnExcluirComentario.setAttribute("onclick", "excluirComentario('publicacao')");
+        }
+    }
+
     abrirSobreTela('sobretelaInfoComentario', btn);
 }
 

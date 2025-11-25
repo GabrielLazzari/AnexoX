@@ -38,7 +38,7 @@ class Publicacao(db.Model):
             'usuario': {
                 'id': self.usuario.id if self.usuario is not None else '',
                 'nome': self.usuario.nome if self.usuario is not None else '',
-                'img': self.usuario.img if self.usuario is not None else ''
+                'img': self.usuario.img if self.usuario is not None and self.usuario.img.strip() != "" else 'static\\imagens\\usuarios\\anonimo.png'
             },
             'usuario_reagiu': self.usuario_reagiu
         }
@@ -153,9 +153,9 @@ class ListaPublicacao(db.Model):
 
         msg_erro = ""
 
-        mesmo_nome = db.session.query(ListaPublicacao).filter(ListaPublicacao.id!=self.id, ListaPublicacao.nome==self.nome).first()
+        mesmo_nome = db.session.query(ListaPublicacao).filter(ListaPublicacao.id!=self.id, ListaPublicacao.nome==self.nome, ListaPublicacao.usuario_id==self.usuario_id).first()
         if mesmo_nome:
-            return f"Já existe uma lista cadastrada com o nome '{mesmo_nome}'"
+            return f"Já existe uma lista cadastrada com o nome '{mesmo_nome.nome}'"
 
         print("atual", [self.id, self.nome, self.descricao])
 

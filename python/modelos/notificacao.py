@@ -45,7 +45,9 @@ class Notificacao(db.Model):
             'link': self.link,
             'titulo': self.titulo,
             'conteudo': self.conteudo,
-            'img': self.img
+            'img': self.img if self.img is not None and str(self.img).strip() != "" else 'static\\imagens\\usuarios\\anonimo.png',
+            'data': self.data_gravacao.strftime('%d/%m/%Y') if self.data_gravacao else '',
+            'hora': self.data_gravacao.strftime('%H:%M') if self.data_gravacao else '',
         }
     
     def carregar_obj(self, usuario):

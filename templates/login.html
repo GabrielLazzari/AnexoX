@@ -8,7 +8,6 @@
     <title>Login</title>
 
     <link rel="stylesheet" type="text/css" href="static/css/animacoes.css">
-    <link rel="stylesheet" type="text/css" href="static/css/main.css">
 
 </head>
 <body>
@@ -19,7 +18,7 @@
     </div>
 
         {% if pagina and pagina != "" %}
-        <span style="color: red; position: relative; background-color: var(--corFundo2);">Para acessar a página de {{ pagina }} você deve estar logado.</span>
+        <span style="color: red; position: relative; background-image: var(--corFundo2);">Para acessar a página de {{ pagina }} você deve estar logado.</span>
     {% endif %}
 
     <form action="" method="post" id="formLogin" class="formUsuario">
@@ -30,7 +29,7 @@
         <div class="areaLogin">
             <div>
                 <label for="campoNome">Usuário</label>
-                <input type="text" name="campoNome" id="campoNome" value="{{nome}}" required>
+                <input type="text" name="campoNome" id="campoNome" value="{{nome}}" autofocus required>
             </div>
 
             <div>
@@ -40,7 +39,11 @@
 
             <div id="acoesLogin">
                 <a href="cadastro">Primeiro Acesso</a>
-                <button type="submit" id="btnLogin">Login</button>
+                <button type="submit" class="btnPrimario">Login</button>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 0px;">
+                <a href="recuperarSenha">Esqueci minha senha</a>
             </div>
 
             <span class="msgRetornoErro">{{ erro }}</span>

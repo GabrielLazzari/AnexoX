@@ -1,7 +1,9 @@
 import uuid
 
 from flask import session
+from flask_login import current_user
 from unidecode import unidecode
+from werkzeug.utils import secure_filename
 
 from python.cache import cache, session_key
 from python.crawler import procurar_livros_internet
@@ -44,6 +46,35 @@ def processar_filtros(filtros, retornar_quantidade=False):
             livros = Livro.query.filter(*condicao).order_by(*ordenacao).limit(filtros['limit']).offset(filtros['skip']).all()
 
         if len(livros) == 0 and len(filtros['campoPesquisaBusca']) >= 3:
+
+            chave_pesquisa = unidecode(secure_filename(filtros['campoPesquisa'].replace(" ", "")))
+            
+            procurar_novos_livros = True
+            livros_cache_encontrados = cache.get(session_key('livro_cache'))
+
+            if livros_cache_encontrados is not None:
+                livros = []
+                for l, v in livros_cache_encontrados.items():
+                    print("lllll", l, chave_pesquisa in l)
+                    if chave_pesquisa in l:
+                        procurar_novos_livros = False
+                        livros.append(v)
+
+            if procurar_novos_livros:
+                livros = procurar_livros_internet(filtros['campoPesquisa'])
+                livros_cache = {}
+                for pos, l in enumerate(livros):
+                    titulo_aux = "|" + unidecode(l.titulo.lower().replace(" ", "")) + "|"
+                    livro_banco = db.session.query(Livro).filter(or_(Livro.titulo_aux.like(f"%{titulo_aux}%"), Livro.descricao == l.descricao)).first()
+                    if livro_banco:
+                        livros_cache['cache' + chave_pesquisa + str(pos)] = livro_banco.id
+                        livros[pos] = livro_banco
+                    else:
+                        l.id = 'cache' + chave_pesquisa + str(pos)
+                        livros_cache[l.id] = l
+                cache.set(session_key('livro_cache'), livros_cache)
+
+            '''
             livros = procurar_livros_internet(filtros['campoPesquisa'])
             livros_cache = {}
             for pos, l in enumerate(livros):
@@ -55,13 +86,14 @@ def processar_filtros(filtros, retornar_quantidade=False):
                 else:
                     l.id = 'cache' + str(pos)
                     livros_cache[l.id] = l
-            cache.set(session_key('livro_cache'), livros_cache)
+            cache.set(session_key('livro_cache'), livros_cache)'''
+            print(cache)
 
         return livros
 
     elif filtros.get('checkLeitores', False) or filtros.get('checkAutores', False) or filtros.get('checkEditoras', False):
 
-        condicao = []
+        condicao = [Usuario.ativo.is_(True)]
         if filtros['campoPesquisa'] != "":
             condicao.append(Usuario.nome_aux.ilike(f"%{filtros['campoPesquisa']}%"))
         if filtros.get('checkLeitores', False):
@@ -79,7 +111,10 @@ def processar_filtros(filtros, retornar_quantidade=False):
         return Usuario.query.filter(*condicao).order_by(*ordenacao).limit(filtros['limit']).offset(filtros['skip']).all()
 
     elif filtros.get('checkPublicacoes', False):
-        condicao = []
+        if current_user.is_authenticated:
+            condicao = [Publicacao.usuario_id != current_user.id]
+        else:
+            condicao = [Publicacao.usuario_id == 0]
 
         if filtros['campoPesquisa'] != "":
             condicao.append(Publicacao.conteudo.ilike(f"%{filtros['campoPesquisa']}%"))
@@ -90,6 +125,46 @@ def processar_filtros(filtros, retornar_quantidade=False):
         ordenacao = retornar_ordenacao(filtros)
 
         return Publicacao.query.filter(*condicao).order_by(*ordenacao).limit(filtros['limit']).offset(filtros['skip']).all()
+    
+    elif filtros.get('checkNotificacoes', False):
+        condicao = [Notificacao.usuario_id == current_user.id]
+        if filtros['campoPesquisa'] != "":
+            condicao.append(Notificacao.conteudo.ilike(f"%{filtros['campoPesquisa']}%"))
+
+        if retornar_quantidade:
+            return Notificacao.query.filter(*condicao).count()
+        
+        ordenacao = retornar_ordenacao(filtros)
+
+        return Notificacao.query.filter(*condicao).order_by(*ordenacao).limit(filtros['limit']).offset(filtros['skip']).all()
+
+    elif filtros.get('tipoSeguindo', '').strip() != "":
+        condicao = []
+        if (filtros.get("tipoSeguindo") == "seguindo"):
+            condicao.append(UsuarioSeguir.usuario_seguidor_id == filtros["idUsuario"])
+        else:
+            condicao.append(UsuarioSeguir.usuario_seguindo_id == filtros["idUsuario"])
+
+        if filtros['campoPesquisa'] != "":
+            condicao.append(Usuario.nome_aux.ilike(f"%{filtros['campoPesquisa']}%"))
+
+        if retornar_quantidade:
+            return UsuarioSeguir.query.filter(*condicao).count()
+        
+        ordenacao = retornar_ordenacao(filtros)
+
+        if filtros['campoPesquisa'] != "":
+            if (filtros.get("tipoSeguindo") == "seguindo"):
+                usuarios_seguir = UsuarioSeguir.query.join(Usuario, Usuario.id == UsuarioSeguir.usuario_seguidor_id).filter(*condicao).order_by(*ordenacao).limit(filtros['limit']).offset(filtros['skip']).all()
+            else:
+                usuarios_seguir = UsuarioSeguir.query.join(Usuario, Usuario.id == UsuarioSeguir.usuario_seguindo_id).filter(*condicao).order_by(*ordenacao).limit(filtros['limit']).offset(filtros['skip']).all()
+        else:
+            usuarios_seguir = UsuarioSeguir.query.filter(*condicao).order_by(*ordenacao).limit(filtros['limit']).offset(filtros['skip']).all()
+        
+        if (filtros.get("tipoSeguindo") == "seguindo"):
+            return [u.usuario_seguindo for u in usuarios_seguir]
+        else:
+            return [u.usuario_seguidor for u in usuarios_seguir]
 
     return []
 
@@ -125,9 +200,13 @@ def retornar_ordenacao(filtros):
             ordenacao = [Usuario.data_cadastro] if filtros.get('checkDecrescente', False) else [Usuario.data_cadastro.desc()]
 
     elif filtros.get('checkPublicacoes', False):
-        pass
+        ordenacao = [Publicacao.data_gravacao.desc()]
+
+    elif filtros.get('checkNotificacoes', False):
+        ordenacao = [Notificacao.data_gravacao.desc()]
 
     return ordenacao
+
 
 def sugestoes_pesquisa(pesquisa, id_usuario=0, limite=3):
 
@@ -203,20 +282,22 @@ def sugestao_pesquisa_usuarios(pesquisa, id_usuario=0, limite=3):
         usuarios = []
         for pessoa in PessoasEmAlta.query.filter(*condicao_usuarios).order_by(PessoasEmAlta.data_alterado.desc()).limit(limite).all():
             if not any(usuario.id == pessoa.pessoa.id for usuario in usuarios):
-                usuarios.append(pessoa.pessoa)
+                if pessoa.pessoa.ativo:
+                    usuarios.append(pessoa.pessoa)
         
         if len(usuarios) <= limite:
             for pessoa in PessoasEmAlta.query.filter().order_by(PessoasEmAlta.data_alterado.desc()).limit(limite - len(usuarios)).all():
                 if not any(usuario.id == pessoa.pessoa.id for usuario in usuarios):
-                    usuarios.append(pessoa.pessoa)
+                    if pessoa.pessoa.ativo:
+                        usuarios.append(pessoa.pessoa)
 
         if len(usuarios) <= limite:
-            for usuario in Usuario.query.filter().order_by(Usuario.data_cadastro.desc()).limit(limite - len(usuarios)).all():
+            for usuario in Usuario.query.filter(Usuario.ativo.is_(True)).order_by(Usuario.data_cadastro.desc()).limit(limite - len(usuarios)).all():
                 if not any(usuario_aux.id == usuario.id for usuario_aux in usuarios):
                     usuarios.append(usuario)
 
     else:
-        usuarios = Usuario.query.filter(Usuario.nome_aux.ilike(f"%{pesquisa}%")).order_by(Usuario.nome.desc()).limit(3).all()
+        usuarios = Usuario.query.filter(Usuario.ativo.is_(True), Usuario.nome_aux.ilike(f"%{pesquisa}%")).order_by(Usuario.nome.desc()).limit(3).all()
 
     return usuarios
 

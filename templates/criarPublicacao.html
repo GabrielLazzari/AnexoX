@@ -22,6 +22,10 @@
 <body>
 
     {% block conteudo %}
+
+    {% if not current_user.is_authenticated %}
+    <span style="color: red; position: relative; background-image: var(--corFundo2);">Para criar uma Publicação você deve estar logado. <a href="login?pagina=criarPublicacao">Clique aqui para logar.</a></span>
+    {% else %}
     <style src="static/css/editorjs/columns.css"></style>
 
     <div id="conteudoLivro" style="display: none;">{{publicacao.conteudo}}</div>
@@ -64,9 +68,11 @@
             padding: 5px;
         }
 
+        .ce-toolbar__actions {
+            
+        }
         .ce-toolbar {
-            /*left: auto !important;
-		right: -10px !important;  ajuste de distância lateral */
+            
         }
     </style>
     <style src="static/css/editorjs/editorjs-fix.css"></style>
@@ -84,15 +90,16 @@
     <script src="static/js/editorjs/editorjs-columns.js"></script>
     <script src="static/js/editorjs/list.js"></script>
 
-    <div class="tituloPagina">Criar Publicação</div>
+    <div class="section-title-center text-center"><span>Temas</span>
+        <h2 class="display-6">Criar Publicação</h2>
+        <div class="section-divider divider-traingle"></div>
+    </div>
 
     <div id="criarPublicacaoContainer">
         <div id="criarPublicacaoEditorJs"></div>
     </div>
 
-    <button class="ce-example__button" id="saveButton">
-        Salvar
-    </button>
+    <button class="ce-example__button btnFundo" id="saveButton" style="width: 100%; margin-top: 20px; margin-bottom: 20px;">Publicar</button>
 
     <div id="sobretelaEscolherLivro" class="sobreTela modal">
         <div>
@@ -101,10 +108,13 @@
         </div>
     </div>
 
+    {% if current_user.is_authenticated and (current_user.plano.name == 'Padrao' or current_user.plano.name == 'Premium') %}
     <script>
-
         let tools = {
-            header: Header,
+            header: {
+                class: Header,
+                inlineToolbar: true // Enable inline toolbar for Header tool
+            },
             // paragraph : editorjsParagraphLinebreakable,
             paragraph: {
                 class: Paragraph,
@@ -112,14 +122,16 @@
             },
             livro: {
                 class: SelecionarLivro,
+                inlineToolbar: true,
                 config: {
                     onClick: (data) => {
 
                     }
                 }
             },
-            image: {
+            /*image: {
                 class: ImageTool,
+                inlineToolbar: true,
                 config: {
                     captionPlaceholder: 'Descricao',
                     defaultCaption: '',
@@ -140,13 +152,14 @@
                         }
                     }
                 }
-            },
+            },*/
             delimiter: Delimiter,
             marker: Marker,
             alert: Alert,
 
             columns: {
                 class: editorjsColumns,
+                inlineToolbar: true,
                 config: {
                     tools: {
                         header: Header,
@@ -164,6 +177,31 @@
                 },
             }
         }
+    </script>
+    {% else %}
+    <script>
+        tools = {
+            header: {
+                class: Header,
+                inlineToolbar: true // Enable inline toolbar for Header tool
+            },
+            // paragraph : editorjsParagraphLinebreakable,
+            paragraph: {
+                class: Paragraph,
+                inlineToolbar: true,
+            },
+            livro: {
+                class: SelecionarLivro,
+                inlineToolbar: true,
+                config: {
+                    onClick: (data) => { }
+                }
+            }
+        }
+    </script>
+    {% endif %}
+
+    <script>
 
         var conteudoLivro = document.getElementById("conteudoLivro");
         var dataEditor = {};
@@ -200,15 +238,17 @@
         saveButton.addEventListener('click', function () {
             editor.save()
                 .then((savedData) => {
-                    //cPreview.show(savedData, document.getElementById("output"));
                     console.log(savedData)
-                    fetch('/criarPublicacao', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            conteudo: savedData,
+                    if (savedData.blocks.length == 0){
+                        toast.aviso("Escreva algum conteúdo antes de publicar");
+                    }else{
+                        fetch('/criarPublicacao', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                conteudo: savedData,
+                            })
                         })
-                    })
                         .then(response => response.json())
                         .then(retorno => {
                             if (retorno.erro) {
@@ -217,6 +257,8 @@
                                 window.location.href = "usuario";
                             }
                         }).catch(error => { console.error('Erro:', error); });
+                    }
+
                 })
                 .catch((error) => {
                     console.error('Saving error', error);
@@ -244,6 +286,7 @@
             })
         }
     </script>
+    {% endif %}
 
     {% endblock %}
 </body>

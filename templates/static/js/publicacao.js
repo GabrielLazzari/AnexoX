@@ -1,5 +1,6 @@
 var idPublicacaoAux = 0;
 var idListaPublicacaoAux = 0;
+var areaListasPublicacoes = document.getElementById("areaListasPublicacoes");
 
 function abrirInfoPublicacao(btn){
     var publicacao = btn.closest(".publicacaoItem");
@@ -70,6 +71,7 @@ function compartilharPublicacao(idPublicacao){
 
 function abrirSalvarPublicacao(idPublicacao=''){
     abrirSobreTela("sobretelaSalvarPublicacao");
+    document.getElementById("salvarPublicacaoAreaEsoclherLista").style.display = "block";
     document.getElementById("tituloSalvarListaPublicacao").innerHTML = "Salvar Publicação";
     retornarListasPublicacao(true);
 
@@ -79,6 +81,7 @@ function abrirSalvarPublicacao(idPublicacao=''){
 
 async function abrirSobreTelaListaPublicacoesEditar(){
     abrirSobreTela("sobretelaSalvarPublicacao");
+    document.getElementById("salvarPublicacaoAreaEsoclherLista").style.display = "none";
     document.getElementById("tituloSalvarListaPublicacao").innerHTML = "Editar Publicação";
     lista = await retornarListaPublicacao(idListaPublicacaoAux);
     document.getElementById("nomeListaPublicacao").value = lista.nome;
@@ -125,7 +128,14 @@ function salvarListaPublicacao(){
                     fecharSobreTela('sobretelaGerenciarListaPublicacoes', true);
                     Array.prototype.forEach.call(document.querySelectorAll('.listapublicacaoitem[idlistapublicacao="'+idListaPublicacaoAux+'"]'), function(sel){
                         sel.querySelector(".tituloLista").innerText = retorno.listaPublicacao.nome;
-                    })
+                    });
+                    if (areaListasPublicacoes){
+                        var listaSelecionada = areaListasPublicacoes.querySelector('.listapublicacaoitem[idlistapublicacao="'+idListaPublicacaoAux+'"]');
+                        var areaTituloListaPublicacoes = document.getElementById("areaTituloListaPublicacoes");
+                        if (listaSelecionada && areaTituloListaPublicacoes && listaSelecionada.classList.contains("selecionado")){
+                            areaTituloListaPublicacoes.innerHTML = retorno.listaPublicacao.nome;
+                        }
+                    }
                 }
             }
         }).catch(error => { console.error('Erro:', error); });   
@@ -196,7 +206,7 @@ function excluirPublicacaoDaLista(){
             }else{
                 var areaVerPublicacoesLista = document.querySelector("#areaVerPublicacoesLista");
                 if (areaVerPublicacoesLista){
-                    document.querySelector("[idpublicacao='" + idPublicacaoAux + "']").closest(".publicacaoItem").remove();
+                    areaVerPublicacoesLista.querySelector("[idpublicacao='" + idPublicacaoAux + "']").closest(".publicacaoItem").remove();
                     fecharSobreTela("sobretelaInfoPublicacao", true);
                     toast.sucesso("Publicacao removida com sucesso da lista!");
                 }
@@ -236,6 +246,8 @@ function excluirListaPublicacao(){
                 selecionarListaPubliacao(selAtual.previousElementSibling);
             } else if (selAtual.nextElementSibling != null){
                 selecionarListaPubliacao(selAtual.nextElementSibling);
+            }else{
+                selecionarListaPubliacao(document.getElementById("btnMinhasPublicacoes"))
             }
 
             Array.prototype.forEach.call(document.querySelectorAll('.listapublicacaoitem[idlistapublicacao="'+idListaPublicacaoAux+'"]'), function(sel){
@@ -245,7 +257,6 @@ function excluirListaPublicacao(){
     }).catch(error => { console.error('Erro:', error); });
 }
 
-var areaListasPublicacoes = document.getElementById("areaListasPublicacoes");
 function retornarListasPublicacao(carregarEscolha){
     fetch('/retornarListasPublicacao', {
         method: 'POST',
@@ -298,7 +309,7 @@ async function retornarListaPublicacao(idListaPublicacao){
 }
 
 function carregarListaPublicacao(lista, carregarEscolha){
-    var divItem = document.createElement("div");
+    var divItem = document.createElement("li");
     divItem.setAttribute('idlistapublicacao', lista.id);
     divItem.innerHTML = lista.nome;
 
@@ -352,13 +363,24 @@ function carregarListaPublicacao(lista, carregarEscolha){
 }
 
 function selecionarListaPubliacao(divLista){
-    var selAntes = document.getElementById("controlePublicacoes").querySelector('.listapublicacaoitem.selecionado');
-    if (divLista == selAntes && divLista.innerHTML == selAntes.innerHTML){
-        return;
+    var controlePublicacoes = document.getElementById("controlePublicacoes");
+    var selAntes = null;
+    if (controlePublicacoes){
+        selAntes = controlePublicacoes.querySelector('.listapublicacaoitem.selecionado');
+        var areaVerPublicacoesLista = document.getElementById('areaVerPublicacoesLista');
+        if (divLista == selAntes && divLista.innerHTML == selAntes.innerHTML && areaVerPublicacoesLista.innerHTML != ""){
+            return;
+        }
     }
+
+    //alterarInteracaoPerfil("interacaoPerfilPublicacoesConteudo");
 
     if (selAntes) selAntes.classList.remove('selecionado');
     divLista.classList.add('selecionado');
+    var areaTituloListaPublicacoes = document.getElementById("areaTituloListaPublicacoes");
+    if (areaTituloListaPublicacoes){
+        areaTituloListaPublicacoes.innerHTML = divLista.innerText;
+    }
     carregarPublicacaoesUsuario(divLista.getAttribute("idlistapublicacao"));
 }
 
@@ -371,11 +393,11 @@ function carregarPublicacaoesUsuario(idListaPublicacao){
         },
         conteudoHtml: conteudoHtmlPublicacao,
         flex: false,
-        elScroolDeteccao: document.getElementById("conteudo"),
+        elScroolDeteccao: window,// document.getElementById("conteudo"),
         qtdElPorPagina: 5,
         logica: function(){
             if (this.paginaAtual == 1 && this.dados.length == 0){
-                this.toggleMsg("Nenhum comentário encontrado para o livro. Seje o primeiro(a) a comentar.");
+                this.toggleMsg("Nenhuma publicação encontrada. <a href='criarPublicacao'>Crie uma publicação.</a>");
             }
         }
     });

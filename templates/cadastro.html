@@ -17,15 +17,48 @@
 
     {% block conteudo %}
 
-    <div class="tituloPagina">Cadastro de Usuário</div>
+    <style>
+        #imgEscolherCadastro{
+            background-color: white;
+            border-radius: 30%;
+            box-shadow: var(--sombraDiscreta);
+            margin: auto;
+        }
 
-    <form action="" method="post" id="formCadastro" class="formUsuario" enctype='multipart/form-data' ondrop="dropHandler(event)" ondragover="dragOverHandler(event)">
+        #btnAlterarSenha{
+            background-color: var(--corTercearia);
+            padding: 5px;
+        }
+
+        button:hover{
+            background-color: var(--corHover) !important;
+        }
+
+        #sugestaoImgPerfil div{
+            max-width: 800px;
+            margin: center;
+        }
+
+        #sugestaoImgPerfil img{
+            width: 200px;
+            height: 200px;
+            padding: 20px;
+        }
+    </style>
+
+    <div class="section-title-center text-center" style="margin-bottom: 0;">
+        <span></span>
+        <h2 class="display-6">Cadastrar-se</h2>
+        <div class="section-divider divider-traingle"></div>
+    </div>
+
+    <form action="" method="post" id="formCadastro" class="formUsuario" enctype='multipart/form-data' ondrop="dropHandler(event)" ondragover="dragOverHandler(event)" style="height: max-content;">
         <input type="hidden" value="{{ usuario.id }}">
         
-        <div style="max-width: 220px;">
-            <div>
+        <div>
+            <div style="display: flex; flex-direction: column;">
                 Imagem
-                <label class="fileInput" {% if usuario.id != None%}style="background-image: url('{{usuario.img}}');"{% endif %}>    
+                <label id="imgEscolherCadastro" class="fileInput" {% if usuario.id != None%}style="background-image: url('{{usuario.img}}');"{% endif %}>    
                     <input type="file" name="imagem" onchange="carregarImagem(this)"/>       
                 </label>
             </div>
@@ -60,18 +93,18 @@
             {% if editando_usuario %}
             <div>
                 <label for="campoSenha">Senha</label>
-                <button type="button" onclick="abrirSobreTela('areaSenha')">Alterar Senha</button>
+                <button id="btnAlterarSenha" type="button" onclick="abrirSobreTela('areaSenha')">Alterar Senha</button>
             </div>
             
             <div id="areaSenha" class="sobreTela modal">
                 <div style= "max-width: 300px;">
                     <div>
-                        <label for="campoSenha">Senha</label>
+                        <label for="campoSenha">Nova Senha</label>
                         <input type="password" name="campoSenha" id="campoSenha" value="{{usuario.senha}}" >
                     </div>
 
                     <div>
-                        <label for="campoConfirmarSenha">Confirmar Senha</label>
+                        <label for="campoConfirmarSenha">Confirmar Nova Senha</label>
                         <input type="password" name="campoConfirmarSenha" id="campoConfirmarSenha" value="{{usuario.senha_confirmar}}" >
                     </div>
                 </div>
@@ -91,7 +124,7 @@
 
             <div>
                 <label for="campoEmail">E-mail</label>
-                <input type="text" name="campoEmail" id="campoEmail" value="{{usuario.email}}" required>
+                <input type="text" name="campoEmail" id="campoEmail" value="{{usuario.email}}" required email>
             </div>
 
             <div id="divCnpj" style="display: none;">
@@ -110,12 +143,26 @@
                 {% else %}
                 <a type="button" href="login" id="btnCancelarCadastro">Cancelar</a>
                 {% endif %}
-                <button type="submit" id="btnSalvarCadastro">Salvar</button>
+                <button type="submit" id="btnSalvarCadastro" class="btnPrimario">Salvar</button>
             </div>
 
             <span class="msgRetornoErro">{{ erro }}</span>
         </div>
     </form>
+
+    <div id="sugestaoImgPerfil" class="sobreTela modal">
+        <div>
+            <img src="static/imagens/sistema/perfil1.png" alt="">
+            <img src="static/imagens/sistema/perfil2.png" alt="">
+            <img src="static/imagens/sistema/perfil3.png" alt="">
+            <img src="static/imagens/sistema/perfil4.png" alt="">
+            <img src="static/imagens/sistema/perfil5.png" alt="">
+            <img src="static/imagens/sistema/perfil6.png" alt="">
+            <img src="static/imagens/sistema/perfil7.png" alt="">
+            <img src="static/imagens/sistema/perfil8.png" alt="">
+            <img src="static/imagens/sistema/perfil9.png" alt="">
+        </div>
+    </div>
 
     <script>
 

@@ -465,6 +465,11 @@ class toast{
     this.criarToast(msg);
   }
 
+  info(msg){
+    this.cor = "linear-gradient(to right, #1384a0ff, #36c9e7ff)";
+    this.criarToast(msg);
+  }
+
   criarToast(msg){
     var content = document.createElement("div");
     content.style.display = "inline";

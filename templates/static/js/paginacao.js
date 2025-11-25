@@ -1,11 +1,13 @@
 function conteudoHtmlLivro(livro) {
     return `
         <div class="livroItem">
+            <div style="display: none" idlivro="${livro.id}"></div>
             <div class="areaCabecalho">
                 <a href="livro?id=${livro.id}"><img class="imgLivro" src="${livro.img}"></a>
                 <div class="controles">
-                    <button onclick="compartilharLivro('${livro.id}')" title="Compartilhar"><img src="static/icones/share-social-outline.svg" alt="" class="svg-m"></button>
-                    <button onclick="abrirSalvarLivro('${livro.id}', this)" title="Salvar na Lista"><img src="static/icones/bookmark-outline.svg" alt="" class="svg-m"></button>
+                    <button onclick="compartilharLivro('${livro.id}')" title="Compartilhar"><img src="static/icones/share-social-outline.svg" alt="" class="svg-mm"></button>
+                    <button onclick="abrirSalvarLivro('${livro.id}', this)" title="Salvar na Lista"><img src="static/icones/bookmark-outline.svg" alt="" class="svg-mm"></button>
+                    <button onclick="compartilharLivroPublicar(${livro.id})"><img src="static/icones/arrow-redo-outline.svg" class="svg-mm"></button>
                 </div>
             </div>
             <div class="titulo"><a href="livro?id=${livro.id}">${livro.titulo}</a></div>
@@ -28,6 +30,8 @@ function conteudoHtmlLivroUsuario(livro) {
 
     var controles = ``;
 
+    console.log('aaaaa', idUsuario, livro.usuario_id)
+
     if (idUsuario == livro.usuario_id) {
         controles = `
             <div class="controles">
@@ -35,19 +39,22 @@ function conteudoHtmlLivroUsuario(livro) {
                 <button onclick="compartilharLivro('${livro.id}')" title="Compartilhar"><img src="static/icones/share-social-outline.svg" alt="" class="svg-mm"></button>
                 <button onclick="abrirMoverLivro('${livro.id}', '${livro.idLista}', this)" title="Mover para Lista"><img src="static/icones/swap-horizontal-outline.svg" alt="" class="svg-mm"></button>
                 <button onclick="abrirDuplicarLivro('${livro.id}', '${livro.idLista}', this)" title="Duplicar para Lista"><img src="static/icones/duplicate-outline.svg" alt="" class="svg-mm"></button>
+                <button onclick="compartilharLivroPublicar(${livro.id})" title="Criar Publicação"><img src="static/icones/arrow-redo-outline.svg" class="svg-mm"></button>
             </div>
         `;
     } else {
         controles = `
             <div class="controles">
-                <button onclick="compartilharLivro('${livro.id}')" title="Compartilhar"><img src="static/icones/share-social-outline.svg" alt="" class="svg-m"></button>
-                <button onclick="abrirSalvarLivro('${livro.id}', this)" title="Salvar na Lista"><img src="static/icones/bookmark-outline.svg" alt="" class="svg-m"></button>
+                <button onclick="compartilharLivro('${livro.id}')" title="Compartilhar"><img src="static/icones/share-social-outline.svg" alt="" class="svg-mm"></button>
+                <button onclick="abrirSalvarLivro('${livro.id}', this)" title="Salvar na Lista"><img src="static/icones/bookmark-outline.svg" alt="" class="svg-mm"></button>
+                <button onclick="compartilharLivroPublicar(${livro.id})"><img src="static/icones/arrow-redo-outline.svg" class="svg-mm"></button>
             </div>
         `;
     }
 
     return `
         <div class="livroItem" href="livro?id=${livro.id}">
+            <div style="display: none" idlivro="${livro.id}"></div>
             <div class="areaCabecalho">
                 <a href="livro?id=${livro.id}"><img class="imgLivro" src="${livro.img}"></a>
                 ${controles}
@@ -81,10 +88,10 @@ function conteudoHtmlLivroPesquisa(livro) {
 function conteudoHtmlUsuario(usuario) {
     var href = "";
     var tag = "div";
-    if (usuario.ativo) {
+    //if (usuario.ativo) {
         href = `href="usuario?id=${usuario.id}"`;
         tag = "a";
-    }
+    //}
 
     return `
         <div class="usuarioItem">
@@ -95,7 +102,7 @@ function conteudoHtmlUsuario(usuario) {
             </div>
             <div class="usuarioItemAcoes">
                 <button class="btnAcao" onclick="controleSeguirUsuario(${usuario.id}, this)">${usuario.seguindo ? 'Deixar de Seguir' : 'Seguir'}</button>
-                ${href == '' ? '' : '<button class="btnAcao usuarioItemConversar"><img src="static/icones/chatbubbles-outline.svg" class="svg-sm"> Conversar</button>'}
+                <!--${href == '' ? '' : '<button class="btnAcao usuarioItemConversar"><img src="static/icones/chatbubbles-outline.svg" class="svg-sm"> Conversar</button>'}-->
                 ${usuario.seguidor ? '<div class="textoSegue">Segue você</div>' : ''}
             </div>
         </div>
@@ -106,7 +113,7 @@ function conteudoHtmlPublicacao(publicacao) {
     var caminhoImgUsuario = document.getElementById("caminhoImgUsuario").innerHTML;
     var mostrarMaisInfo = false;
     var idUsuarioLogado = document.getElementById("idUsuarioLogado").innerText;
-    if (idUsuarioLogado == publicacao.usuario.id){
+    if (idUsuarioLogado == publicacao.usuario.id || window.location.pathname == "/usuario"){
         mostrarMaisInfo = true;
     }
 
@@ -114,9 +121,9 @@ function conteudoHtmlPublicacao(publicacao) {
         <div class="publicacaoItem">
             <input type="hidden" idpublicacao="${publicacao.id}">
             <div class="publicacaoItemCabecalho">
-                <img src="${publicacao.usuario.img}">
+                <a href="usuario?id=${publicacao.usuario.id}"><img src="${publicacao.usuario.img}"></a>
                 <div>
-                    <div class="publicacaoNomeUsuario">${publicacao.usuario.nome}</div>
+                    <a href="usuario?id=${publicacao.usuario.id}"><div class="publicacaoNomeUsuario">${publicacao.usuario.nome}</div></a>
                     <div class="datahora">${publicacao.data} as ${publicacao.hora}</div>
                 </div>
                 ${mostrarMaisInfo ? '<button class="btnMaisInfo" onclick="abrirInfoPublicacao(this)"></button>' : ''}
@@ -124,19 +131,20 @@ function conteudoHtmlPublicacao(publicacao) {
             <div class="publicacaoItemConteudo">
                 <div class="publicacaoConteudo"></div>
                 <div class="publicacaoAcoes">
-                    <button class="btnReagir ${publicacao.usuario_reagiu ? 'reagido' : ''}" onclick="reagirPublicacao(this)"></button>
-                    <button onclick="compartilharPublicacao(${publicacao.id})"><img src="static/icones/arrow-redo-outline.svg"></button>
-                    <button onclick="abrirSalvarPublicacao(${publicacao.id})"><img src="static/icones/bookmark-outline.svg"></button>
+                    <button class="btnReagir ${publicacao.usuario_reagiu ? 'reagido' : ''}" onclick="reagirPublicacao(this)" title="Reagir"></button>
+                    <button onclick="compartilharPublicacao(${publicacao.id})" title="Compartilhar"><img src="static/icones/arrow-redo-outline.svg" class="svg-mm"></button>
+                    <button onclick="abrirSalvarPublicacao(${publicacao.id})" title="Salvar"><img src="static/icones/bookmark-outline.svg" class="svg-mm"></button>
+                    <button class="btnComentarPublicacao" title="Comentar"><img src="static/icones/chatbubble-outline.svg" class="svg-mm"></button>
                 </div>
             </div>
             <div class="publicacaoItemComentario">
                 <hr>
-                <div class="novo-comentario" style="display: block;">
+                <div class="novo-comentario" style="display: none;">
                     <div class="comentario-form">
                         <img id="imgUsuarioResponder" src="${caminhoImgUsuario}">
                         <div class="comentario-input">
-                            <div style="display: flex;">
-                                <input type="checkbox" id="checkSpoilerNovoComentario" class="checkCotemSpoiler">
+                            <div class="areaCheckContemSpoiler">
+                                <input type="checkbox" class="checkSpoilerNovoComentario" class="checkContemSpoiler">
                                 <label for="checkSpoilerNovoComentario">Contém Spoiler</label>
                             </div>
                             <div style="display: flex; align-items:baseline;">
@@ -180,17 +188,22 @@ function conteudoHtmlPublicacao(publicacao) {
                 filtros: valoresFiltro,
                 conteudoHtml: conteudoHtmlComentario,
                 flex: false,
-                qtdElPorPagina: 5,
+                qtdElPorPagina: 3,
                 tipoCarregamento: 'btnMais',
                 logica: function(){
                     if (this.paginaAtual == 1 && this.dados.length == 0){
-                        this.toggleMsg("Nenhum comentário encontrado. Seje o primeiro(a) a comentar.");
+                        this.toggleMsg("Nenhum comentário. Seje o primeiro(a) a comentar.");
                     }
                 }
             });
 
+            var novoComentario = obj.querySelector(".novo-comentario");
             var btnEnviar = obj.querySelector(".btn-enviar-comentario");
             btnEnviar.addEventListener('click', () => {
+                if (novoComentario){
+                    novoComentario.style.display = "none";
+                }
+
                 var inputComentario = obj.querySelector(".input-comentario");
                 const textoComentario = inputComentario.value.trim();
                 if (textoComentario) {
@@ -203,10 +216,20 @@ function conteudoHtmlPublicacao(publicacao) {
                         }
                     }
                     
-                    var spoiler = document.getElementById("checkSpoilerNovoComentario").checked;
+                    var spoiler = obj.querySelector(".checkSpoilerNovoComentario").checked;
                     comentar(obj.querySelector(".areaComentarios"), textoComentario, 'publicacao', publicacao.id, spoiler, idComentarioPai)
                     
                     inputComentario.value = '';
+                }
+            });
+
+            obj.querySelector(".btnComentarPublicacao").addEventListener('click', () => {
+                if (novoComentario){
+                    if (novoComentario.style.display == "none"){
+                        novoComentario.style.display = "block";
+                    }else{
+                        novoComentario.style.display = "none";
+                    }
                 }
             });
         }
@@ -219,14 +242,43 @@ function conteudoHtmlComentario(comentario) {
     if (comentario.spoiler) {
         btnSpoiler = `<button class="btnComentarioSpoiler" onclick="this.nextElementSibling.style.display = 'block';this.remove();">Atenção! Spoiler! Clique aqui para visualizar o comentário.</button>`;
     }
+
+    var datahora = "";
+    if (comentario.data && comentario.hora && comentario.data.toString().trim() != "" && comentario.hora.toString().trim() != ""){
+        datahora = '<div class="datahora">';
+
+        var temData = false;
+        if (comentario.data && comentario.data.toString().trim() != ""){
+            temData = true;
+            datahora += comentario.data.toString().trim();
+        }
+
+        if (comentario.hora && comentario.hora.toString().trim() != ""){
+            if (temData){ datahora += " as " }
+            datahora += comentario.hora.toString().trim();
+        }
+
+        datahora += '</div>';
+    }
+
+    var idUsuarioLogado = document.getElementById("idUsuarioLogado");
+    if (idUsuarioLogado){
+        idUsuarioLogado = idUsuarioLogado.innerText;
+    }else{
+        idUsuarioLogado = 0;
+    }
+
     return [
         `<div class="comentario ${comentario.nivel > 1 ? 'comentarioResposta' : ''}">
             <input type="hidden" idcomentario="${comentario.id}">
-            <img src="${comentario.usuario.img}">
+            <a href="usuario?id=${comentario.usuario.id}"><img src="${comentario.usuario.img}"></a>
             <div>
                 <div class="comentarioCabecalho">
-                    <div>${comentario.usuario.nome}</div>
-                    <button class="btnMaisInfo" onclick="abrirInfoComentario(this)"></button>
+                    <div>
+                        <a href="usuario?id=${comentario.usuario.id}"><div>${comentario.usuario.nome}</div></a>
+                        ${datahora}
+                    </div>
+                    ${idUsuarioLogado == comentario.usuario.id ? '<button class="btnMaisInfo" onclick="abrirInfoComentario(this)"></button>' : ''}
                 </div>
                 ${btnSpoiler}
                 <div class="comentarioConteudo" ${comentario.spoiler ? 'style="display: none"' : ''}>
@@ -356,12 +408,12 @@ class Paginacao {
         }
 
         if (this.elScroolDeteccao == window) {
-            console.log('win')
             this.elScroolDeteccao = document.documentElement;
         }
 
         this.atualizarTamanho();
-        window.addEventListener("resize", this.atualizarTamanho.bind(this));
+        this._resizeHandler = this.atualizarTamanho.bind(this);
+        window.addEventListener("resize", this._resizeHandler);
     }
 
     criarEstrutura() {
@@ -370,8 +422,12 @@ class Paginacao {
         if (this.mostrarBarraPesquisa) {
             this.el.insertAdjacentHTML("beforeend", `<input class="paginacaoPesquisa" placeholder="Pesquisar...">`);
             this.paginacaoPesquisa = this.el.querySelector(".paginacaoPesquisa");
+            this.pesquisaDigitando = "";
+            this.paginacaoPesquisa.addEventListener("keydown", async (e) => {
+                this.pesquisaDigitando = this.paginacaoPesquisa.value
+            });
             this.paginacaoPesquisa.addEventListener("keyup", async (e) => {
-                if (this.paginacaoPesquisa.value.trim() != "") {
+                if (this.paginacaoPesquisa.value.trim() != "" || this.pesquisaDigitando.trim() != "") {
                     this.paginaAtual = 1;
                     this.filtros.campoPesquisa = this.paginacaoPesquisa.value;
                     this.elPaginacaoItens.innerHTML = "";
@@ -394,6 +450,14 @@ class Paginacao {
         this.elPaginacaoItens.innerHTML = "";
         if (this.tipoCarregamento == "btnMais") {
             this.addBtnCarregarMais("Ver Respostas");
+        }
+    }
+
+    limpar() {
+        this.el.innerHTML = "";
+        if (this._resizeHandler) {
+            window.removeEventListener("resize", this._resizeHandler);
+            this._resizeHandler = null;
         }
     }
 
@@ -620,8 +684,6 @@ class Paginacao {
 
             var resposta = await response.json()
 
-            console.log('r', resposta)
-
             if (resposta.erro != "") {
                 this.toggleCarregando();
                 this.toggleErro(resposta.erro);
@@ -710,7 +772,7 @@ class Paginacao {
             else if (this.filtros.checkAutores) { msg = "Nenhum autor encontrado"; }
             else if (this.filtros.checkEditoras) { msg = "Nenhuma editora encontrada"; }
             else if (this.filtros.checkPublicacoes) { msg = "Nenhuma publicação encontrada"; }
-            if (this.filtros.campoPesquisa != "") {
+            if (this.filtros.campoPesquisa  && this.filtros.campoPesquisa != "") {
                 msg += " para a pesquisa '" + this.filtros.campoPesquisa + "'";
             }
             this.toggleMsg(msg);
@@ -797,8 +859,8 @@ class Paginacao {
     }
 
     atualizarTamanho() {
-        if (this.elScroolDeteccao == this.elPaginacaoItens) {
-            this.el.style.height = this.el.parentElement.getBoundingClientRect().bottom - this.el.getBoundingClientRect().top - 10 + "px";
+        if (this.tipoCarregamento == "scrool" && this.elScroolDeteccao == this.elPaginacaoItens) {
+            this.el.style.height = this.el.parentElement.getBoundingClientRect().bottom - this.el.getBoundingClientRect().top+ "px";
         }
         this.atualizarEstruturaPaginacao();
     }

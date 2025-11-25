@@ -1,8 +1,31 @@
 {% extends 'index.html' %}
 {% block conteudo %}
 
+    <style src="static/css/editorjs/editorjs-fix.css"></style>
+    <style>
+        .codex-editor__redactor{
+            padding-bottom: 0px !important;
+        }
+
+        .paginacaoItens {
+            padding: 10px;
+        }
+    </style>
+
+<script src="static/js/editorjs/editorjs.js"></script>
+<script src="static/js/editorjs/delimiter.js"></script>
+<script src="static/js/editorjs/image.js"></script>
+<script src="static/js/editorjs/editorjs-alert.js"></script>
+<script src="static/js/editorjs/editorjs-selecionar-livro.js"></script>
+<script src="static/js/editorjs/header.js"></script>
+<script src="static/js/editorjs/link.js"></script>
+<script src="static/js/editorjs/marker.js"></script>
+<script src="static/js/editorjs/paragraph.js"></script>
+<script src="static/js/editorjs/editorjs-columns.js"></script>
+<script src="static/js/editorjs/list.js"></script>
+
 {% if erro != ""%}
-<span style="color: red; position: relative; background-color: var(--corFundo2);">{{ erro }}</span>
+<span style="color: red; position: relative; background-image: var(--corFundo2);">{{ erro }}</span>
 <div style="display: none;" id="dadosPublicacao"></div>
 {% else %}
 <div style="display: none;" id="idPublicacao">{{publicacao.id}}</div>
@@ -12,15 +35,16 @@
 </div>
 {% endif %}
 
+<script src="static/js/comentario.js"></script>
+<script src="static/js/publicacao.js"></script>
+
 <script>
     const publicacao = JSON.parse(document.getElementById('dadosPublicacao')?.innerText || '{}');
-    console.log(publicacao)
     var [innerAux, jsAux] = Array.isArray((rt = conteudoHtmlPublicacao(publicacao))) ? rt : [rt, null];
     var areaPublicacao = document.getElementById('areaPublicacao');
     areaPublicacao.innerHTML = innerAux;
-    console.log(innerAux)
     if (jsAux) {
-        jsAux(da);
+        jsAux(areaPublicacao);
     }
 </script>
 

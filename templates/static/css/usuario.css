@@ -4,7 +4,6 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-
     z-index: 1;
     height: 100%;
     display: flex;
@@ -18,7 +17,7 @@
 }
 
 .formUsuario > *{
-    padding: 10px;
+    padding: 20px;
     max-width: 300px;
 }
 
@@ -28,26 +27,10 @@
 
 #acoesLogin{
     display: flex;
-    flex-wrap: wrap;
 }
 
 #acoesLogin > *{
-    width: max-content;
-    margin-bottom: 10px;
-}
-
-#acoesLogin a{
-    color: var(--corDestaque);
-    margin-right: 20px;
-}
-
-#acoesLogin #btnCancelarCadastro{
-    margin-right: 20px;
-}
-
-#acoesLogin button{
-    min-width: 100px;
-    flex-grow: 1;
+    text-align: center;
 }
 
 .tipoPerfilUsuario{
@@ -75,6 +58,15 @@
     height: 200px;
 }
 
+#imagemCapa .fileInput{
+    background-image: url("icones/camera-outline.svg");
+    width: 30px;
+    height: 30px;
+    border: none;
+    position: absolute;
+    right: 30px;
+}
+
 input[type="file"] {
     display: none;
 }
@@ -82,7 +74,7 @@ input[type="file"] {
 .areaLogin{
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
     border-radius: 5px;
-    background-color: var(--corFundo2);
+    background-image: var(--corFundo);
 }
 
 .imgFundoLogin{
@@ -94,6 +86,7 @@ input[type="file"] {
     /* z-index: 0; */
     left: -0px;
     filter: brightness(1.9);
+    filter: blur(2px);
 }
 
 
@@ -102,16 +95,27 @@ input[type="file"] {
     flex-wrap: wrap;
 }
 
-.blocoInfoPerfil > *{
-    padding: 20px;
-}
-
 #informacoesPerfil{
-    margin-bottom: 20px;
+    margin-bottom: 15px;
 }
 
 #informacoesPerfil > *{
-    margin: 0 auto;
+   
+}
+
+#imagemCapa{
+    height: 120px;
+    border-radius: 5px;
+    box-shadow: 0 3px 4px -4px #9c9c9c;
+    width: 100%;
+}
+
+#imagemCapa img{
+    width: 100%;
+    height: 300px;
+    /*mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 80%, transparent 100%);*/
+    mask-image: linear-gradient(to bottom, transparent 0%, black 15%);
+    border-radius: 10px;
 }
 
 #dadosPerfil{
@@ -120,9 +124,19 @@ input[type="file"] {
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
+    z-index: 1;
+    margin-left: 40px;
 }
 
-#dadosPerfil img, .usuarioItem .imgUsuario{
+@media (max-width:500px) {
+    #informacoesPerfil > * {
+        margin-left: unset;
+        margin: 0 auto;
+    }
+}
+
+
+#dadosPerfil img, .usuarioItem .imgUsuario, #informacoesPerfil2 img{
     width: 150px;
     height: 150px;
     border-radius: 100%;
@@ -135,6 +149,11 @@ input[type="file"] {
 
 #dadosPerfil div{
     width: 100%;
+}
+
+#nomeUsuario{
+    font-size: 20px;
+    font-weight: bold;
 }
 
 #acoesPerfil{
@@ -174,6 +193,16 @@ input[type="file"] {
     flex-wrap: wrap;
 }
 
+#preferenciasLiterarias3{
+    display: flex;
+    flex-wrap: wrap;
+}
+
+#preferenciasLiterarias3 > *{
+    margin: 5px;
+    padding: 5px;
+}
+
 #preferenciasLiterarias div{
     padding: 5px;
     width: 100%;
@@ -189,22 +218,64 @@ input[type="file"] {
     box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.4);
 }
 
+#btnsAcaoPerfil{
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+#interacoesPerfil2{
+    display: flex;
+    margin-top: 30px;
+}
+
+#interacoesPerfil2 > *{
+    width: 100%;
+    margin: 10px;
+    padding: 10px;
+}
+
+#interacoesPerfil2 h3{
+    font-size: 20px;
+}
+
+@media (max-width:800px) {
+    #interacoesPerfil2 h3{
+        display: none;
+    }
+}
+
 #interacoesPerfil{
     margin-top: 10px;
+    min-height: 80px;
 }
 
 #interacoesPerfil > *{
     flex-grow: 1;
+    margin: 10px;
+    padding: 10px;
+}
+
+#interacoesPerfil :first-child, #interacoesPerfil2 :first-child{
+    margin-left: 0px;
+}
+
+#interacoesPerfil :last-child, #interacoesPerfil2 :last-child{
+    margin-right: 0px;
 }
 
 #interacoesPerfil button{
-    background-color: unset;
+    background-color: var(--corTercearia);
     border: unset;
+    box-shadow: var(--sombraDiscreta);
 }
 
-#interacoesPerfil button.selecionado{
-    background-color: var(--corPrata);
-    border-radius: 10px;
+#interacoesPerfil button:hover{
+    background-color: var(--corHover);
+}
+
+#interacoesPerfil button.selecionado, #interacoesPerfil2 button.selecionado{
+    background-color: var(--corSelecionadoDestaque);
 }
 
 #conteudoMostrarPreferencias{
@@ -217,6 +288,17 @@ input[type="file"] {
     padding: 5px;
 }
 
+#areaConteudoPerfil{
+    margin-left: 60px;
+    margin-right: 60px;
+}
+
+@media (max-width:500px) {
+    #areaConteudoPerfil {
+        margin-left: 0px;
+        margin-right: 0px;
+    }
+}
 
 /* Usuario em lista */
 .usuarioItem{
@@ -228,9 +310,12 @@ input[type="file"] {
     align-items: center;
     border-radius: 10px;
     padding: 10px;
-    background-color: var(--corFundo2);
+    background-image: var(--corFundo);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease
 }
+
+.usuarioItem:hover { transform: scale(1.03); }
 
 .usuarioItem .usuarioItemDetalhes{
     text-align: center;
@@ -291,7 +376,7 @@ input[type="file"] {
     width: 100%;
     height: fit-content;
     border: 1px solid var(--corPrata) !important;
-    background: var(--corFundo2) !important;
+    background-image: var(--corFundo2) !important;
 }
 
 .usuarioItem .usuarioItemConversar:hover{
@@ -308,34 +393,58 @@ input[type="file"] {
 #interacoesPerfilVisualizacao > div.selecionado{
     display: flex;
     width: 100%;
+    justify-content: center;
 }
 
-#interacaoPerfilLivrosConteudo > *{
-    margin: 10px;
+.bodyInteracaoPerfil{
+    margin-top: 20px;
 }
 
 #interacaoPerfilLivrosConteudo > :nth-child(2){
     flex-grow: 1;
 }
 
-#controleListasLivros, #controlePublicacoes{
-    border: 1px solid var(--corDestaque);
-    border-radius: 5px;
-    padding: 5px;
+#areaCabecalhoLista{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--corTercearia);
+    padding: 20px;
+    border-radius: 0.25rem;
+    font-weight: 500;
+    box-shadow: var(--sombraDiscreta);
+    min-height: 80px;
 }
 
-#areaDescricaoLista{
-    text-align: center;
-    padding-top: 5px;
-    padding-bottom: 5px;
+#areaTituloLista, #areaTituloListaPublicacoes{
+    font-size: 20px;
+}
+
+.areaDescricaoLista{
+    padding-top: 10px;
+    padding-bottom: 10px;
 }
 
 .btnCriarLista{
     border: 1px solid #82B366;
     background-color: #D5E8D4;
     padding: 5px;
-    width: 100%;
     margin-bottom: 5px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    height: max-content;
+    color: black !important;
+    text-decoration: none;
+}
+
+.btnCriarLista:hover{
+    background-color: var(--corHover);
+}
+
+#sobretelaSelecionarListaLivro .btnCriarLista, .account_dashboard_sidebar_profile .btnCriarLista{
+    width: 100%;
 }
 
 #sobretelaInfoLista{
@@ -345,13 +454,13 @@ input[type="file"] {
 #areaVerLivrosLista{
     display: flex;
     flex-wrap: wrap;
+    justify-content: center;
 }
 
-.listalivroitem, .listapublicacaoitem{
+.listapublicacaoitem{
     display: flex;
     align-items: center;
-    padding: 5px;
-    border-radius: 5px;
+    padding: 15px;
     border: unset;
 }
 
@@ -360,10 +469,20 @@ input[type="file"] {
 }
 
 .listalivroitem.selecionado, .listapublicacaoitem.selecionado{
-    background-color: var(--corPrata);
+    background-color: var(--corSelecionadoDestaque);
 }
 
-.listalivroitem .tituloLista, .listapublicacaoitem .tituloLista{
+.listalivroitem:nth-of-type(1), #btnMinhasPublicacoes{
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+
+.listalivroitem:last-of-type, .sidebar_widget_body .listapublicacaoitem:last-child{
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.listapublicacaoitem .tituloLista{
     flex-grow: 1;
     margin-left: 5px;
     margin-right: 5px;
@@ -380,5 +499,56 @@ input[type="file"] {
 /* Conteudo das publicacoes */
 
 #areaVerPublicacoesLista{
-    margin: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+
+
+#informacoesPerfil2{
+    width: 100%;
+}
+
+#informacoesPerfil2 #dadosPerfil2{
+    transform: translateY(30%);
+}
+
+#imagemCapa2{
+    height: 120px;
+    background-color: #8c77a1;
+    border-radius: 5px;
+    box-shadow: 0 3px 4px -4px #9c9c9c;
+    margin-bottom: 85px;
+}
+
+#dadosPerfil2{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#nomeUsuario2{
+    font-size: 20px;
+    font-weight: bold;
+    margin: 10px;
+}
+
+#estilosLiterariosPerfil2{
+    display: flex;
+    align-items: baseline;
+}
+
+.itemEstiloLiterario2{
+    padding: 5px;
+}
+
+#controleUsuarioSeguir{
+    display: flex;
+}
+
+#controleUsuarioSeguir > *{
+    width: 100%;
+    background-color: var(--corTercearia);
+    border-radius: 5px;
+        padding: 20px;
 }

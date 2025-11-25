@@ -1,0 +1,419 @@
+
+.formUsuario{
+    padding: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+
+    z-index: 1;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.formUsuario *{
+    width: 100%;
+}
+
+.formUsuario > *{
+    padding: 10px;
+    max-width: 300px;
+}
+
+.formUsuario > * > *{
+    margin-bottom: 20px;
+}
+
+#acoesLogin{
+    display: flex;
+    flex-wrap: wrap;
+}
+
+#acoesLogin > *{
+    width: max-content;
+    margin-bottom: 10px;
+}
+
+#acoesLogin a{
+    color: var(--corDestaque);
+    margin-right: 20px;
+}
+
+#acoesLogin #btnCancelarCadastro{
+    margin-right: 20px;
+}
+
+#acoesLogin button{
+    min-width: 100px;
+    flex-grow: 1;
+}
+
+.tipoPerfilUsuario{
+    padding-left: 10px;
+}
+
+.tipoPerfilUsuario > *{
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.fileInput{
+    width: 100%;
+    height: 100%;
+    background: url("icones/image-outline.svg") no-repeat center center;
+    background-size: 100% 100%;
+    border: 1px solid var(--corDestaque);
+    background-size: cover;
+}
+
+.formUsuario .fileInput{
+    background-image: url("icones/person-outline.svg");
+    width: 200px;
+    height: 200px;
+}
+
+input[type="file"] {
+    display: none;
+}
+
+.areaLogin{
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+    background-image: var(--corFundo2);
+}
+
+.imgFundoLogin{
+    background-image: url(static/imagens/sistema/login2.png);
+    height: 100%;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    /* z-index: 0; */
+    left: -0px;
+    filter: brightness(1.9);
+    filter: blur(2px);
+}
+
+
+.blocoInfoPerfil{
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.blocoInfoPerfil > *{
+    padding: 20px;
+}
+
+#informacoesPerfil{
+    margin-bottom: 20px;
+}
+
+#informacoesPerfil > *{
+    margin: 0 auto;
+}
+
+#dadosPerfil{
+    text-align: center;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+}
+
+#dadosPerfil img, .usuarioItem .imgUsuario{
+    width: 150px;
+    height: 150px;
+    border-radius: 100%;
+    border: 2px solid var(--corDestaque);
+    margin-bottom: 10px;
+    padding: 5px;
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.5);
+    object-fit: cover;
+}
+
+#dadosPerfil div{
+    width: 100%;
+}
+
+#acoesPerfil{
+    max-width: 300px;
+}
+
+#acoesPerfil > *{
+    text-decoration: none;
+    text-align: center;
+    width: 100%;
+    display: block;
+}
+
+#informacoesPerfil button{
+    width: 100%;
+    height: 30px;
+    padding: 5px;
+    margin-bottom: 10px;
+}
+
+#estilosLiterariosPerfil button{
+    border: 2px solid var(--corPrata);
+    background-color: lightgrey;
+}
+
+#estilosLiterariosPerfil button:hover{
+    background-color: var(--corHover);
+}
+
+#estilosLiterariosPerfil{
+    text-align: center;
+    max-width: 300px;
+}
+
+#preferenciasLiterarias{
+    display: flex;
+    flex-wrap: wrap;
+}
+
+#preferenciasLiterarias div{
+    padding: 5px;
+    width: 100%;
+}
+
+#preferenciasLiterariasTitulo{
+    text-transform: uppercase;
+    font-weight: bold;
+    margin-bottom: 6px;
+}
+
+#preferenciasLiterariasTitulo hr{
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.4);
+}
+
+#interacoesPerfil{
+    margin-top: 10px;
+}
+
+#interacoesPerfil > *{
+    flex-grow: 1;
+}
+
+#interacoesPerfil button{
+    background-color: unset;
+    border: unset;
+}
+
+#interacoesPerfil button.selecionado{
+    background-color: var(--corPrata);
+    border-radius: 10px;
+}
+
+#conteudoMostrarPreferencias{
+    padding-top: 10px;
+    padding-bottom: 10px;
+    text-align: center;
+}
+
+#conteudoMostrarPreferencias > div{
+    padding: 5px;
+}
+
+
+/* Usuario em lista */
+.usuarioItem{
+    width: 100%;
+    margin: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 10px;
+    padding: 10px;
+    background-image: var(--corFundo2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease
+}
+
+.usuarioItem:hover { transform: scale(1.03); }
+
+.usuarioItem .usuarioItemDetalhes{
+    text-align: center;
+    margin-bottom: 5px;
+    margin-left: 5px;
+    margin-right: 5px;
+    font-size: 18px;
+}
+
+.usuarioItem .usuarioItemAcoes{
+    display: flex;
+    flex-direction: column;
+}
+
+.usuarioItem .usuarioItemAcoes > *{
+    width: 100%;
+}
+
+.usuarioItem .usuarioItemAcoes .btnAcao{
+    margin-bottom: 5px;
+    background-color: var(--corDestaque);
+    border: unset;
+    padding: 5px;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.usuarioItem .usuarioItemAcoes .btnAcao:hover{
+    background-color: var(--corPrataEscuro);
+}
+
+.usuarioItem .usuarioItemAcoes .textoSegue{
+    color: var(--corDestaque);
+    text-align: center;
+}
+
+@media screen and (min-width: 1100px) {
+    .usuarioItem {
+        width: 44%;
+    }
+}
+
+@media screen and (max-width: 600px) {
+    .usuarioItem > *{
+        flex-grow: 1;
+    }
+
+    .usuarioItem .areaImg{
+        text-align: center;
+    }
+
+    .usuarioItem .usuarioItemAcoes{
+        width: 100%;
+    }
+}
+
+.usuarioItem .usuarioItemConversar{
+    width: 100%;
+    height: fit-content;
+    border: 1px solid var(--corPrata) !important;
+    background-image: var(--corFundo2) !important;
+}
+
+.usuarioItem .usuarioItemConversar:hover{
+    background-color: var(--corHover);
+}
+
+
+/* BLOCOS DE CONTUDO */
+/* Contuedo das listas */
+#interacoesPerfilVisualizacao > div{
+    display: none;
+}
+
+#interacoesPerfilVisualizacao > div.selecionado{
+    display: flex;
+    width: 100%;
+    justify-content: center;
+}
+
+#interacaoPerfilLivrosConteudo > :nth-child(2){
+    flex-grow: 1;
+}
+
+#areaCabecalhoLista{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--corTercearia);
+    padding: 20px;
+    border-radius: 0.25rem;
+    font-weight: 500;
+    box-shadow: 0 3px 4px -4px #9c9c9c;
+    min-height: 80px;
+}
+
+#areaTituloLista, #areaTituloListaPublicacoes{
+    font-size: 20px;
+}
+
+.areaDescricaoLista{
+    padding-top: 0px;
+    padding-bottom: 10px;
+}
+
+.btnCriarLista{
+    border: 1px solid #82B366;
+    background-color: #D5E8D4;
+    padding: 5px;
+    margin-bottom: 5px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    height: max-content;
+    color: black !important;
+    text-decoration: none;
+}
+
+.btnCriarLista:hover{
+    background-color: var(--corHover);
+}
+
+#sobretelaSelecionarListaLivro .btnCriarLista, .account_dashboard_sidebar_profile .btnCriarLista{
+    width: 100%;
+}
+
+#sobretelaInfoLista{
+    border: 1px solid var(--corDestaque);
+}
+
+#areaVerLivrosLista{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.listapublicacaoitem{
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border: unset;
+}
+
+.listalivroitem:hover, .listapublicacaoitem:hover{
+    background-color: var(--corHover);
+}
+
+.listalivroitem.selecionado, .listapublicacaoitem.selecionado{
+    background-color: var(--corDestaque);
+}
+
+.listalivroitem:nth-of-type(1), #btnMinhasPublicacoes{
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+
+.listalivroitem:last-of-type, .sidebar_widget_body .listapublicacaoitem:last-child{
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.listapublicacaoitem .tituloLista{
+    flex-grow: 1;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+
+/* Conteudo dos seguindo e seguidores */
+
+#interacaoPerfilSeguindoConteudo, #interacaoPerfilSeguidoresConteudo{
+    flex-wrap: wrap;
+}
+
+
+/* Conteudo das publicacoes */
+
+#areaVerPublicacoesLista{
+    display: flex;
+    flex-direction: column;
+}

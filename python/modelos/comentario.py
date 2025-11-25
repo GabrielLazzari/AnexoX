@@ -24,8 +24,9 @@ class Comentario(db.Model):
     origem = db.Column(SAEnum(OrigemComentario), nullable=False, default=OrigemComentario.Livro)
     origem_id = db.Column(db.Integer)
     comentario_pai_id = db.Column(db.Integer, db.ForeignKey('comentario.id'), nullable=True)
-    comentarios = db.relationship('Comentario', backref=db.backref('comentario_pai', remote_side=[id]), lazy='dynamic')
+    comentarios = db.relationship('Comentario', backref=db.backref('comentario_pai', remote_side=[id]), lazy='dynamic', cascade="all, delete-orphan")
     nivel_comentario = db.Column(db.Integer, default = 1)
+    data_gravacao = db.Column(db.DateTime, default=datetime.now)
     usuario_reagiu = False
 
     def dicionario(self):
@@ -34,8 +35,10 @@ class Comentario(db.Model):
             'usuario': {
                 'id': self.usuario.id,
                 'nome': self.usuario.nome,
-                'img': self.usuario.img
+                'img': self.usuario.img if self.usuario is not None and str(self.usuario.img).strip() != "" else 'static\\imagens\\usuarios\\anonimo.png'
             },
+            'data': self.data_gravacao.strftime('%d/%m/%Y') if self.data_gravacao else '',
+            'hora': self.data_gravacao.strftime('%H:%M') if self.data_gravacao else '',
             'conteudo': self.conteudo,
             'spoiler': self.spoiler,
             'nivel': self.nivel_comentario,

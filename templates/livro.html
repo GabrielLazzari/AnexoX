@@ -2,113 +2,199 @@
 
 {% block conteudo %}
 
+<link rel="stylesheet" type="text/css" href="static/css/template/3ebukz.css">
 <div style="display: none;" id="idLivro">{{livro.id}}</div>
 
-<div class="livro-detalhes">
-    <div class="livro-container">
-        <!-- Seção principal do livro -->
-        <div class="livro-principal">
-            
-            <!-- Imagem do livro -->
-            <div class="livro-imagem">
-                <img src="{{livro.img}}" alt="{{ livro.titulo }}" class="capa-livro">
-            </div>
-            
-            <!-- Informações do livro -->
-            <div class="livro-info">
-                <h1 class="livro-titulo">{{ livro.titulo }}</h1>
-                <div class="livro-dados">
-                    <p><strong>Autor:</strong> {% if livro.autor.id is not none %}<a href="usuario?id={{livro.autor.id}}">{{ livro.autor.nome }}</a>{% else %}{{ livro.autor.nome }}{% endif %}</p>
-                    <p><strong>Editora:</strong> {% if livro.autor.id is not none %}<a href="usuario?id={{livro.editora.id}}">{{ livro.editora.nome }}</a>{% else %}{{ livro.editora.nome }}{% endif %}</p>
-                    {% if livro.data_publicacao != "" %}
-                    <p><strong>Data Publicação:</strong> {{ livro.data_publicacao }}</p>
-                    {% endif %}
-                    <p><strong>Estilo:</strong> {{ livro.estilo|default("Romance") }}</p>
-                    <p><strong>Número:</strong> {{ livro.numero|default("1") }}</p>
+<div class="vs-product-wrapper space-top space-extra-bottom">
+    <div class="container">
+        <div class="row gx-60 animate__fadeInUp wow-animated" data-wow-delay="0.30s">
+            <div class="col-lg-6">
+                <div class="product-slide-row"
+                    style="visibility: visible; animation-delay: 0.3s; animation-name: fadeInUp;">
+                    <div class="product-big-img">
+                        <div class="img"><img src="{{livro.img}}" alt="Product Image"></div>
+                    </div>
                 </div>
             </div>
-            
-            <!-- Ações do livro -->
-            <div class="livro-acoes">
-                <div class="reacoes-container">
-                    <button class="btn-reacao emoji-btn {% if reacao_usuario == 'muitobom' %}selecionado{% endif %}" title="Muito bom">😍</button>
-                    <button class="btn-reacao emoji-btn {% if reacao_usuario == 'bom' %}selecionado{% endif %}" title="Bom">😊</button>
-                    <button class="btn-reacao emoji-btn {% if reacao_usuario == 'ok' %}selecionado{% endif %}" title="Ok">😐</button>
-                    <button class="btn-reacao emoji-btn {% if reacao_usuario == 'ruim' %}selecionado{% endif %}" title="Ruim">😕</button>
-                    <button class="btn-reacao emoji-btn {% if reacao_usuario == 'muitoruim' %}selecionado{% endif %}" title="Muito ruim">😠</button>
-                    <button class="btn-reacao emoji-btn {% if reacao_usuario == 'nãogostei' %}selecionado{% endif %}" title="Terrível">😡</button>
-                </div>
-                <div class="acoes-principais">
-                    <button class="btn-acao" title="Compartilhar" onclick="compartilharLivro(`{{livro.id}}`)">
-                        <img src="static/icones/share-social-outline.svg" class="svg-sm">
-                    </button>
-                    <button id="btnAcaoSalvo" class="btn-acao {% if livro.livro_salvo %}salvo{% else %}{% endif %}" title="Salvar" onclick="abrirSalvarLivro('{{livro.id}}', this)">
-                        <img src="static/icones/bookmark-outline.svg" class="svg-sm">
-                    </button>
-                </div>
-            </div>
-        </div>
-        
-        {% if livro.descricao != "" %}
-        <div class="livro-descricao">
-            <h2>Descrição</h2>
-            <p>{{ livro.descricao | safe }}</p>
-        </div>
-        {% endif %}
-
-        {% if livro.autor.descricao != "" %}
-        <div class="livro-sobre-autor">
-            <h2>Sobre o Autor: {{livro.autor.nome}}</h2>
-            <div>
-                <img src="{{ livro.autor.img }}">
-                <p>{{ livro.autor.descricao | safe }}</p>
-            </div>
-        </div>
-        {% endif %}
-        
-        <!-- Seção de comentários -->
-        <div class="comentarios-secao">
-            <div class="comentarios-header">
-                <h2>Comentários</h2>
-                <button class="btn-acao btn-comentario" title="Adicionar comentário">
-                    Comentar
-                </button>
-            </div>
-
-            {% if current_user.is_authenticated %}
-            <!-- Formulário para novo comentário -->
-            <div class="novo-comentario" style="display: none;">
-                <div class="comentario-form">
-                    <img id="imgUsuarioResponder" src="{{img_usuario}}">
-                    <div class="comentario-input">
-                        <div style="display: flex;">
-                            <input type="checkbox" id="checkSpoilerNovoComentario" class="checkCotemSpoiler">
-                            <label for="checkSpoilerNovoComentario">Contém Spoiler</label>
+            <div class="col-lg-6">
+                <div class="product-about" style="visibility: visible; animation-delay: 0.3s; animation-name: fadeInUp;">
+                    <div class="product-rating" style="display: none;">
+                        <div class="star-rating" role="img" aria-label="Rated 5.00 out of 5">
+                            <span></span>
                         </div>
-                        <input type="text" class="input-comentario">
-                        <div class="comentario-acoes-form">
-                            <button class="btn-enviar-comentario">Enviar</button>
-                            <button class="btn-cancelar-comentario">Cancelar</button>
+                        <span class="product-rating__total">Review (03)</span>
+                    </div>
+                    <h2 class="product-title animated-title">{{livro.titulo}}</h2>
+                    <div class="product_meta">
+                        <span>
+                            <p>Autor:</p> <a href="usuario?id={{livro.autor.id}}">{{livro.autor.nome}}</a></span>
+                        </span>
+                        <span>
+                            <p>Editora:</p> <a href="usuario?id={{livro.editora.id}}">{{livro.editora.nome}}</a></span>
+                        </span>
+                        {% if livro.data_publicacao != "" %}
+                        <span>
+                            <p>Data Publicação:</p>{{livro.data_publicacao}}</a></span>
+                        </span>
+                        {% endif %}
+                        {% if livro.estilos != "" %}
+                        <span>
+                            <p>Estilos:</p>{{livro.estilos}}</a></span>
+                        </span>
+                        {% endif %}
+                    </div>
+                    <div class="actions">
+                        <div class="reacoes-container">
+                            <button class="btn-reacao emoji-btn {% if reacao_usuario == 'muitobom' %}selecionado{% endif %}"
+                                title="Muito bom">😍</button>
+                            <button class="btn-reacao emoji-btn {% if reacao_usuario == 'bom' %}selecionado{% endif %}"
+                                title="Bom">😊</button>
+                            <button class="btn-reacao emoji-btn {% if reacao_usuario == 'ok' %}selecionado{% endif %}"
+                                title="Ok">😐</button>
+                            <button class="btn-reacao emoji-btn {% if reacao_usuario == 'ruim' %}selecionado{% endif %}"
+                                title="Ruim">😕</button>
+                            <button class="btn-reacao emoji-btn {% if reacao_usuario == 'muitoruim' %}selecionado{% endif %}"
+                                title="Muito ruim">😠</button>
+                            <button class="btn-reacao emoji-btn {% if reacao_usuario == 'nãogostei' %}selecionado{% endif %}"
+                                title="Terrível">😡</button>
+                        </div>
+                        <div class="acoes-principais">
+                            <button class="btnAcao" title="Compartilhar" onclick="compartilharLivro(`{{livro.id}}`)">
+                                <img src="static/icones/share-social-outline.svg" class="svg-mm">
+                            </button>
+                            <button id="btnAcaoSalvo" class="btnAcao {% if livro.livro_salvo %}salvo{% else %}{% endif %}" title="Salvar Livro" onclick="abrirSalvarLivro('{{livro.id}}', this)">
+                                <img src="static/icones/bookmark-outline.svg" class="svg-mm">
+                            </button>
+                            <button class="btnAcao" onclick="compartilharLivroPublicar('{{livro.id}}')" title="Compartilhar no Feed">
+                                <img src="static/icones/arrow-redo-outline.svg" class="svg-mm">
+                            </button>
+                            {% if current_user.is_authenticated and current_user.plano.name == 'Premium' %}
+                            <!--<button class="btnAcao" onclick="divulgarLivro('{{livro.id}}')" title="Divulgar Livro">
+                                <img src="static/icones/megaphone-outline.svg" class="svg-sm">
+                            </button>-->
+                            {% endif %}
                         </div>
                     </div>
                 </div>
             </div>
-            
-            <!-- Lista de comentários -->
-            <div id="areaComentarios" class="comentarios"></div>
-
-            <div id="sobretelaInfoComentario" class="sobreTela acao">
-                <div class="tituloBarra">Editar Comentário</div>
-                <div class="acaoConteudo">
-                    <button onclick="excluirComentario('livro')"><img src="static/icones/trash-outline.svg" class="svg-m"> Excluir</button>
-                </div>
-            </div>
-            {% else %}
-            <p style="color: red;">Deve estar logado para ver os comentários. <a href="login?pagina=livro&id={{livro.id}}">Clique aqui para fazer login</a></p>
-            {% endif %}
         </div>
     </div>
 </div>
+
+{% if livro.descricao != "" %}
+<section class="trending-layout1 space wow animate__animated animate__fadeInUp" style="padding-top: 0px;">
+    <div class="container">
+        <div class="title-area2">
+            <h2>Descrição</h2>
+            <span class="border-line d-xxl-block"></span>
+        </div>
+        <div class="g-4 descricao-livro">
+            <p>{{livro.descricao | safe}}</p>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{% if livro.autor.descricao != "" %}
+<section class="trending-layout1 space wow animate__animated animate__fadeInUp" style="padding-top: 0px;">
+    <div class="container">
+        <div class="title-area2">
+            <h2>Sobre o Autor: {{livro.autor.nome}}</h2>
+            <span class="border-line d-xxl-block"></span>
+        </div>
+        <div class="g-4 descricao-livro livro-sobre-autor">
+            <img src="{{ livro.autor.img }}">
+            <p>{{ livro.autor.descricao | safe }}</p>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<div id="areaLivrosEmAlta" class="sessaoImagem wow animate__animated animate__fadeInUp" style="background: linear-gradient(rgba(125, 125, 125, 0.5), rgba(0, 0, 0, 0.5)), url('static/imagens/sistema/biblioteca.jpg'); color: white;">
+    <h3 style="color: white;">Livros Relacionados</h3>
+    <hr style="margin-bottom: 10px;">
+    <div id="conteudoLivrosEmAlta" class="owl-carousel"></div>
+</div>
+
+<section class="trending-layout1 space wow animate__animated animate__fadeInUp">
+    <div class="container">
+        <div class="title-area2">
+            <h2>Onde Encontrar o Livro?</h2>
+            <span class="border-line d-xxl-block"></span>
+        </div>
+        <div class="g-4 descricao-livro">
+            <div class="livro-links">
+                {% for link in livro.links %}
+                <a class="livro-link" href="{{link.link}}" target="_blank">
+                    {%if link.hospedeiro == 'Amazon'%}
+                    <img src="static/imagens/sistema/amazon_icon.jpeg" alt="">
+                    Amazon
+                    {%elif link.hospedeiro == 'EstanteVirtual'%}
+                    <img src="static/imagens/sistema/estantevirtual_icon.jpg" alt="">
+                    Estante Virtual
+                    {% endif %}
+                </a>
+                {% endfor %}
+            </div>
+
+            {% if current_user.is_authenticated and current_user.plano.name == 'Premium' %}
+            <script src="static/js/grafico/chart.js"></script>
+            <div id="graficoPrecoLivro" class="grafico"></div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<section class="trending-layout1 space sessaoMargem wow animate__animated animate__fadeInUp" style="background-image: var(--corFundo2);">
+    <div class="container">
+        <div class="title-area2">
+            <h2>Comentários</h2>
+            <span class="border-line d-xxl-block"></span>
+        </div>
+        <div class="g-4">
+            
+            <div>
+                <div class="comentarios-header">
+                    <button class="btnAcao btnPrimario btn-comentario" title="Adicionar comentário">
+                        Deixe seu Comentário
+                    </button>
+                </div>
+
+                {% if current_user.is_authenticated %}
+                <div class="novo-comentario" style="display: none;">
+                    <div class="comentario-form">
+                        <img id="imgUsuarioResponder" src="{{img_usuario}}">
+                        <div class="comentario-input">
+                            <div class="areaCheckContemSpoiler">
+                                <input type="checkbox" id="checkSpoilerNovoComentario" class="checkContemSpoiler">
+                                <label for="checkSpoilerNovoComentario">Contém Spoiler</label>
+                            </div>
+                            <input type="text" class="input-comentario">
+                            <div class="comentario-acoes-form">
+                                <button class="btn-enviar-comentario">Enviar</button>
+                                <button class="btn-cancelar-comentario">Cancelar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="areaComentarios" class="comentarios"></div>
+
+                <div id="sobretelaInfoComentario" class="sobreTela acao">
+                    <div class="tituloBarra">Editar Comentário</div>
+                    <div class="acaoConteudo">
+                        <button onclick="excluirComentario('livro')"><img src="static/icones/trash-outline.svg" class="svg-m">
+                            Excluir</button>
+                    </div>
+                </div>
+                {% else %}
+                <p style="color: red;">Deve estar logado para ver os comentários. <a
+                        href="login?pagina=livro&id={{livro.id}}">Clique aqui para fazer login</a></p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
 
 <script src="static/js/livro.js"></script>
 <script src="static/js/comentario.js"></script>

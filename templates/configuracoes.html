@@ -1,0 +1,366 @@
+{% extends 'index.html' %}
+{% block conteudo %}
+
+<style>
+    .btnAlterarTema{
+        width: 100px;
+        height: 100px;
+        padding: 10px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        border-radius: 5px;
+        transition: all 0.3s ease;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin: 10px;
+    }
+
+    .btnAlterarTema:hover{
+        transform: translateY(-10px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+
+    #colorEscolheCor{
+        opacity: 0;
+        user-select: none;
+        pointer-events: none;
+    }
+
+    .linhaNotificacao{
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 15px;
+    }
+
+    #btnsDesativarConta button{
+        display: block;
+        width: 100%;
+        text-align: center;
+        padding: 15px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        border-radius: 5px;
+        transition: all 0.3s ease;
+        background-color: var(--corFundo2Contraste);
+    }
+
+    #btnsDesativarConta button:hover{
+        transform: translateY(-5px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        background-color: var(--corHover);
+    }
+</style>
+
+<section id="pricing" class="section-padding pricing bg-one">
+    <div class="container">
+        <div class="row">
+            <div class="col-xl-6 offset-xl-3 col-lg-10 offset-lg-1">
+                <div class="section-title-center text-center"><span>PREÇOS</span>
+                    <h2 class="display-6">Preços</h2>
+                    <div class="section-divider divider-traingle"></div>
+                </div>
+            </div>
+        </div>
+        <div class="row align-items-center justify-content-center">
+            <div class="col-md-6 col-lg-4 mb-4 mb-lg-0 aos-init aos-animate" data-aos="fade-up" data-aos-duration="1000"
+                data-aos-delay="100">
+                <div class="pricing__item translateEffect1 {% if current_user.plano.name == 'Gratuito' %}active{% else %}{% endif %}">
+                    <h3 class="pricing__title">Básico</h3>
+                    <h3 class="pricing__price">R$0</h3>
+                    <ul class="pricing__list">
+                        <li>Acesso a Livros</li>
+                        <li>Acesso a Publicações</li>
+                        <li>Criar Listas</li>
+                    </ul>
+                    <a onclick="alterarPlano(0, this)" class="{% if current_user.plano.name == 'Gratuito' %}button btnPrimario{% else %}btn__secondary{% endif %} btnOpcaoPlano btnOpcaoPlanoGratuito">
+                        <span>GRATUITO</span>
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 mb-4 mb-lg-0 aos-init aos-animate" data-aos="fade-up" data-aos-duration="1000"
+                data-aos-delay="150">
+                <div class="pricing__item translateEffect1 {% if current_user.plano.name == 'Padrao' %}active{% else %}{% endif %}">
+                    <h3 class="pricing__title">Padrão</h3>
+                    <h3 class="pricing__price">R$12<span>/mês</span></h3>
+                    <ul class="pricing__list">
+                        <li>Personalisar Perfil</li>
+                        <li>Publicações Avançadas</li>
+                        <li><br></li>
+                                    <!--<li>Imagens maior que 2MB</li>
+                                    <li>Referenciar mais de um livro</li>
+                                    <li>Adicionar mais que 10 conteúdos numa publicação</li>
+                                    <li>Aumentar quantidade de caracteres pra digitar</li>-->
+                        <!--<li>Notificar Livros</li>-->
+                    </ul>
+                    <a onclick="alterarPlano(1, this)" class="{% if current_user.plano.name == 'Padrao' %}button btnPrimario{% else %}btn__secondary{% endif %} btnOpcaoPlano">
+                        {% if current_user.plano.name == 'Padrao' %}
+                        <span>CANCELAR</span>
+                        {% else %}
+                        <span>ASSINAR</span>
+                        {% endif %}
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 mb-4 mb-lg-0 aos-init aos-animate" data-aos="fade-up" data-aos-duration="1000"
+                data-aos-delay="200">
+                <div class="pricing__item translateEffect1 {% if current_user.plano.name == 'Premium' %}active{% else %}{% endif %}">
+                    <h3 class="pricing__title">Premium</h3>
+                    <h3 class="pricing__price">R$35<span>/mês</span></h3>
+                    <ul class="pricing__list">
+                        <li>Histórico Preços de Livros</li>
+                        <li><br></li>
+                        <li><br></li>
+                        <!--<li>Divulgação de Perfils</li>
+                        <li>Divulgação de Livros</li>-->
+                    </ul>
+                    <a onclick="alterarPlano(2, this)" class="{% if current_user.plano.name == 'Premium' %}button btnPrimario{% else %}btn__secondary{% endif %} btnOpcaoPlano">
+                        {% if current_user.plano.name == 'Premium' %}
+                        <span>CANCELAR</span>
+                        {% else %}
+                        <span>ASSINAR</span>
+                        {% endif %}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="pricing" class="section-padding pricing bg-one">
+    <div class="container">
+        <div class="row">
+            <div class="col-xl-6 offset-xl-3 col-lg-10 offset-lg-1">
+                <div class="section-title-center text-center"><span>Configurações</span>
+                    <h2 class="display-6">Configurações</h2>
+                    <div class="section-divider divider-traingle"></div>
+                </div>
+            </div>
+        </div>
+        <div class="row align-items-center justify-content-center">
+            <div class="linhaNotificacao">
+                <div>
+                    <h4>Notificacões</h4>
+                    <label for="checkReceberNotificacoes"><p>Ativar / Desativar todas as notificações</p></label>
+                </div>
+                <input type="checkbox" id="checkReceberNotificacoes" class="checkFiltro">
+            </div>
+            <div class="linhaNotificacao">
+                <div>
+                    <h4>Notificacões personalizadas</h4>
+                    <label for="checkReceberNotificacoes"><p>Receber notificações de livros recomendados</p></label>
+                </div>
+                <input type="checkbox" id="checkReceberNotificacoes" class="checkFiltro">
+            </div>
+            <div class="linhaNotificacao">
+                <div>
+                    <h4>Notificacões Usuário Seguindo</h4>
+                    <label for="checkReceberNotificacoes"><p>Receber notificações quando alguém começa a seguir você</p></label>
+                </div>
+                <input type="checkbox" id="checkReceberNotificacoes" class="checkFiltro">
+            </div>
+            <div class="linhaNotificacao">
+                <div>
+                    <h4>Notificacões Lista Seguindo</h4>
+                    <label for="checkReceberNotificacoes"><p>Receber notificações quando alguém começa a observar uma lista de livros sua.</p></label>
+                </div>
+                <input type="checkbox" id="checkReceberNotificacoes" class="checkFiltro">
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<section id="pricing" class="section-padding pricing bg-one">
+    <div class="container">
+        <div class="row">
+            <div class="col-xl-6 offset-xl-3 col-lg-10 offset-lg-1">
+                <div class="section-title-center text-center"><span>Açoes</span>
+                    <h2 class="display-6">Açoes da Conta</h2>
+                    <div class="section-divider divider-traingle"></div>
+                </div>
+            </div>
+        </div>
+        <div id="btnsDesativarConta" class="row">
+            <div class="col-6">
+                <button onclick="desativarConta()">Desativar Perfil</button>
+                Ao desativar o perfil, você será deslogado, ao logar novamente o perfil será reativado. <br>
+                Enquanto desativado, seu perfil não será visível para outros usuários.
+            </div> 
+            <div class="col-6">
+                <button onclick="deletarConta()">Deletar Perfil</button>
+                Após deletar o perfil, todos os seus dados serão permanentemente apagados do sistema, e não poderão ser recuperados.
+            </div> 
+        </div>
+    </div>
+</section>
+
+
+<section id="pricing" class="section-padding pricing bg-one">
+    <div class="container">
+        <div class="row">
+            <div class="col-xl-6 offset-xl-3 col-lg-10 offset-lg-1">
+                <div class="section-title-center text-center"><span>Temas</span>
+                    <h2 class="display-6">Temas de cor</h2>
+                    <div class="section-divider divider-traingle"></div>
+                </div>
+            </div>
+        </div>
+        <div class="row align-items-center justify-content-center">
+            <button class="btnAlterarTema" variavelcor="corPrimaria" style="background-color: var(--corPrimaria);"></button>
+            <button class="btnAlterarTema" variavelcor="corSecundaria" style="background-color: var(--corSecundaria);"></button>
+            <button class="btnAlterarTema" variavelcor="corTercearia" style="background-color: var(--corTercearia);"></button>
+            <button class="btnAlterarTema" variavelcor="corDestaque" style="background-color: var(--corDestaque);"></button>
+        </div>
+        <input id="colorEscolheCor" type="color" value="#ff0000">
+        <button onclick="resetarCores()" class="button btnPrimario" style="margin-top: 10px; width: 100%;"><span>Resetar cores</span></button>
+    </div>
+</section>
+
+<script>
+
+    function alterarPlano(novoPlano, btn_alvo){
+        fetch('/alterarPlanoUsuario', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ novoPlano: novoPlano })
+        })
+        .then(response => response.json())
+        .then(retorno => {
+            if (retorno.erro != ""){
+                toast.erro(retorno.erro);
+            }else{
+                Array.prototype.forEach.call(document.getElementsByClassName("btnOpcaoPlano"), function(btn){
+                    btn.classList.remove("button");
+                    btn.classList.remove("btnPrimario");
+                    btn.classList.add("btn__secondary");
+                    if (!btn.classList.contains("btnOpcaoPlanoGratuito")){
+                        btn.innerHTML = "<span>ASSINAR</span>";
+                    }
+                });
+                Array.prototype.forEach.call(document.getElementsByClassName("pricing__item"), function(el){
+                    el.classList.remove("active");
+                });
+
+                if (retorno.plano == novoPlano){
+                    if (!btn_alvo.classList.contains("btnOpcaoPlanoGratuito")){
+                        btn_alvo.innerHTML = "<span>CANCELAR</span>";
+                    }
+                    btn_alvo.closest(".pricing__item").classList.add("active");
+                    btn_alvo.classList.add("button");
+                    btn_alvo.classList.add("btnPrimario");
+                    btn_alvo.classList.remove("btn__secondary");
+
+                }else{
+                    if (!btn_alvo.classList.contains("btnOpcaoPlanoGratuito")){
+                        btn_alvo.innerHTML = "<span>ASSINAR</span>";
+                    }
+                    var btnOpcaoPlanoGratuito = document.querySelector(".btnOpcaoPlanoGratuito");
+                    btnOpcaoPlanoGratuito.closest(".pricing__item").classList.add("active");
+                    btnOpcaoPlanoGratuito.classList.add("button");
+                    btnOpcaoPlanoGratuito.classList.add("btnPrimario");
+                    btnOpcaoPlanoGratuito.classList.remove("btn__secondary");
+                }
+            }
+        }).catch(error => { console.error('Erro:', error); });
+    }
+
+    function desativarConta(){
+        // href="desativarConta"
+        if (!window.confirm("Deseja realmente desativar o Perfil?")){
+            return;
+        }
+
+        fetch('/desativarConta', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ })
+        })
+        .then(response => response.json())
+        .then(retorno => {
+            if (retorno.erro != ""){
+                toast.erro(retorno.erro);
+            }else{
+                window.location.reload();
+            }
+        }).catch(error => { console.error('Erro:', error); });
+    }
+
+    function deletarConta(){
+        // href="excluirUsuario"
+        if (!window.confirm("Deseja realmente excluir o Perfil?")){
+            return;
+        }
+
+        fetch('/excluirUsuario', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ })
+        })
+        .then(response => response.json())
+        .then(retorno => {
+            if (retorno.erro != ""){
+                toast.erro(retorno.erro);
+            }else{
+                window.location.reload();
+            }
+        }).catch(error => { console.error('Erro:', error); });
+    }
+
+</script>
+
+{% if current_user.is_authenticated and (current_user.plano.name == 'Padrao' or current_user.plano.name == 'Premium') %}
+<script>
+    var colorEscolheCor = document.getElementById("colorEscolheCor");
+    const root = document.documentElement;
+    var variavelAlterar = ""
+    Array.prototype.forEach.call(document.getElementsByClassName("btnAlterarTema"), function(btn){
+        btn.addEventListener('click', function (){
+            if (colorEscolheCor){
+                variavelAlterar = btn.getAttribute("variavelcor").trim();
+                colorEscolheCor.showPicker()
+            }
+        })
+    })
+    if (colorEscolheCor){
+        colorEscolheCor.addEventListener('input', function() {
+            if (variavelAlterar != ""){
+                root.style.setProperty('--'+variavelAlterar, this.value);
+            }
+        });
+
+        colorEscolheCor.addEventListener('change', function() {
+            console.log(variavelAlterar, this.value);
+
+            fetch('/salvarCorUsuario', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ [variavelAlterar]: this.value })
+            })
+            .then(response => response.json())
+            .then(retorno => {
+            }).catch(error => { console.error('Erro:', error); });
+        });
+    }
+
+    function resetarCores(){
+        fetch('/salvarCorUsuario', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                'corPrimaria': '',
+                'corSecundaria': '',
+                'corTercearia': '',
+                'corDestaque': '',
+                'corFundoContraste': '',
+                'corFundo2Contraste': ''
+            })
+        })
+        .then(response => response.json())
+        .then(retorno => {
+            window.location.reload();
+        }).catch(error => { console.error('Erro:', error); });
+    }
+</script>
+{% endif %}
+
+{% endblock %}
